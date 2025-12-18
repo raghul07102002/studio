@@ -79,7 +79,7 @@ export function CompletionPieChart() {
                 </PieChart>
             </ResponsiveContainer>
             </ChartContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="absolute inset-0 flex flex-col items-center justify-center -translate-y-1">
                 <p className="text-5xl font-bold">{overallCompletion.toFixed(0)}%</p>
                 <p className="text-muted-foreground text-sm">Today</p>
             </div>
