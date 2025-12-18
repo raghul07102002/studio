@@ -46,7 +46,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     "chrono-habit-data-2025",
     {}
   );
-  const [selectedView, setSelectedView] = useState<ViewOption>("Year");
+  const [selectedView, setSelectedView] = useState<ViewOption>("Week");
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useLocalStorage<DashboardOption>('chrono-dashboard-selection', 'habits');
 

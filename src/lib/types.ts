@@ -17,19 +17,10 @@ export type DailyHabitLogs = Record<string, HabitLog>;
 export type HabitData = Record<string, DailyHabitLogs>;
 
 export type ViewOption =
-  | "Year"
-  | "January"
-  | "February"
-  | "March"
-  | "April"
-  | "May"
-  | "June"
-  | "July"
-  | "August"
-  | "September"
-  | "October"
-  | "November"
-  | "December";
+  | "Day"
+  | "Week"
+  | "Month"
+  | "Year";
 
 export type DashboardOption = "habits" | "wealth";
 

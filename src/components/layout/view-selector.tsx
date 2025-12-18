@@ -8,10 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MONTHS } from "@/lib/constants";
 import { ViewOption } from "@/lib/types";
 
-const viewOptions: ViewOption[] = ["Year", ...MONTHS as ViewOption[]];
+const viewOptions: ViewOption[] = ["Day", "Week", "Month", "Year"];
 
 export function ViewSelector() {
   const { selectedView, setSelectedView } = useApp();
