@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -11,10 +12,11 @@ export function SavingsAllocation() {
   const { monthlySalary, monthlySavings, savingsAllocation } = wealthData;
   
   const totalAllocated = useMemo(() => {
+    if (!savingsAllocation) return 0;
     const { mutualFunds, emergencyFunds, shortTermGoals } = savingsAllocation;
-    const mfTotal = Object.values(mutualFunds).flat().reduce((sum, fund) => sum + fund.amount, 0);
-    const efTotal = emergencyFunds.reduce((sum, fund) => sum + fund.amount, 0);
-    const stgTotal = shortTermGoals.reduce((sum, fund) => sum + fund.amount, 0);
+    const mfTotal = mutualFunds ? Object.values(mutualFunds).flat().reduce((sum, fund) => sum + fund.amount, 0) : 0;
+    const efTotal = emergencyFunds ? emergencyFunds.reduce((sum, fund) => sum + fund.amount, 0) : 0;
+    const stgTotal = shortTermGoals ? shortTermGoals.reduce((sum, fund) => sum + fund.amount, 0) : 0;
     return mfTotal + efTotal + stgTotal;
   }, [savingsAllocation]);
 
