@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -44,7 +45,7 @@ export function WealthMetrics() {
               type="number"
               value={monthlySalary || ''}
               onChange={handleSalaryChange}
-              placeholder="e.g., 100000"
+              placeholder="0"
               className="h-12 w-full rounded-md border-0 bg-transparent px-1 py-2 text-2xl font-bold ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
             />
           </div>
