@@ -47,7 +47,7 @@ export function FinancialReportProvider({ children }: { children: ReactNode }) {
         total += expenses.reduce((sum, exp) => sum + exp.amount, 0);
       }
     });
-    return { totalExpenses: total, filteredExpenses };
+    return { totalExpenses: total, filteredExpenses: filtered };
   }, [wealthData.expenses, timeInterval]);
 
   const totalTrips = useMemo(() => {
