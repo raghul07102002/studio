@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -27,7 +26,7 @@ export function TravelDashboardView() {
         <CardContent>
           <div className='w-full h-[600px] flex items-center justify-center relative bg-muted rounded-lg'>
             <Image 
-              src="https://picsum.photos/seed/india-map/800/600"
+              src="https://storage.googleapis.com/aiv-studio-public-images/india-map.png"
               alt="Map of India"
               fill
               style={{ objectFit: 'contain' }}
