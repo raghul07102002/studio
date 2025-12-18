@@ -161,8 +161,8 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     updateWealthData({ trips: (localWealthData.trips || []).filter((t) => t.id !== id) });
   };
 
-  const addFund = (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id'>) => {
-    const newFund = { ...fund, id: `fund-${Date.now()}-${Math.random()}` };
+  const addFund = (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id' | 'schemeCode'> & { schemeCode?: string }) => {
+    const newFund: Fund = { ...fund, id: `fund-${Date.now()}-${Math.random()}` };
     const currentAllocation = { ...(localWealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
     if (!currentAllocation.mutualFunds) currentAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
     if (!currentAllocation.emergencyFunds) currentAllocation.emergencyFunds = [];

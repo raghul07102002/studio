@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -20,7 +21,7 @@ interface FundTableProps {
 }
 
 interface SearchResult {
-    schemeCode: number;
+    schemeCode: string;
     schemeName: string;
 }
 
@@ -38,6 +39,7 @@ export function FundTable({
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
+  const [newItemSchemeCode, setNewItemSchemeCode] = useState<string | undefined>(undefined);
   const [isAdding, setIsAdding] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -74,9 +76,10 @@ export function FundTable({
   const handleAddItem = () => {
     const amount = parseFloat(newItemAmount);
     if (newItemName && !isNaN(amount)) {
-      addFund(category, { name: newItemName, amount });
+      addFund(category, { name: newItemName, amount, schemeCode: newItemSchemeCode });
       setNewItemName('');
       setNewItemAmount('');
+      setNewItemSchemeCode(undefined);
       setIsAdding(false);
       setIsPopoverOpen(false);
     }
@@ -93,8 +96,9 @@ export function FundTable({
     }
   }
 
-  const handleSelectFund = (name: string) => {
+  const handleSelectFund = (name: string, schemeCode: string) => {
     setNewItemName(name);
+    setNewItemSchemeCode(schemeCode);
     setSearchResults([]);
     setIsPopoverOpen(false);
   }
@@ -172,11 +176,11 @@ export function FundTable({
                                 key={fund.schemeCode}
                                 variant="ghost"
                                 className="w-full justify-start h-auto text-left whitespace-normal text-xs"
-                                onClick={() => handleSelectFund(fund.schemeName)}
+                                onClick={() => handleSelectFund(fund.schemeName, fund.schemeCode)}
                               >
                                 {fund.schemeName}
                               </Button>
-                            )) : <p className="p-2 text-xs text-muted-foreground">No results found.</p>)}
+                            )) : (newItemName.length >= 3 && <p className="p-2 text-xs text-muted-foreground">No results found.</p>))}
                         </div>
                       </ScrollArea>
                     </PopoverContent>

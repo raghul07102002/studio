@@ -44,6 +44,7 @@ export interface Fund {
   id: string;
   name: string;
   amount: number;
+  schemeCode?: string;
 }
 
 export interface MutualFunds {
