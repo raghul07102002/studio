@@ -57,11 +57,24 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     return doc(firestore, "users", user.uid);
   }, [user, firestore]);
 
-  const { data: userProfile, isLoading: isUserLoading } = useDoc<any>(userDocRef);
+  const { data: userProfile, isLoading: isUserLoading } = useDoc<{wealthData?: WealthData}>(userDocRef);
 
   useEffect(() => {
     if (userProfile && userProfile.wealthData) {
-      setLocalWealthData(prev => ({...prev, ...userProfile.wealthData}));
+      // Deep merge to preserve structure if some fields are missing from Firestore
+      const mergedData = {
+        ...DEFAULT_WEALTH_DATA,
+        ...userProfile.wealthData,
+        savingsAllocation: {
+          ...DEFAULT_WEALTH_DATA.savingsAllocation,
+          ...(userProfile.wealthData.savingsAllocation || {}),
+          mutualFunds: {
+            ...DEFAULT_WEALTH_DATA.savingsAllocation.mutualFunds,
+            ...(userProfile.wealthData.savingsAllocation?.mutualFunds || {}),
+          },
+        },
+      };
+      setLocalWealthData(mergedData);
     }
   }, [userProfile]);
 
@@ -76,6 +89,30 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     [userDocRef, localWealthData]
   );
   
+  useEffect(() => {
+    if (user && userProfile && !isUserLoading) {
+      const migrationFlag = `wealth-migration-complete-${user.uid}`;
+      if (localStorage.getItem(migrationFlag)) {
+        return;
+      }
+
+      const oldWealthData = localStorage.getItem('chrono-wealth-data');
+      if (oldWealthData) {
+        try {
+          const dataToMigrate = JSON.parse(oldWealthData);
+          // Only migrate if there's no existing wealth data in Firestore
+          if (!userProfile.wealthData) {
+            updateWealthData(dataToMigrate);
+             console.log("Wealth data migration successful.");
+          }
+        } catch (e) {
+          console.error("Error parsing old wealth data for migration:", e);
+        }
+      }
+      localStorage.setItem(migrationFlag, 'true');
+    }
+  }, [user, userProfile, isUserLoading, updateWealthData]);
+
   const addExpense = (date: string, expense: Omit<Expense, "id">) => {
     const newExpense = { ...expense, id: `exp-${Date.now()}` };
     const newExpenses = { ...(localWealthData.expenses || {}) };
@@ -149,7 +186,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
       currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].map(f => f.id === updatedFund.id ? updatedFund : f);
     } else {
         const cat = category as TopLevelFundCategory;
-        currentAllocation[cat] = currentAllocation[cat].map(f => f.id === updatedFund.id ? updatedFund : f)
+        currentAllocation[cat] = (currentAllocation[cat] || []).map(f => f.id === updatedFund.id ? updatedFund : f)
     }
 
     updateWealthData({ savingsAllocation: currentAllocation });
@@ -164,7 +201,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
       currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].filter(f => f.id !== id);
     } else {
         const cat = category as TopLevelFundCategory;
-        currentAllocation[cat] = currentAllocation[cat].filter(f => f.id !== id);
+        currentAllocation[cat] = (currentAllocation[cat] || []).filter(f => f.id !== id);
     }
 
     updateWealthData({ savingsAllocation: currentAllocation });
@@ -209,5 +246,3 @@ export function useWealth() {
   }
   return context;
 }
-
-    
