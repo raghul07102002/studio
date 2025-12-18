@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 export function LiveClock() {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -18,12 +19,12 @@ export function LiveClock() {
   }, []);
 
   return (
-    <Card className="h-full flex flex-col items-center justify-center bg-accent text-accent-foreground">
+    <Card className="h-full flex flex-col items-center justify-center bg-secondary text-secondary-foreground">
       <CardContent className="p-6 text-center">
         <div className="text-6xl font-bold tracking-tighter">
-          {format(currentTime, 'HH:mm:ss')}
+          {format(currentTime, 'hh:mm:ss a')}
         </div>
-        <div className="text-xl text-accent-foreground/80">
+        <div className="text-xl text-muted-foreground mt-2">
           {format(currentTime, 'eeee, MMMM d, yyyy')}
         </div>
       </CardContent>
