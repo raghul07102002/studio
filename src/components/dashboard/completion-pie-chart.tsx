@@ -5,7 +5,6 @@ import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -38,7 +37,7 @@ export function CompletionPieChart() {
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle>Completion Overview</CardTitle>
         </div>
@@ -65,11 +64,13 @@ export function CompletionPieChart() {
                     data={chartData}
                     dataKey="value"
                     nameKey="name"
-                    innerRadius="80%"
+                    innerRadius="70%"
                     outerRadius="100%"
-                    strokeWidth={0}
+                    strokeWidth={5}
+                    stroke="hsl(var(--background))"
                     startAngle={90}
                     endAngle={450}
+                    cornerRadius={8}
                 >
                     {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -79,8 +80,8 @@ export function CompletionPieChart() {
             </ResponsiveContainer>
             </ChartContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-5xl font-bold text-primary">{overallCompletion.toFixed(1)}%</p>
-                <p className="text-muted-foreground">Completed</p>
+                <p className="text-5xl font-bold">{overallCompletion.toFixed(0)}%</p>
+                <p className="text-muted-foreground text-sm">Today</p>
             </div>
         </div>
       </CardContent>

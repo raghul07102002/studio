@@ -25,23 +25,27 @@ export function AppHeader() {
             <span>Track2025</span>
         </Link>
         
-        <nav className="hidden md:flex items-center gap-4">
-            {selectedDashboard === 'habits' && habitNavItems.map((item) => (
-            <Link 
-                key={item.href}
-                href={item.href}
-                className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-primary" : "text-muted-foreground"
-                )}
-            >
-                {item.label}
-            </Link>
-            ))}
-        </nav>
       </div>
 
       <div className="flex items-center gap-4">
+        {selectedDashboard === 'habits' && (
+            <nav className="hidden md:flex items-center gap-1 rounded-lg bg-secondary/80 p-1">
+                {habitNavItems.map((item) => (
+                <Button
+                    key={item.href}
+                    variant={pathname === item.href ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-8 px-3"
+                    asChild
+                >
+                    <Link href={item.href}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {item.label}
+                    </Link>
+                </Button>
+                ))}
+            </nav>
+        )}
         <DashboardSelector />
 
         <div className="md:hidden">
