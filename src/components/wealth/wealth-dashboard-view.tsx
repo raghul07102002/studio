@@ -3,6 +3,7 @@
 import { CorpusChart } from './corpus-chart';
 import { EditableTable } from './editable-table';
 import { IncomeInput } from './income-input';
+import { SalaryDistributionChart } from './salary-distribution-chart';
 import { SavingsAllocation } from './savings-allocation';
 import { WealthMetrics } from './wealth-metrics';
 
@@ -24,9 +25,12 @@ export function WealthDashboardView() {
             type="trips"
           />
         </div>
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SalaryDistributionChart />
             <CorpusChart />
-            <SavingsAllocation />
+            <div className="md:col-span-2">
+                <SavingsAllocation />
+            </div>
         </div>
       </div>
     </div>

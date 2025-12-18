@@ -32,8 +32,8 @@ export function CorpusChart() {
     const achieved = (selectedYear / 20) * TARGET_CORPUS;
     const remaining = TARGET_CORPUS - achieved;
     return [
-      { name: 'Achieved', value: achieved, fill: 'hsl(var(--primary))' },
-      { name: 'Remaining', value: remaining, fill: 'hsl(var(--secondary))' },
+      { name: 'Achieved', value: achieved, fill: 'hsl(var(--chart-3))' },
+      { name: 'Remaining', value: remaining, fill: 'hsl(var(--muted))' },
     ];
   }, [selectedYear]);
 
@@ -47,7 +47,7 @@ export function CorpusChart() {
           <div>
             <CardTitle>Target Corpus</CardTitle>
             <CardDescription>
-              ₹{TARGET_CORPUS.toLocaleString('en-IN')} over 20 years
+              ₹{TARGET_CORPUS.toLocaleString('en-IN')} in 20 years
             </CardDescription>
           </div>
           <Select
@@ -68,45 +68,47 @@ export function CorpusChart() {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
-        <ChartContainer
-          config={{}}
-          className="mx-auto aspect-square w-full max-w-[300px]"
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius="60%"
-                strokeWidth={5}
-                paddingAngle={5}
-                cornerRadius={8}
-              >
-                {chartData.map((entry) => (
-                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        <div className="relative w-full max-w-[300px] aspect-square">
+            <ChartContainer
+                config={{}}
+                className="mx-auto aspect-square w-full"
+            >
+                <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent 
+                        hideLabel 
+                        formatter={(value) => `${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`}
+                        />}
+                    />
+                    <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius="70%"
+                    outerRadius="100%"
+                    strokeWidth={5}
+                    stroke="hsl(var(--background))"
+                    startAngle={90}
+                    endAngle={450}
+                    cornerRadius={8}
+                    >
+                    {chartData.map((entry) => (
+                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                    ))}
+                    </Pie>
+                </PieChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                <p className="text-sm text-muted-foreground">Achieved</p>
+                <p className="text-3xl font-bold tracking-tighter">
+                {achievedPercentage.toFixed(0)}%
+                </p>
+          </div>
+        </div>
       </CardContent>
-      <div className="p-6 pt-0 text-center">
-        <p className="text-2xl font-bold">
-          {achievedCorpus.toLocaleString('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-          })}
-        </p>
-        <p className="text-muted-foreground">
-          {achievedPercentage.toFixed(1)}% of your goal
-        </p>
-      </div>
     </Card>
   );
 }
