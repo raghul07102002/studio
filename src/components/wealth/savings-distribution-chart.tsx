@@ -6,10 +6,8 @@ import { Pie, PieChart, Cell, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -38,17 +36,17 @@ export function SavingsDistributionChart() {
     const unallocated = monthlySavings - totalAllocated > 0 ? monthlySavings - totalAllocated : 0;
 
     return [
-      { name: 'Mutual Funds', value: mfTotal, fill: 'hsl(var(--chart-1))' },
-      { name: 'Emergency Funds', value: efTotal, fill: 'hsl(var(--chart-2))' },
-      { name: 'Short Term Goals', value: stgTotal, fill: 'hsl(var(--chart-3))' },
-      { name: 'Unallocated', value: unallocated, fill: 'hsl(var(--muted))' },
+      { name: 'MF', value: mfTotal, fill: 'hsl(var(--chart-1))', fullName: 'Mutual Funds' },
+      { name: 'EF', value: efTotal, fill: 'hsl(var(--chart-2))', fullName: 'Emergency Funds' },
+      { name: 'STG', value: stgTotal, fill: 'hsl(var(--chart-3))', fullName: 'Short Term Goals' },
+      { name: 'Unallocated', value: unallocated, fill: 'hsl(var(--muted))', fullName: 'Unallocated' },
     ].filter(item => item.value > 0);
   }, [monthlySavings, savingsAllocation]);
 
   const chartConfig = useMemo(() => {
     const config: any = {};
     chartData.forEach(item => {
-        config[item.name.replace(/\s/g, '')] = { label: item.name, color: item.fill };
+        config[item.name] = { label: item.name, color: item.fill };
     });
     return config;
   }, [chartData]);
@@ -63,7 +61,6 @@ export function SavingsDistributionChart() {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle>Savings Distribution</CardTitle>
-          <CardDescription>How your savings are allocated</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center">
@@ -76,7 +73,12 @@ export function SavingsDistributionChart() {
               <PieChart>
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel formatter={(value) => `${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`} />}
+                  content={<ChartTooltipContent 
+                    formatter={(value, name, props) => {
+                      const { fullName } = props.payload as any;
+                      return [`${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`, fullName]
+                    }}
+                    />}
                 />
                 <Pie
                     data={chartData}

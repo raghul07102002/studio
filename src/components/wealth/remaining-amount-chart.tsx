@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -5,7 +6,6 @@ import { Pie, PieChart, Cell, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -13,6 +13,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent
 } from '@/components/ui/chart';
 import { useWealth } from '@/contexts/wealth-provider';
 import { format, isSameMonth } from 'date-fns';
@@ -43,21 +45,31 @@ export function RemainingAmountChart() {
     }
     return [
       { name: 'Total Spent', value: spentAmount, fill: 'hsl(var(--chart-4))' },
-      { name: 'Remaining in Budget', value: remainingAmount, fill: 'hsl(var(--chart-1))' },
+      { name: 'Remaining', value: remainingAmount, fill: 'hsl(var(--chart-1))' },
     ];
   }, [spentAmount, remainingAmount, monthlyBudget, totalExpenses]);
+
+  const chartConfig = useMemo(() => {
+    const config: any = {};
+    chartData.forEach(item => {
+        config[item.name.replace(/\s/g, '')] = { label: item.name, color: item.fill };
+    });
+    return config;
+  }, [chartData]);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle>Remaining Budget</CardTitle>
-          <CardDescription>Monthly Expense Budget vs. Spent</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 flex items-center justify-center">
-        <div className="relative w-full max-w-[300px] aspect-square">
-          <ChartContainer config={{}} className="w-full h-full">
+      <CardContent className="flex-1 flex flex-col items-center justify-center">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto w-full max-w-[300px] flex flex-col items-center"
+        >
+          <div className="relative w-full max-w-[300px] aspect-square">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <ChartTooltip
@@ -86,14 +98,18 @@ export function RemainingAmountChart() {
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-          </ChartContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <p className="text-sm text-muted-foreground">Remaining</p>
-            <p className="text-3xl font-bold tracking-tighter">
-                {remainingAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-            </p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+              <p className="text-sm text-muted-foreground">Remaining</p>
+              <p className="text-3xl font-bold tracking-tighter">
+                  {remainingAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </p>
+            </div>
           </div>
-        </div>
+          <ChartLegend
+            content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
+            className="flex items-center justify-center pt-4"
+          />
+        </ChartContainer>
       </CardContent>
     </Card>
   );
