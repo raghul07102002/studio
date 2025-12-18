@@ -150,16 +150,17 @@ export function FundTable({
                     <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align='start'>
                       <ScrollArea className="h-48">
                         <div className="p-2 space-y-1">
-                          {searchResults.map((fund) => (
-                            <Button
-                              key={fund.schemeCode}
-                              variant="ghost"
-                              className="w-full justify-start h-auto text-left whitespace-normal text-xs"
-                              onClick={() => handleSelectFund(fund.schemeName)}
-                            >
-                              {fund.schemeName}
-                            </Button>
-                          ))}
+                          {isSearching ? <p className="p-2 text-xs text-muted-foreground">Searching...</p> : 
+                            searchResults.map((fund) => (
+                              <Button
+                                key={fund.schemeCode}
+                                variant="ghost"
+                                className="w-full justify-start h-auto text-left whitespace-normal text-xs"
+                                onClick={() => handleSelectFund(fund.schemeName)}
+                              >
+                                {fund.schemeName}
+                              </Button>
+                            ))}
                         </div>
                       </ScrollArea>
                     </PopoverContent>
