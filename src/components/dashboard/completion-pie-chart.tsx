@@ -55,7 +55,8 @@ export function CompletionPieChart() {
                     cursor={false}
                     content={
                     <ChartTooltipContent
-                        formatter={(value, name) => [`${(value as number).toFixed(1)}%`, name]}
+                        formatter={(value) => `${(value as number).toFixed(1)}%`}
+                        hideLabel
                     />
                     }
                 />
