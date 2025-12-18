@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useWealth } from '@/contexts/wealth-provider';
 import {
   Card,
@@ -29,6 +29,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
+import { MonthlyBudgetInput } from './monthly-budget-input';
 
 interface EditableTableProps {
   title: string;
@@ -45,10 +46,28 @@ export function EditableTable({
   
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const selectedDateString = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  const selectedMonthString = selectedDate ? format(selectedDate, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
 
   const items = type === 'expenses' 
     ? (wealthData.expenses[selectedDateString] || [])
     : wealthData.trips;
+  
+  const monthlyBudget = type === 'expenses' 
+    ? wealthData.expenseBudgets[selectedMonthString] || 0
+    : wealthData.tripBudgets[selectedMonthString] || 0;
+
+  const monthlyTotalSpent = useMemo(() => {
+    if (type === 'expenses') {
+      return Object.entries(wealthData.expenses).reduce((total, [date, dailyExpenses]) => {
+        if (date.startsWith(selectedMonthString)) {
+          return total + dailyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        }
+        return total;
+      }, 0);
+    }
+    // For trips, we'll sum up all trips for now as they are not dated per month
+    return wealthData.trips.reduce((sum, item) => sum + item.amount, 0);
+  }, [wealthData.expenses, wealthData.trips, selectedMonthString, type]);
 
   const addItem = (item: Omit<Expense, 'id'> | Omit<Trip, 'id'>) => {
     if (type === 'expenses') {
@@ -97,23 +116,24 @@ export function EditableTable({
     }
   }
 
-  const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+  const dailyTotal = items.reduce((sum, item) => sum + item.amount, 0);
+  const remainingBudget = monthlyBudget - monthlyTotalSpent;
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </div>
-            {type === 'expenses' && (
+            {type === 'expenses' ? (
                 <Popover>
                     <PopoverTrigger asChild>
                     <Button
                         variant={"outline"}
                         className={cn(
-                        "w-[240px] justify-start text-left font-normal",
+                        "w-full sm:w-[240px] justify-start text-left font-normal",
                         !selectedDate && "text-muted-foreground"
                         )}
                     >
@@ -130,8 +150,9 @@ export function EditableTable({
                     />
                     </PopoverContent>
                 </Popover>
-            )}
+            ) : <MonthlyBudgetInput type={type} selectedMonth={selectedMonthString} />}
         </div>
+        {type === 'expenses' && <div className="pt-4"><MonthlyBudgetInput type="expenses" selectedMonth={selectedMonthString} /></div>}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -195,9 +216,22 @@ export function EditableTable({
           </div>
         </div>
       </CardContent>
-      <CardFooter className='justify-end'>
-        <div className="text-right font-semibold">
-          Total for {selectedDate ? format(selectedDate, 'MMM d') : 'selected date'}: {totalAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}
+      <CardFooter className='flex-col items-start gap-2'>
+        <div className="w-full flex justify-between font-semibold">
+          <span>Total for {type === 'expenses' ? (selectedDate ? format(selectedDate, 'MMM d') : 'day') : 'All Trips'}:</span>
+          <span>{dailyTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
+        </div>
+        <div className="w-full flex justify-between font-semibold text-muted-foreground text-sm">
+          <span>Monthly Budget ({format(new Date(selectedMonthString), 'MMMM yyyy')}):</span>
+          <span>{monthlyBudget.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
+        </div>
+        <div className="w-full flex justify-between font-semibold text-muted-foreground text-sm">
+          <span>Total Spent this Month:</span>
+          <span>{monthlyTotalSpent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
+        </div>
+        <div className={cn("w-full flex justify-between font-bold text-lg", remainingBudget < 0 ? "text-destructive" : "text-primary")}>
+          <span>Remaining Budget:</span>
+          <span>{remainingBudget.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
         </div>
       </CardFooter>
     </Card>

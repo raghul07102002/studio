@@ -15,6 +15,8 @@ const DEFAULT_WEALTH_DATA: WealthData = {
     gold: [],
     equity: [],
   },
+  expenseBudgets: {},
+  tripBudgets: {},
 };
 
 interface WealthContextType {
@@ -29,6 +31,7 @@ interface WealthContextType {
   addFund: (category: keyof WealthData['savingsAllocation'], fund: Omit<Fund, 'id'>) => void;
   updateFund: (category: keyof WealthData['savingsAllocation'], fund: Fund) => void;
   removeFund: (category: keyof WealthData['savingsAllocation'], id: string) => void;
+  setBudget: (type: 'expenses' | 'trips', month: string, amount: number) => void;
 }
 
 const WealthContext = createContext<WealthContextType | undefined>(undefined);
@@ -125,6 +128,24 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     })
   };
 
+  const setBudget = (type: 'expenses' | 'trips', month: string, amount: number) => {
+    if (type === 'expenses') {
+      updateWealthData({
+        expenseBudgets: {
+          ...wealthData.expenseBudgets,
+          [month]: amount,
+        },
+      });
+    } else {
+      updateWealthData({
+        tripBudgets: {
+          ...wealthData.tripBudgets,
+          [month]: amount,
+        },
+      });
+    }
+  };
+
 
   const value = {
     wealthData,
@@ -137,7 +158,8 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     removeTrip,
     addFund,
     updateFund,
-    removeFund
+    removeFund,
+    setBudget,
   };
 
   return (

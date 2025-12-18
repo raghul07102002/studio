@@ -49,10 +49,16 @@ export interface SavingsAllocation {
   equity: Fund[];
 }
 
+export interface MonthlyBudget {
+  [month: string]: number; // e.g., { "2025-01": 50000 }
+}
+
 export interface WealthData {
   monthlySalary: number;
   monthlySavings: number;
   expenses: Record<string, Expense[]>; // Changed from Expense[]
   trips: Trip[];
   savingsAllocation: SavingsAllocation;
+  expenseBudgets: MonthlyBudget;
+  tripBudgets: MonthlyBudget;
 }
