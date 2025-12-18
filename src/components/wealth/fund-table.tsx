@@ -5,12 +5,15 @@ import { useWealth } from '@/contexts/wealth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, Plus } from 'lucide-react';
-import type { WealthData } from '@/lib/types';
+import type { Fund, MutualFunds } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 
+type FundCategory = keyof MutualFunds;
+type TopLevelFundCategory = 'emergencyFunds' | 'shortTermGoals';
+
 interface FundTableProps {
-  category: keyof WealthData['savingsAllocation'];
+  category: FundCategory | TopLevelFundCategory;
   title: string;
   maxAllocation: number;
 }
@@ -22,7 +25,9 @@ export function FundTable({
 }: FundTableProps) {
   const { wealthData, addFund, updateFund, removeFund } = useWealth();
   
-  const funds = wealthData.savingsAllocation[category];
+  const funds = (category in wealthData.savingsAllocation.mutualFunds)
+    ? wealthData.savingsAllocation.mutualFunds[category as FundCategory]
+    : wealthData.savingsAllocation[category as TopLevelFundCategory];
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
@@ -57,7 +62,8 @@ export function FundTable({
     <div className="space-y-2 rounded-lg border p-4">
         <h4 className="font-semibold text-center">{title}</h4>
         <div className={cn("text-center text-xs font-medium", isOverAllocated ? 'text-destructive' : 'text-muted-foreground')}>
-            {currentTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {maxAllocation.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            {currentTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            { maxAllocation !== Infinity && <span> / {maxAllocation.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>}
         </div>
         
         <ScrollArea className='h-32'>
@@ -106,9 +112,11 @@ export function FundTable({
             <Button variant="outline" size='sm' className='w-full mt-2' onClick={() => setIsAdding(true)}>Add Fund</Button>
         )}
         
-        <div className={cn("text-center text-xs font-medium pt-1", isOverAllocated ? 'text-destructive' : 'text-muted-foreground')}>
-            Remaining: {remaining.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-        </div>
+        {maxAllocation !== Infinity && (
+            <div className={cn("text-center text-xs font-medium pt-1", isOverAllocated ? 'text-destructive' : 'text-muted-foreground')}>
+                Remaining: {remaining.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </div>
+        )}
     </div>
   );
 }

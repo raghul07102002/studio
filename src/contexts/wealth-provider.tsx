@@ -2,21 +2,29 @@
 
 import { createContext, useContext, ReactNode, useCallback } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import type { WealthData, Expense, Trip, Fund } from "@/lib/types";
-import { format } from "date-fns";
+import type { WealthData, Expense, Trip, Fund, MutualFunds } from "@/lib/types";
 
 const DEFAULT_WEALTH_DATA: WealthData = {
   monthlySalary: 0,
+  monthlySavings: 0,
   expenses: {},
   trips: [],
   savingsAllocation: {
-    debt: [],
-    gold: [],
-    equity: [],
+    mutualFunds: {
+      debt: [],
+      gold: [],
+      equity: [],
+    },
+    emergencyFunds: [],
+    shortTermGoals: [],
   },
   expenseBudgets: {},
   tripBudgets: {},
 };
+
+type FundCategory = keyof MutualFunds;
+type TopLevelFundCategory = 'emergencyFunds' | 'shortTermGoals';
+
 
 interface WealthContextType {
   wealthData: WealthData;
@@ -27,9 +35,9 @@ interface WealthContextType {
   addTrip: (trip: Omit<Trip, "id">) => void;
   updateTrip: (trip: Trip) => void;
   removeTrip: (id: string) => void;
-  addFund: (category: keyof WealthData['savingsAllocation'], fund: Omit<Fund, 'id'>) => void;
-  updateFund: (category: keyof WealthData['savingsAllocation'], fund: Fund) => void;
-  removeFund: (category: keyof WealthData['savingsAllocation'], id: string) => void;
+  addFund: (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id'>) => void;
+  updateFund: (category: FundCategory | TopLevelFundCategory, fund: Fund) => void;
+  removeFund: (category: FundCategory | TopLevelFundCategory, id: string) => void;
   setBudget: (type: 'expenses' | 'trips', month: string, amount: number) => void;
 }
 
@@ -96,49 +104,59 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     updateWealthData({ trips: wealthData.trips.filter((t) => t.id !== id) });
   };
 
-  const addFund = (category: keyof WealthData['savingsAllocation'], fund: Omit<Fund, 'id'>) => {
+  const addFund = (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id'>) => {
     const newFund = { ...fund, id: `fund-${Date.now()}` };
-    const currentAllocation = wealthData.savingsAllocation;
-    updateWealthData({
-      savingsAllocation: {
-        ...currentAllocation,
-        [category]: [...currentAllocation[category], newFund],
-      }
-    })
+    const currentAllocation = { ...wealthData.savingsAllocation };
+
+    if (category in currentAllocation.mutualFunds) {
+      currentAllocation.mutualFunds[category as FundCategory].push(newFund);
+    } else {
+      currentAllocation[category as TopLevelFundCategory].push(newFund);
+    }
+    
+    updateWealthData({ savingsAllocation: currentAllocation });
   };
   
-  const updateFund = (category: keyof WealthData['savingsAllocation'], updatedFund: Fund) => {
-    const currentAllocation = wealthData.savingsAllocation;
-    updateWealthData({
-      savingsAllocation: {
-        ...currentAllocation,
-        [category]: currentAllocation[category].map(f => f.id === updatedFund.id ? updatedFund : f),
-      }
-    })
+  const updateFund = (category: FundCategory | TopLevelFundCategory, updatedFund: Fund) => {
+    const currentAllocation = { ...wealthData.savingsAllocation };
+
+    if (category in currentAllocation.mutualFunds) {
+      const cat = category as FundCategory;
+      currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].map(f => f.id === updatedFund.id ? updatedFund : f);
+    } else {
+        const cat = category as TopLevelFundCategory;
+        currentAllocation[cat] = currentAllocation[cat].map(f => f.id === updatedFund.id ? updatedFund : f)
+    }
+
+    updateWealthData({ savingsAllocation: currentAllocation });
   };
   
-  const removeFund = (category: keyof WealthData['savingsAllocation'], id: string) => {
-    const currentAllocation = wealthData.savingsAllocation;
-    updateWealthData({
-      savingsAllocation: {
-        ...currentAllocation,
-        [category]: currentAllocation[category].filter(f => f.id !== id),
-      }
-    })
+  const removeFund = (category: FundCategory | TopLevelFundCategory, id: string) => {
+    const currentAllocation = { ...wealthData.savingsAllocation };
+    
+    if (category in currentAllocation.mutualFunds) {
+      const cat = category as FundCategory;
+      currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].filter(f => f.id !== id);
+    } else {
+        const cat = category as TopLevelFundCategory;
+        currentAllocation[cat] = currentAllocation[cat].filter(f => f.id !== id);
+    }
+
+    updateWealthData({ savingsAllocation: currentAllocation });
   };
 
   const setBudget = (type: 'expenses' | 'trips', month: string, amount: number) => {
     if (type === 'expenses') {
       updateWealthData({
         expenseBudgets: {
-          ...wealthData.expenseBudgets,
+          ...(wealthData.expenseBudgets || {}),
           [month]: amount,
         },
       });
     } else {
       updateWealthData({
         tripBudgets: {
-          ...wealthData.tripBudgets,
+          ...(wealthData.tripBudgets || {}),
           [month]: amount,
         },
       });
@@ -147,7 +165,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
 
 
   const value = {
-    wealthData,
+    wealthData: wealthData || DEFAULT_WEALTH_DATA,
     updateWealthData,
     addExpense,
     updateExpense,

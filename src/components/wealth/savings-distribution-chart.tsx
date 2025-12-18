@@ -15,41 +15,37 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useWealth } from '@/contexts/wealth-provider';
-import { isSameMonth } from 'date-fns';
 
-export function SalaryDistributionChart() {
+export function SavingsDistributionChart() {
   const { wealthData } = useWealth();
-  const { monthlySalary, expenses } = wealthData;
-
-  const totalExpenses = useMemo(() => {
-    const now = new Date();
-    if (!expenses) return 0;
-    return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
-      if (isSameMonth(new Date(date), now)) {
-        return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-      }
-      return total;
-    }, 0);
-  }, [expenses]);
-  
-  const savings = monthlySalary - totalExpenses > 0 ? monthlySalary - totalExpenses : 0;
+  const { monthlySavings, savingsAllocation } = wealthData;
 
   const chartData = useMemo(() => {
-    if (monthlySalary === 0 && totalExpenses === 0) {
-      return [{ name: 'No Data', value: 1, fill: 'hsl(var(--muted))' }];
+    if (!savingsAllocation || monthlySavings === 0) {
+        return [{ name: 'No Savings Data', value: 1, fill: 'hsl(var(--muted))' }];
     }
+    const { mutualFunds, emergencyFunds, shortTermGoals } = savingsAllocation;
+    const mfTotal = Object.values(mutualFunds).flat().reduce((sum, fund) => sum + fund.amount, 0);
+    const efTotal = emergencyFunds.reduce((sum, fund) => sum + fund.amount, 0);
+    const stgTotal = shortTermGoals.reduce((sum, fund) => sum + fund.amount, 0);
+    
+    const totalAllocated = mfTotal + efTotal + stgTotal;
+    const unallocated = monthlySavings - totalAllocated > 0 ? monthlySavings - totalAllocated : 0;
+
     return [
-      { name: 'Expenses', value: totalExpenses, fill: 'hsl(var(--chart-2))' },
-      { name: 'Savings', value: savings, fill: 'hsl(var(--chart-1))' },
-    ];
-  }, [totalExpenses, savings, monthlySalary]);
+      { name: 'Mutual Funds', value: mfTotal, fill: 'hsl(var(--chart-1))' },
+      { name: 'Emergency Funds', value: efTotal, fill: 'hsl(var(--chart-2))' },
+      { name: 'Short Term Goals', value: stgTotal, fill: 'hsl(var(--chart-3))' },
+      { name: 'Unallocated', value: unallocated, fill: 'hsl(var(--muted))' },
+    ].filter(item => item.value > 0);
+  }, [monthlySavings, savingsAllocation]);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle>Salary Distribution</CardTitle>
-          <CardDescription>Current Month's Expenses vs. Savings</CardDescription>
+          <CardTitle>Savings Distribution</CardTitle>
+          <CardDescription>How your savings are allocated</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
@@ -85,9 +81,9 @@ export function SalaryDistributionChart() {
             </ResponsiveContainer>
           </ChartContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <p className="text-sm text-muted-foreground">Total Salary</p>
+            <p className="text-sm text-muted-foreground">Total Savings</p>
             <p className="text-3xl font-bold tracking-tighter">
-                {monthlySalary.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {monthlySavings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
         </div>

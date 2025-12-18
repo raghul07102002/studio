@@ -8,10 +8,11 @@ import { isSameMonth } from 'date-fns';
 
 export function WealthMetrics() {
   const { wealthData } = useWealth();
-  const { monthlySalary, expenses } = wealthData;
+  const { monthlySalary, expenses, monthlySavings } = wealthData;
 
   const totalExpenses = useMemo(() => {
     const now = new Date();
+    if (!expenses) return 0;
     return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
       if (isSameMonth(new Date(date), now)) {
         return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -20,7 +21,7 @@ export function WealthMetrics() {
     }, 0);
   }, [expenses]);
   
-  const savings = monthlySalary - totalExpenses;
+  const savings = monthlySavings;
   const savingsRate = monthlySalary > 0 ? (savings / monthlySalary) * 100 : 0;
   const expenseRate = monthlySalary > 0 ? (totalExpenses / monthlySalary) * 100 : 0;
 
@@ -40,14 +41,14 @@ export function WealthMetrics() {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Monthly Savings</CardTitle>
+          <CardTitle className="text-sm font-medium">Target Savings</CardTitle>
           <PiggyBank className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
             {savings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0})}
           </div>
-          <p className="text-xs text-muted-foreground">Salary minus expenses.</p>
+          <p className="text-xs text-muted-foreground">Your monthly savings goal.</p>
         </CardContent>
       </Card>
       <Card>
@@ -64,13 +65,15 @@ export function WealthMetrics() {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Expense Rate</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
           <TrendingDown className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{expenseRate.toFixed(1)}%</div>
+          <div className="text-2xl font-bold">
+            {totalExpenses.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0})}
+          </div>
           <p className="text-xs text-muted-foreground">
-            Percentage of salary spent.
+            Total for the current month.
           </p>
         </CardContent>
       </Card>

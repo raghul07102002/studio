@@ -2,12 +2,12 @@
 
 import { CorpusChart } from './corpus-chart';
 import { EditableTable } from './editable-table';
-import { SalaryDistributionChart } from './salary-distribution-chart';
 import { SavingsAllocation } from './savings-allocation';
 import { WealthMetrics } from './wealth-metrics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { RemainingAmountChart } from './remaining-amount-chart';
+import { SavingsDistributionChart } from './savings-distribution-chart';
 
 export function WealthDashboardView() {
   return (
@@ -18,7 +18,7 @@ export function WealthDashboardView() {
           <RemainingAmountChart />
         </div>
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SalaryDistributionChart />
+          <SavingsDistributionChart />
           <CorpusChart />
         </div>
       </div>
