@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -43,7 +44,7 @@ export function CorpusChart() {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start gap-4">
           <div>
             <CardTitle>Target Corpus</CardTitle>
             <CardDescription>
@@ -102,8 +103,8 @@ export function CorpusChart() {
                 </ResponsiveContainer>
             </ChartContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <p className="text-sm text-muted-foreground">Achieved</p>
-                <p className="text-3xl font-bold tracking-tighter">
+                <p className="text-xs text-muted-foreground">Achieved</p>
+                <p className="text-2xl font-bold tracking-tighter">
                 {achievedPercentage.toFixed(0)}%
                 </p>
           </div>
