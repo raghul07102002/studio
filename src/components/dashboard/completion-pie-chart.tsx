@@ -44,10 +44,10 @@ export function CompletionPieChart() {
         <ViewSelector />
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
-        <div className="relative w-full max-w-[250px] aspect-square">
+        <div className="grid w-full max-w-[250px] aspect-square">
            <ChartContainer
             config={{}}
-            className="absolute inset-0"
+            className="row-start-1 col-start-1"
             >
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -79,7 +79,7 @@ export function CompletionPieChart() {
                 </PieChart>
             </ResponsiveContainer>
             </ChartContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="row-start-1 col-start-1 flex flex-col items-center justify-center">
                 <p className="text-5xl font-bold">{overallCompletion.toFixed(0)}%</p>
                 <p className="text-muted-foreground text-sm">Today</p>
             </div>
