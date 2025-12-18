@@ -8,6 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -105,12 +106,10 @@ export function RemainingAmountChart() {
               </p>
             </div>
           </div>
-          <div className='-mt-4'>
-            <ChartLegend
-                content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
-                className="flex items-center justify-center"
-            />
-          </div>
+          <ChartLegend
+              content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
+              className="flex items-center justify-center -mt-4"
+          />
         </ChartContainer>
       </CardContent>
     </Card>

@@ -8,6 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -36,17 +37,17 @@ export function SavingsDistributionChart() {
     const unallocated = monthlySavings - totalAllocated > 0 ? monthlySavings - totalAllocated : 0;
 
     return [
-      { name: 'MF', value: mfTotal, fill: 'hsl(var(--chart-1))', fullName: 'Mutual Funds' },
-      { name: 'EF', value: efTotal, fill: 'hsl(var(--chart-2))', fullName: 'Emergency Funds' },
-      { name: 'STG', value: stgTotal, fill: 'hsl(var(--chart-3))', fullName: 'Short Term Goals' },
-      { name: 'Unallocated', value: unallocated, fill: 'hsl(var(--muted))', fullName: 'Unallocated' },
+      { name: 'MF', value: mfTotal, fill: 'hsl(var(--chart-1))' },
+      { name: 'EF', value: efTotal, fill: 'hsl(var(--chart-2))' },
+      { name: 'STG', value: stgTotal, fill: 'hsl(var(--chart-3))' },
+      { name: 'Unallocated', value: unallocated, fill: 'hsl(var(--muted))' },
     ].filter(item => item.value > 0);
   }, [monthlySavings, savingsAllocation]);
 
   const chartConfig = useMemo(() => {
     const config: any = {};
     chartData.forEach(item => {
-        config[item.name] = { label: item.fullName, color: item.fill };
+        config[item.name] = { label: item.name, color: item.fill };
     });
     return config;
   }, [chartData]);
@@ -104,12 +105,10 @@ export function SavingsDistributionChart() {
                 </p>
             </div>
           </div>
-            <div className='-mt-4'>
-                <ChartLegend
-                    content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
-                    className="flex items-center justify-center"
-                />
-            </div>
+            <ChartLegend
+                content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
+                className="flex items-center justify-center -mt-4"
+            />
         </ChartContainer>
       </CardContent>
     </Card>
