@@ -25,7 +25,7 @@ export function DayCard({ date }: DayCardProps) {
   const dailyCompletion = calculateDailyCompletion(dayLogs, habits);
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col h-[28rem]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="flex items-baseline gap-2">
             <span className="text-sm font-bold uppercase text-muted-foreground">{format(date, 'EEE')}</span>
@@ -34,7 +34,7 @@ export function DayCard({ date }: DayCardProps) {
         </div>
         <Badge variant={dailyCompletion > 80 ? "default" : "secondary"}>{dailyCompletion.toFixed(0)}%</Badge>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-2 p-4 pt-0">
+      <CardContent className="flex-1 flex flex-col gap-2 p-4 pt-0 overflow-hidden">
         <ScrollArea className="flex-1 pr-3">
           <div className="space-y-3">
             {habits.map((habit) => {
