@@ -76,66 +76,64 @@ export function EditableTable({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="w-[100px] text-right">Amount</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+            <ScrollArea className='h-40 w-full'>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="w-[100px] text-right">Amount</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {items.map((item) => (
+                    <TableRow key={item.id}>
+                        <TableCell>
+                        <Textarea
+                            value={item.name}
+                            onChange={(e) => handleUpdate(item.id, 'name', e.target.value)}
+                            className="h-8 border-none resize-none overflow-hidden"
+                            rows={1}
+                            onInput={(e) => {
+                                const target = e.target as HTMLTextAreaElement;
+                                target.style.height = 'auto';
+                                target.style.height = `${target.scrollHeight}px`;
+                            }}
+                        />
+                        </TableCell>
+                        <TableCell className="text-right">
+                        <Input
+                            type="number"
+                            value={item.amount}
+                            onChange={(e) => handleUpdate(item.id, 'amount', e.target.value)}
+                            className="h-8 border-none text-right"
+                        />
+                        </TableCell>
+                        <TableCell>
+                        <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                        </TableCell>
                     </TableRow>
-                </TableHeader>
-            </Table>
-          <ScrollArea className='h-40 w-full pr-4'>
-            <Table>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <Textarea
-                        value={item.name}
-                        onChange={(e) => handleUpdate(item.id, 'name', e.target.value)}
-                        className="h-8 border-none resize-none overflow-hidden"
-                        rows={1}
-                        onInput={(e) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            target.style.height = 'auto';
-                            target.style.height = `${target.scrollHeight}px`;
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Input
-                        type="number"
-                        value={item.amount}
-                        onChange={(e) => handleUpdate(item.id, 'amount', e.target.value)}
-                        className="h-8 border-none text-right"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-          <div className="flex gap-2">
-            <Input
-              placeholder="New item name"
-              value={newItemName}
-              onChange={(e) => setNewItemName(e.target.value)}
-            />
-            <Input
-              type="number"
-              placeholder="Amount"
-              className="w-32"
-              value={newItemAmount}
-              onChange={(e) => setNewItemAmount(e.target.value)}
-            />
-            <Button onClick={handleAddItem}>Add</Button>
-          </div>
+                    ))}
+                    </TableBody>
+                </Table>
+            </ScrollArea>
+            <div className="flex gap-2">
+                <Input
+                placeholder="New item name"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                />
+                <Input
+                type="number"
+                placeholder="Amount"
+                className="w-32"
+                value={newItemAmount}
+                onChange={(e) => setNewItemAmount(e.target.value)}
+                />
+                <Button onClick={handleAddItem}>Add</Button>
+            </div>
         </div>
       </CardContent>
       <CardFooter className='justify-end'>
