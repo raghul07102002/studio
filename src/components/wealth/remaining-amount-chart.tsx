@@ -18,24 +18,27 @@ import {
   ChartLegendContent
 } from '@/components/ui/chart';
 import { useWealth } from '@/contexts/wealth-provider';
-import { format, isSameMonth } from 'date-fns';
+import { format } from 'date-fns';
 
-export function RemainingAmountChart() {
+interface RemainingAmountChartProps {
+    selectedMonth: string; // "yyyy-MM"
+}
+
+export function RemainingAmountChart({ selectedMonth }: RemainingAmountChartProps) {
   const { wealthData } = useWealth();
   const { expenseBudgets, expenses } = wealthData;
 
-  const currentMonthString = format(new Date(), 'yyyy-MM');
-  const monthlyBudget = expenseBudgets?.[currentMonthString] || 0;
+  const monthlyBudget = expenseBudgets?.[selectedMonth] || 0;
 
   const totalExpenses = useMemo(() => {
-    const now = new Date();
+    if (!expenses) return 0;
     return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
-      if (isSameMonth(new Date(date), now)) {
+      if (date.startsWith(selectedMonth)) {
         return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
       }
       return total;
     }, 0);
-  }, [expenses]);
+  }, [expenses, selectedMonth]);
   
   const remainingAmount = monthlyBudget - totalExpenses > 0 ? monthlyBudget - totalExpenses : 0;
   const spentAmount = totalExpenses;
@@ -67,6 +70,7 @@ export function RemainingAmountChart() {
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle>Remaining Budget</CardTitle>
+        <CardDescription>{format(new Date(selectedMonth), 'MMMM yyyy')}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center">
         <ChartContainer

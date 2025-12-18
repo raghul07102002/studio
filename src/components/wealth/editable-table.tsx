@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -35,18 +36,22 @@ interface EditableTableProps {
   title: string;
   description: string;
   type: 'expenses' | 'trips';
+  selectedDate?: Date;
+  onDateChange?: (date: Date | undefined) => void;
 }
 
 export function EditableTable({
   title,
   description,
   type,
+  selectedDate,
+  onDateChange
 }: EditableTableProps) {
   const { wealthData, addExpense, updateExpense, removeExpense, addTrip, updateTrip, removeTrip } = useWealth();
   
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const selectedDateString = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const selectedMonthString = selectedDate ? format(selectedDate, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
+  const dateForExpenses = type === 'expenses' ? selectedDate : new Date();
+  const selectedDateString = dateForExpenses ? format(dateForExpenses, 'yyyy-MM-dd') : '';
+  const selectedMonthString = dateForExpenses ? format(dateForExpenses, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
 
   const items = type === 'expenses' 
     ? (wealthData?.expenses?.[selectedDateString] || [])
@@ -127,7 +132,7 @@ export function EditableTable({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </div>
-            {type === 'expenses' ? (
+            {type === 'expenses' && onDateChange ? (
                 <Popover>
                     <PopoverTrigger asChild>
                     <Button
@@ -145,12 +150,12 @@ export function EditableTable({
                     <Calendar
                         mode="single"
                         selected={selectedDate}
-                        onSelect={setSelectedDate}
+                        onSelect={onDateChange}
                         initialFocus
                     />
                     </PopoverContent>
                 </Popover>
-            ) : <MonthlyBudgetInput type={type} selectedMonth={selectedMonthString} />}
+            ) : type === 'trips' ? <MonthlyBudgetInput type={type} selectedMonth={selectedMonthString} /> : null}
         </div>
         {type === 'expenses' && <div className="pt-4"><MonthlyBudgetInput type="expenses" selectedMonth={selectedMonthString} /></div>}
       </CardHeader>
