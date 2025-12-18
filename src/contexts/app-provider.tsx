@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -33,6 +34,8 @@ interface AppContextType {
   isInitialized: boolean;
   selectedDashboard: DashboardOption;
   setSelectedDashboard: (dashboard: DashboardOption) => void;
+  reportDate: Date;
+  setReportDate: (date: Date) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -49,6 +52,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedView, setSelectedView] = useState<ViewOption>("Week");
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useLocalStorage<DashboardOption>('chrono-dashboard-selection', 'habits');
+  const [reportDate, setReportDate] = useState(new Date());
 
   const router = useRouter();
   const pathname = usePathname();
@@ -66,11 +70,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const handleDashboardChange = (dashboard: DashboardOption) => {
     setSelectedDashboard(dashboard);
     if (dashboard === 'habits') {
-      if (pathname.startsWith('/wealth')) {
+      if (pathname.startsWith('/wealth') || pathname.startsWith('/history')) {
         router.push('/dashboard');
       }
     } else {
-      router.push('/wealth');
+        if (!pathname.startsWith('/wealth') && !pathname.startsWith('/history')) {
+            router.push('/wealth');
+        }
     }
   };
 
@@ -104,8 +110,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   
   const filteredDates = useMemo(
-    () => getFilteredDates(selectedView, YEAR),
-    [selectedView]
+    () => getFilteredDates(selectedView, reportDate),
+    [selectedView, reportDate]
   );
 
   const value = {
@@ -119,6 +125,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isInitialized,
     selectedDashboard,
     setSelectedDashboard: handleDashboardChange,
+    reportDate,
+    setReportDate,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

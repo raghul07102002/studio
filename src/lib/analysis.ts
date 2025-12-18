@@ -1,3 +1,4 @@
+
 import { Habit, HabitData, ViewOption } from "./types";
 import { getDaysInYear } from "./utils";
 import { YEAR } from "./constants";
@@ -55,8 +56,8 @@ export const calculateHabitCompletion = (
   return (completedCount / filteredDates.length) * 100;
 };
 
-export const getFilteredDates = (view: ViewOption, year: number) => {
-    const now = new Date();
+export const getFilteredDates = (view: ViewOption, referenceDate: Date) => {
+    const now = referenceDate;
     let start, end;
     
     switch (view) {
@@ -73,11 +74,11 @@ export const getFilteredDates = (view: ViewOption, year: number) => {
         end = endOfMonth(now);
         return eachDayOfInterval({ start, end });
       case 'Year':
-        start = startOfYear(new Date(year, 0, 1));
-        end = endOfYear(new Date(year, 11, 31));
+        start = startOfYear(now);
+        end = endOfYear(now);
         return eachDayOfInterval({ start, end });
       default:
-        return getDaysInYear(year);
+        return getDaysInYear(now.getFullYear());
     }
 };
 
