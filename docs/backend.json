@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "Habit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Habit",
+      "type": "object",
+      "description": "Represents a user-defined habit.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Habit entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the habit."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of habit (Checkbox or Numeric)."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type"
+      ]
+    },
+    "DailyHabitData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DailyHabitData",
+      "type": "object",
+      "description": "Represents the daily data for each habit.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the DailyHabitData entry."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date for which the habit data is recorded in ISO 8601 format (YYYY-MM-DD).",
+          "format": "date"
+        },
+        "month": {
+          "type": "string",
+          "description": "The month for which the habit data is recorded (e.g., January, February)."
+        },
+        "year": {
+          "type": "number",
+          "description": "The year for which the habit data is recorded (e.g., 2025)."
+        },
+        "day": {
+          "type": "string",
+          "description": "The day of the week for which the habit data is recorded (e.g., Monday, Tuesday)."
+        },
+        "habitData": {
+          "type": "array",
+          "description": "An array of habit completion data. Each element corresponds to a specific habit and indicates its completion status.",
+          "items": {
+            "type": "boolean"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "month",
+        "year",
+        "day",
+        "habitData"
+      ]
+    },
+    "YearlyCompletionData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YearlyCompletionData",
+      "type": "object",
+      "description": "Represents the yearly habit completion data",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the YearlyCompletionData entry."
+        },
+        "habitId": {
+          "type": "string",
+          "description": "Reference to Habit. (Relationship: Habit 1:N YearlyCompletionData)"
+        },
+        "year": {
+          "type": "number",
+          "description": "The year for which the completion data is recorded (e.g., 2025)."
+        },
+        "completionRate": {
+          "type": "number",
+          "description": "The overall completion rate for the habit in the specified year."
+        }
+      },
+      "required": [
+        "id",
+        "habitId",
+        "year",
+        "completionRate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/habits/{habitId}",
+        "definition": {
+          "entityName": "Habit",
+          "schema": {
+            "$ref": "#/backend/entities/Habit"
+          },
+          "description": "Stores user-defined habits. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the habit."
+            },
+            {
+              "name": "habitId",
+              "description": "The unique ID of the habit."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/dailyHabitData/{dailyHabitDataId}",
+        "definition": {
+          "entityName": "DailyHabitData",
+          "schema": {
+            "$ref": "#/backend/entities/DailyHabitData"
+          },
+          "description": "Stores daily habit data for each user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the daily habit data."
+            },
+            {
+              "name": "dailyHabitDataId",
+              "description": "The unique ID of the daily habit data entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/yearlyCompletionData/{yearlyCompletionDataId}",
+        "definition": {
+          "entityName": "YearlyCompletionData",
+          "schema": {
+            "$ref": "#/backend/entities/YearlyCompletionData"
+          },
+          "description": "Stores yearly completion data for each user and habit. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the yearly completion data."
+            },
+            {
+              "name": "yearlyCompletionDataId",
+              "description": "The unique ID of the yearly completion data entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "Given the frontend-only nature of the ChronoHabits 2025 application and the absence of user authentication or a backend server, Firestore is not applicable. The user explicitly states local storage (LocalStorage or IndexedDB) as the persistence mechanism. Therefore, a Firestore data structure is irrelevant in this context. The request to store data on GitHub is also unrelated to Firestore database design. This application architecture inherently avoids all concerns about authorization independence and QAPs, since there is no backend at all."
+  }
+}

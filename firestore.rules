@@ -1,0 +1,119 @@
+rules_version = '2';
+
+/**
+ * @file firestore.rules
+ * @description Security rules for the ChronoHabits 2025 Firestore database.
+ *
+ * @section Core Philosophy
+ * This ruleset enforces a strict user-ownership model. All application data,
+ * including habits and their corresponding tracking data, is treated as private
+ * and is accessible only by the user who created it. The default security
+ * posture is to deny all access, with explicit permissions granted only where
+ * necessary.
+ *
+ * @section Data Structure
+ * The entire data model is hierarchical and user-centric. All data is stored
+ * in subcollections under the `/users/{userId}` path. This structure ensures
+ * that data access can be controlled using the `userId` wildcard from the path,
+ * providing a clear and secure boundary between different users' data.
+ * For example:
+ * - /users/{userId}/habits/{habitId}
+ * - /users/{userId}/dailyHabitData/{dailyHabitDataId}
+ *
+ * @section Key Security Decisions
+ * - **Strict Ownership**: A user can only read, write, update, or delete
+ *   documents that exist within their own data tree (i.e., under their
+ *   `userId`).
+ * - **No User Listing**: The rules do not allow for listing or querying the
+ *   top-level `/users` collection, preventing enumeration of application users.
+ * - **Data Integrity**: On creation, rules validate that the document's `id` field
+ *   matches the document's unique ID in the path. This `id` field is then enforced
+ *   as immutable to prevent re-linking or modification of a document's core identity.
+ *
+ * @section Denormalization for Authorization
+ * While the data model descriptions suggest denormalizing a `userId` field
+ * onto each document, the provided schemas do not include this field. Authorization
+ * currently relies solely on the path-based `{userId}`. For enhanced security
+ * and query flexibility in the future, it is recommended to add a `userId` field
+ * to each document and add validation rules to ensure it matches the creator's UID.
+ *
+ * @section Structural Segregation
+ * This application does not mix public and private data within the same collection.
+ * The entire data structure is treated as private to the user, simplifying the
+ * security model and eliminating the need for complex filtering rules.
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions
+    // -----------------
+
+    /**
+     * Checks if the current request is from an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the requesting user's UID matches the document owner's ID
+     * from the resource path.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Ensures ownership for an existing document. Used for safe updates and deletes.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+
+    // Collection Rules
+    // ------------------
+
+    /**
+     * @description Rules for a user's habits.
+     * @path /users/{userId}/habits/{habitId}
+     * @allow (create) An authenticated user creating a habit in their own `habits` subcollection.
+     * @deny (get) An authenticated user trying to read a habit from another user's subcollection.
+     * @principle Restricts access to a user's own data tree. Enforces document ownership.
+     */
+    match /users/{userId}/habits/{habitId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == habitId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for a user's daily habit tracking data.
+     * @path /users/{userId}/dailyHabitData/{dailyHabitDataId}
+     * @allow (create) An authenticated user creating daily data in their own subcollection.
+     * @deny (list) An authenticated user trying to list daily data from another user's subcollection.
+     * @principle Restricts access to a user's own data tree. Enforces document ownership.
+     */
+    match /users/{userId}/dailyHabitData/{dailyHabitDataId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == dailyHabitDataId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for a user's yearly habit completion data.
+     * @path /users/{userId}/yearlyCompletionData/{yearlyCompletionDataId}
+     * @allow (update) An authenticated user updating a yearly summary document they own.
+     * @deny (delete) An authenticated user trying to delete a yearly summary document owned by someone else.
+     * @principle Restricts access to a user's own data tree. Enforces document ownership.
+     */
+    match /users/{userId}/yearlyCompletionData/{yearlyCompletionDataId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == yearlyCompletionDataId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
