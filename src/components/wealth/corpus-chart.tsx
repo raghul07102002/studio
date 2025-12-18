@@ -103,7 +103,7 @@ export function CorpusChart() {
                 </ResponsiveContainer>
             </ChartContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <p className="text-xs text-muted-foreground">Achieved</p>
+                <p className="text-xs text-muted-foreground mt-2">Achieved</p>
                 <p className="text-2xl font-bold tracking-tighter">
                 {achievedPercentage.toFixed(0)}%
                 </p>
