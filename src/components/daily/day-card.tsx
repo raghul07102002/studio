@@ -73,4 +73,3 @@ export function DayCard({ date }: DayCardProps) {
     </Card>
   );
 }
-
