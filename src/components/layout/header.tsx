@@ -1,6 +1,5 @@
 "use client";
 
-import { ViewSelector } from "./view-selector";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Flame, Menu } from "lucide-react";
@@ -17,7 +16,9 @@ export function AppHeader() {
   const currentNavItems =
     selectedDashboard === "habits" ? habitNavItems : navItems;
   const currentLabel =
-    navItems.find((item) => item.href === pathname)?.label || "ChronoHabits";
+    habitNavItems.find((item) => item.href === pathname)?.label || 
+    navItems.find((item) => item.href === pathname)?.label || 
+    "ChronoHabits";
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
@@ -63,7 +64,6 @@ export function AppHeader() {
       </div>
       <div className="flex items-center gap-4">
         <DashboardSelector />
-        {selectedDashboard === "habits" && <ViewSelector />}
       </div>
     </header>
   );

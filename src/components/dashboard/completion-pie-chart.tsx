@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/chart";
 import { useApp } from "@/contexts/app-provider";
 import { calculateOverallCompletion } from "@/lib/analysis";
+import { ViewSelector } from "../layout/view-selector";
 
 export function CompletionPieChart() {
-  const { habits, habitData, filteredDates, selectedView } = useApp();
+  const { habits, habitData, filteredDates } = useApp();
 
   const overallCompletion = useMemo(() => {
     return calculateOverallCompletion(habitData, habits, filteredDates);
@@ -29,28 +30,31 @@ export function CompletionPieChart() {
     const remaining = 100 - completed;
     return [
       { name: "Completed", value: completed, fill: "hsl(var(--primary))" },
-      { name: "Remaining", value: remaining, fill: "hsl(var(--secondary))" },
+      { name: "Remaining", value: remaining, fill: "hsl(var(--muted))" },
     ];
   }, [overallCompletion]);
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Overall Completion</CardTitle>
-        <CardDescription>Your progress for the selected period: {selectedView}</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Overall Completion</CardTitle>
+          <CardDescription>Your progress for the selected period.</CardDescription>
+        </div>
+        <ViewSelector />
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
         <ChartContainer
           config={{}}
-          className="mx-auto aspect-square w-full max-w-[250px]"
+          className="mx-auto aspect-square w-full max-w-[300px]"
         >
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <ChartTooltip
                 cursor={false}
                 content={
                   <ChartTooltipContent
-                    formatter={(value, name) => [`${(value as number).toFixed(1)}%`, name]}
+                    formatter={(value) => `${(value as number).toFixed(1)}%`}
                     hideLabel
                   />
                 }

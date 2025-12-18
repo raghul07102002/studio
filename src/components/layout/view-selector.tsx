@@ -20,7 +20,7 @@ export function ViewSelector() {
       value={selectedView}
       onValueChange={(value) => setSelectedView(value as ViewOption)}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[120px]">
         <SelectValue placeholder="Select a view" />
       </SelectTrigger>
       <SelectContent>
