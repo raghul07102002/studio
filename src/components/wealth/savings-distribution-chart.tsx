@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -25,9 +26,11 @@ export function SavingsDistributionChart() {
         return [{ name: 'No Savings Data', value: 1, fill: 'hsl(var(--muted))' }];
     }
     const { mutualFunds, emergencyFunds, shortTermGoals } = savingsAllocation;
-    const mfTotal = Object.values(mutualFunds).flat().reduce((sum, fund) => sum + fund.amount, 0);
-    const efTotal = emergencyFunds.reduce((sum, fund) => sum + fund.amount, 0);
-    const stgTotal = shortTermGoals.reduce((sum, fund) => sum + fund.amount, 0);
+    
+    // Add checks to prevent crash if data is not initialized
+    const mfTotal = mutualFunds ? Object.values(mutualFunds).flat().reduce((sum, fund) => sum + fund.amount, 0) : 0;
+    const efTotal = emergencyFunds ? emergencyFunds.reduce((sum, fund) => sum + fund.amount, 0) : 0;
+    const stgTotal = shortTermGoals ? shortTermGoals.reduce((sum, fund) => sum + fund.amount, 0) : 0;
     
     const totalAllocated = mfTotal + efTotal + stgTotal;
     const unallocated = monthlySavings - totalAllocated > 0 ? monthlySavings - totalAllocated : 0;
@@ -83,7 +86,7 @@ export function SavingsDistributionChart() {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
             <p className="text-sm text-muted-foreground">Total Savings</p>
             <p className="text-3xl font-bold tracking-tighter">
-                {monthlySavings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {(monthlySavings || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
         </div>
