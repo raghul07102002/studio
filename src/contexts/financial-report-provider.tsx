@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -8,8 +9,7 @@ import {
 } from 'react';
 import { useApp } from './app-provider';
 import { useWealth } from './wealth-provider';
-import { isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
-import { format } from 'date-fns';
+import { isWithinInterval, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 
 interface FinancialReportContextType {
   view: 'Day' | 'Week' | 'Month' | 'Year';
@@ -25,16 +25,20 @@ const FinancialReportContext = createContext<
 >(undefined);
 
 export function FinancialReportProvider({ children }: { children: ReactNode }) {
-  const { selectedView, filteredDates } = useApp();
+  const { selectedView, reportDateRange } = useApp();
   const { wealthData } = useWealth();
 
   const timeInterval = useMemo(() => {
-    if (!filteredDates.length) {
+    if (!reportDateRange || !reportDateRange.from) {
       const now = new Date();
       return { start: now, end: now };
     }
-    return { start: filteredDates[0], end: filteredDates[filteredDates.length - 1] };
-  }, [filteredDates]);
+    return { start: reportDateRange.from, end: reportDateRange.to || reportDateRange.from };
+  }, [reportDateRange]);
+
+  const filteredDates = useMemo(() => {
+    return eachDayOfInterval(timeInterval);
+  }, [timeInterval]);
 
   const { totalExpenses, filteredExpenses } = useMemo(() => {
     let total = 0;
@@ -51,18 +55,23 @@ export function FinancialReportProvider({ children }: { children: ReactNode }) {
   }, [wealthData.expenses, timeInterval]);
 
   const totalTrips = useMemo(() => {
+    // This calculation might need to be adjusted based on how trip dates are handled.
+    // For now, we sum all trips as before, since they aren't tied to dates.
     return wealthData.trips.reduce((sum, trip) => sum + trip.amount, 0);
   }, [wealthData.trips]);
   
   const totalSavings = useMemo(() => {
-    if (selectedView === 'Month') {
-        const currentMonthStart = startOfMonth(new Date());
-        if (isWithinInterval(currentMonthStart, timeInterval)) {
-            return wealthData.monthlySalary - totalExpenses;
-        }
+    // This logic might need refinement based on how savings are tied to date ranges.
+    // A simple approach is to check if the range covers a full month.
+    const start = timeInterval.start;
+    const end = timeInterval.end;
+    const isFullMonth = start.getDate() === 1 && end.getDate() === endOfMonth(start).getDate();
+    
+    if (isFullMonth) {
+        return wealthData.monthlySalary - totalExpenses;
     }
-    return 0;
-  }, [wealthData.monthlySalary, totalExpenses, selectedView, timeInterval]);
+    return 0; // Or calculate proportional savings
+  }, [wealthData.monthlySalary, totalExpenses, timeInterval]);
 
 
   const value = {

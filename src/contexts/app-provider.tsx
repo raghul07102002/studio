@@ -14,10 +14,11 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { Habit, HabitData, ViewOption, DashboardOption } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { generateInitialHabitData } from "@/data/initial-data";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { YEAR } from "@/lib/constants";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter, usePathname } from "next/navigation";
+import { DateRange } from "react-day-picker";
 
 interface AppContextType {
   habits: Habit[];
@@ -34,8 +35,8 @@ interface AppContextType {
   isInitialized: boolean;
   selectedDashboard: DashboardOption;
   setSelectedDashboard: (dashboard: DashboardOption) => void;
-  reportDate: Date;
-  setReportDate: (date: Date) => void;
+  reportDateRange: DateRange | undefined;
+  setReportDateRange: (dateRange: DateRange | undefined) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -52,7 +53,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedView, setSelectedView] = useState<ViewOption>("Week");
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useLocalStorage<DashboardOption>('chrono-dashboard-selection', 'habits');
-  const [reportDate, setReportDate] = useState(new Date());
+  
+  const defaultDateRange: DateRange = {
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  };
+  const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(defaultDateRange);
+
 
   const router = useRouter();
   const pathname = usePathname();
@@ -110,8 +117,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   
   const filteredDates = useMemo(
-    () => getFilteredDates(selectedView, reportDate),
-    [selectedView, reportDate]
+    () => getFilteredDates(selectedView, reportDateRange?.from || new Date()),
+    [selectedView, reportDateRange]
   );
 
   const value = {
@@ -125,8 +132,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isInitialized,
     selectedDashboard,
     setSelectedDashboard: handleDashboardChange,
-    reportDate,
-    setReportDate,
+    reportDateRange,
+    setReportDateRange,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

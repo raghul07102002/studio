@@ -9,25 +9,18 @@ import { format } from 'date-fns';
 import { DateSelector } from './date-selector';
 
 export function FinancialReportView() {
-  const { view, filteredDates } = useFinancialReport();
+  const { filteredDates } = useFinancialReport();
   
   const getSubtitle = () => {
-    if (!filteredDates.length) return '';
+    if (!filteredDates.length) return 'Select a date range to view your history';
     const start = filteredDates[0];
     const end = filteredDates[filteredDates.length - 1];
 
-    switch (view) {
-        case 'Day':
-            return format(start, 'MMMM d, yyyy');
-        case 'Week':
-            return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
-        case 'Month':
-            return format(start, 'MMMM yyyy');
-        case 'Year':
-            return format(start, 'yyyy');
-        default:
-            return '';
+    if (format(start, 'yyyy-MM-dd') === format(end, 'yyyy-MM-dd')) {
+        return format(start, 'MMMM d, yyyy');
     }
+
+    return `${format(start, 'MMM d, yyyy')} - ${format(end, 'MMM d, yyyy')}`;
   }
 
   return (
