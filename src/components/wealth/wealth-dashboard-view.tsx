@@ -6,6 +6,8 @@ import { IncomeInput } from './income-input';
 import { SalaryDistributionChart } from './salary-distribution-chart';
 import { SavingsAllocation } from './savings-allocation';
 import { WealthMetrics } from './wealth-metrics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function WealthDashboardView() {
   return (
@@ -14,25 +16,40 @@ export function WealthDashboardView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <IncomeInput />
-          <EditableTable
-            title="Expenses"
-            description="Manage your monthly expenses."
-            type="expenses"
-          />
-          <EditableTable
-            title="Trip Costs"
-            description="Plan for your travel expenses."
-            type="trips"
-          />
         </div>
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SalaryDistributionChart />
-            <CorpusChart />
-            <div className="md:col-span-2">
-                <SavingsAllocation />
-            </div>
+          <SalaryDistributionChart />
+          <CorpusChart />
         </div>
       </div>
+      <Card>
+        <CardContent className="p-6">
+          <Tabs defaultValue="expenses">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="expenses">Expenses</TabsTrigger>
+              <TabsTrigger value="trips">Trip Costs</TabsTrigger>
+              <TabsTrigger value="savings">Savings Allocation</TabsTrigger>
+            </TabsList>
+            <TabsContent value="expenses" className="mt-6">
+              <EditableTable
+                title="Expenses"
+                description="Manage your monthly expenses."
+                type="expenses"
+              />
+            </TabsContent>
+            <TabsContent value="trips" className="mt-6">
+              <EditableTable
+                title="Trip Costs"
+                description="Plan for your travel expenses."
+                type="trips"
+              />
+            </TabsContent>
+            <TabsContent value="savings" className="mt-6">
+              <SavingsAllocation />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
