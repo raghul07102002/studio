@@ -17,33 +17,26 @@ import {
 import { useWealth } from '@/contexts/wealth-provider';
 
 const TARGET_CORPUS = 70000000; // 7 Crore
+const YEARS = 20;
+const RATE = 0.12; // 12%
 
-// This function now uses a ratio based on the user's reference point.
-// Reference: 50k/month investment reaches 7 Cr in 20 years at 12% CAGR.
-// This simplifies the projection to be directly proportional to the total monthly investment.
-const calculateFutureValue = (totalMonthlyInvestment: number) => {
-  const referenceInvestment = 50000;
-  const referenceFutureValue = TARGET_CORPUS;
-  
-  if (referenceInvestment === 0) {
-    return 0;
-  }
-  
-  // Project the future value proportionally to the reference.
-  const projectedValue = (totalMonthlyInvestment / referenceInvestment) * referenceFutureValue;
-  return projectedValue;
+// This function calculates the future value of a series of monthly investments
+const calculateFutureValue = (monthlyInvestment: number) => {
+  const months = YEARS * 12;
+  const monthlyRate = RATE / 12;
+  // FV = P * [({(1+r)^n - 1} / r) * (1+r)]  (formula for SIP)
+  let futureValue = monthlyInvestment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate);
+  return futureValue;
 };
 
 
 export function CorpusChart() {
   const { wealthData } = useWealth();
-  const [projectedValue, setProjectedValue] = useState(0);
 
-  useEffect(() => {
+  const investmentData = useMemo(() => {
     const { savingsAllocation } = wealthData;
     if (!savingsAllocation) {
-        setProjectedValue(0);
-        return;
+        return { totalPrincipal: 0, totalInterest: 0, remainingPrincipal: TARGET_CORPUS };
     }
 
     const allFunds = [
@@ -57,19 +50,29 @@ export function CorpusChart() {
     const totalMonthlyInvestment = allFunds.reduce((sum, fund) => sum + fund.amount, 0);
 
     const fv = calculateFutureValue(totalMonthlyInvestment);
-    setProjectedValue(fv);
+    const totalPrincipalInvested = totalMonthlyInvestment * 12 * YEARS;
+    const totalInterest = fv - totalPrincipalInvested > 0 ? fv - totalPrincipalInvested : 0;
+    
+    // This represents the total amount of money you'd put in over 20 years at the current monthly rate.
+    // The "remaining" is how much more principal would be needed to hit the target.
+    const remainingNeeded = TARGET_CORPUS > fv ? TARGET_CORPUS - fv : 0;
+
+    return {
+        amountInvested: totalPrincipalInvested,
+        interestAmount: totalInterest,
+        amountToInvest: remainingNeeded,
+    }
 
   }, [wealthData.savingsAllocation]);
 
 
   const chartData = useMemo(() => {
-    const achieved = projectedValue;
-    const remaining = Math.max(0, TARGET_CORPUS - achieved);
     return [
-      { name: 'Projected', value: achieved, fill: 'hsl(var(--chart-3))' },
-      { name: 'Remaining', value: remaining, fill: 'hsl(var(--muted))' },
-    ];
-  }, [projectedValue]);
+      { name: 'Amount Invested', value: investmentData.amountInvested, fill: 'hsl(var(--chart-1))' },
+      { name: 'Interest Amount', value: investmentData.interestAmount, fill: 'hsl(var(--chart-3))' },
+      { name: 'Amount to Invest', value: investmentData.amountToInvest, fill: 'hsl(var(--muted))' },
+    ].filter(d => d.value > 0);
+  }, [investmentData]);
 
   return (
     <Card className="h-full flex flex-col">
@@ -117,7 +120,7 @@ export function CorpusChart() {
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <p className="text-xs text-muted-foreground mt-2">Projected Value</p>
                 <p className="text-2xl font-bold tracking-tighter">
-                {projectedValue.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {(investmentData.amountInvested + investmentData.interestAmount).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
           </div>
         </div>
