@@ -114,7 +114,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   }, [user, userProfile, isUserLoading, updateWealthData]);
 
   const addExpense = (date: string, expense: Omit<Expense, "id">) => {
-    const newExpense = { ...expense, id: `exp-${Date.now()}` };
+    const newExpense = { ...expense, id: `exp-${Date.now()}-${Math.random()}` };
     const newExpenses = { ...(localWealthData.expenses || {}) };
     if (!newExpenses[date]) {
       newExpenses[date] = [];
@@ -145,7 +145,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   };
 
   const addTrip = (trip: Omit<Trip, "id">) => {
-    const newTrip = { ...trip, id: `trip-${Date.now()}` };
+    const newTrip = { ...trip, id: `trip-${Date.now()}-${Math.random()}` };
     updateWealthData({ trips: [...(localWealthData.trips || []), newTrip] });
   };
 
@@ -162,7 +162,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   };
 
   const addFund = (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id'>) => {
-    const newFund = { ...fund, id: `fund-${Date.now()}` };
+    const newFund = { ...fund, id: `fund-${Date.now()}-${Math.random()}` };
     const currentAllocation = { ...(localWealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
     if (!currentAllocation.mutualFunds) currentAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
     if (!currentAllocation.emergencyFunds) currentAllocation.emergencyFunds = [];
