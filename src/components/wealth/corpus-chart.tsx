@@ -81,6 +81,12 @@ export function CorpusChart() {
           <div className='space-y-1'>
             <CardTitle>Investment</CardTitle>
           </div>
+          <div className="text-right">
+              <p className="text-sm font-medium text-muted-foreground">Remaining to Invest</p>
+              <p className="text-lg font-bold">
+                {investmentData.amountToInvest.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </p>
+            </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
