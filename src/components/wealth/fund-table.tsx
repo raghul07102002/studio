@@ -74,7 +74,7 @@ export function FundTable({
                     type="number"
                     value={fund.amount}
                     onChange={(e) => handleUpdate(fund.id, 'amount', e.target.value)}
-                    className="h-8 w-20 text-xs"
+                    className="h-8 w-24 text-xs"
                     placeholder='Amount'
                 />
                 <Button variant="ghost" size="icon" className='h-8 w-8' onClick={() => removeFund(category, fund.id)}>
@@ -96,7 +96,7 @@ export function FundTable({
                 <Input
                 type="number"
                 placeholder="Amount"
-                className="h-8 w-20 text-xs"
+                className="h-8 w-24 text-xs"
                 value={newItemAmount}
                 onChange={(e) => setNewItemAmount(e.target.value)}
                 />
