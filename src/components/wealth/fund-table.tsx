@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWealth } from '@/contexts/wealth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Plus, Sparkles } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import type { Fund, MutualFunds } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
-import { suggestFunds } from '@/ai/flows/suggest-funds-flow';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type FundCategory = keyof MutualFunds;
 type TopLevelFundCategory = 'emergencyFunds' | 'shortTermGoals';
@@ -17,6 +17,11 @@ interface FundTableProps {
   category: FundCategory | TopLevelFundCategory;
   title: string;
   maxAllocation: number;
+}
+
+interface SearchResult {
+    schemeCode: number;
+    schemeName: string;
 }
 
 export function FundTable({
@@ -34,7 +39,35 @@ export function FundTable({
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    if (newItemName.length < 3) {
+      setSearchResults([]);
+      if (newItemName.length === 0) setIsPopoverOpen(false);
+      return;
+    }
+
+    const search = async () => {
+      setIsSearching(true);
+      try {
+        const response = await fetch(`https://api.mfapi.in/mf/search?q=${newItemName}`);
+        const data: SearchResult[] = await response.json();
+        setSearchResults(data);
+        setIsPopoverOpen(true);
+      } catch (error) {
+        console.error("Error fetching funds:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounce = setTimeout(search, 300);
+    return () => clearTimeout(debounce);
+  }, [newItemName]);
 
   const handleAddItem = () => {
     const amount = parseFloat(newItemAmount);
@@ -57,23 +90,11 @@ export function FundTable({
     }
   }
 
-  const handleSuggestFunds = async () => {
-    if (!['debt', 'gold', 'equity'].includes(category)) return;
-    setIsSuggesting(true);
-    try {
-      const result = await suggestFunds({ category: category as 'debt' | 'gold' | 'equity' });
-      // Clear existing funds in this category before adding new ones
-      funds.forEach(fund => removeFund(category, fund.id));
-
-      result.funds.forEach(fund => {
-        addFund(category, { name: `${fund.name} (${fund.cagr}%)`, amount: 0 });
-      });
-    } catch (error) {
-      console.error("Error suggesting funds:", error);
-    } finally {
-      setIsSuggesting(false);
-    }
-  };
+  const handleSelectFund = (name: string) => {
+    setNewItemName(name);
+    setSearchResults([]);
+    setIsPopoverOpen(false);
+  }
 
   const currentTotal = funds.reduce((sum, fund) => sum + fund.amount, 0);
   const remaining = maxAllocation - currentTotal;
@@ -83,11 +104,6 @@ export function FundTable({
     <div className="space-y-2 rounded-lg border p-4">
         <div className='flex justify-center items-center gap-2'>
             <h4 className="font-semibold text-center">{title}</h4>
-            {['debt', 'gold', 'equity'].includes(category) && (
-              <Button variant="ghost" size="icon" className='h-6 w-6' onClick={handleSuggestFunds} disabled={isSuggesting}>
-                <Sparkles className={cn('h-4 w-4', isSuggesting && 'animate-spin')} />
-              </Button>
-            )}
         </div>
         <div className={cn("text-center text-xs font-medium", isOverAllocated ? 'text-destructive' : 'text-muted-foreground')}>
             {currentTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -120,13 +136,36 @@ export function FundTable({
         </ScrollArea>
         
         {isAdding ? (
-            <div className="flex gap-1 items-center mt-2">
-                <Input
-                placeholder="Fund Name"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
-                className="h-8 text-xs flex-1"
-                />
+            <div className="flex gap-1 items-center mt-2 relative">
+                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Input
+                      placeholder="Search Fund Name..."
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      className="h-8 text-xs flex-1"
+                    />
+                  </PopoverTrigger>
+                  {searchResults.length > 0 && (
+                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align='start'>
+                      <ScrollArea className="h-48">
+                        <div className="p-2 space-y-1">
+                          {searchResults.map((fund) => (
+                            <Button
+                              key={fund.schemeCode}
+                              variant="ghost"
+                              className="w-full justify-start h-auto text-left whitespace-normal text-xs"
+                              onClick={() => handleSelectFund(fund.schemeName)}
+                            >
+                              {fund.schemeName}
+                            </Button>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </PopoverContent>
+                  )}
+                </Popover>
+
                 <Input
                 type="number"
                 placeholder="Amount"
