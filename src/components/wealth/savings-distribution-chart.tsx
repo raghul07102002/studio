@@ -54,10 +54,8 @@ export function SavingsDistributionChart() {
   
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
-          <CardTitle>Savings Distribution</CardTitle>
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle>Savings Distribution</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center">
         <ChartContainer
@@ -108,7 +106,7 @@ export function SavingsDistributionChart() {
           </div>
             <ChartLegend
                 content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
-                className="flex items-center justify-center -mt-4"
+                className="flex items-center justify-center"
             />
         </ChartContainer>
       </CardContent>

@@ -38,16 +38,21 @@ export function RemainingAmountChart() {
   }, [expenses]);
   
   const remainingAmount = monthlyBudget - totalExpenses > 0 ? monthlyBudget - totalExpenses : 0;
-  const spentAmount = totalExpenses > monthlyBudget ? monthlyBudget : totalExpenses;
+  const spentAmount = totalExpenses;
 
   const chartData = useMemo(() => {
     if (monthlyBudget === 0 && totalExpenses === 0) {
       return [{ name: 'No Budget Set', value: 1, fill: 'hsl(var(--muted))' }];
     }
-    return [
+    const data = [
       { name: 'Total Spent', value: spentAmount, fill: 'hsl(var(--chart-4))' },
       { name: 'Remaining', value: remainingAmount, fill: 'hsl(var(--chart-1))' },
     ];
+    if (spentAmount > monthlyBudget) {
+      data.find(d => d.name === 'Remaining')!.value = 0;
+      data.find(d => d.name === 'Total Spent')!.value = spentAmount;
+    }
+    return data;
   }, [spentAmount, remainingAmount, monthlyBudget, totalExpenses]);
 
   const chartConfig = useMemo(() => {
@@ -60,10 +65,8 @@ export function RemainingAmountChart() {
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
-          <CardTitle>Remaining Budget</CardTitle>
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle>Remaining Budget</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center">
         <ChartContainer
@@ -102,13 +105,13 @@ export function RemainingAmountChart() {
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
               <p className="text-sm text-muted-foreground">Remaining</p>
               <p className="text-3xl font-bold tracking-tighter">
-                  {remainingAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  {(monthlyBudget - totalExpenses).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             </div>
           </div>
           <ChartLegend
               content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
-              className="flex items-center justify-center -mt-4"
+              className="flex items-center justify-center"
           />
         </ChartContainer>
       </CardContent>
