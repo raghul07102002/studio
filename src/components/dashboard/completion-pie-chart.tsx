@@ -18,12 +18,31 @@ import { useApp } from "@/contexts/app-provider";
 import { calculateOverallCompletion } from "@/lib/analysis";
 import { ViewSelector } from "../layout/view-selector";
 
+const getMotivationalQuote = (percentage: number) => {
+  if (percentage < 25) {
+    return "Every small step counts. Keep going!";
+  }
+  if (percentage < 50) {
+    return "You're building momentum. Great work!";
+  }
+  if (percentage < 75) {
+    return "Consistency is paying off. You're doing amazing!";
+  }
+  if (percentage < 100) {
+    return "Incredible progress! You're so close to your goal.";
+  }
+  return "Perfection! You've mastered your habits.";
+};
+
+
 export function CompletionPieChart() {
   const { habits, habitData, filteredDates } = useApp();
 
   const overallCompletion = useMemo(() => {
     return calculateOverallCompletion(habitData, habits, filteredDates);
   }, [habitData, habits, filteredDates]);
+
+  const motivationalQuote = getMotivationalQuote(overallCompletion);
 
   const chartData = useMemo(() => {
     const completed = overallCompletion;
@@ -75,8 +94,9 @@ export function CompletionPieChart() {
         </ChartContainer>
       </CardContent>
        <div className="p-6 pt-0 text-center">
-        <p className="text-4xl font-bold">{overallCompletion.toFixed(1)}%</p>
+        <p className="text-4xl font-bold [text-shadow:0_2px_4px_hsl(var(--primary)/0.2)]">{overallCompletion.toFixed(1)}%</p>
         <p className="text-muted-foreground">Completed</p>
+        <p className="text-sm text-muted-foreground italic mt-2 h-8">{motivationalQuote}</p>
       </div>
     </Card>
   );

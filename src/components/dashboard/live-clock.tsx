@@ -20,7 +20,7 @@ export function LiveClock() {
   return (
     <Card className="h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/90 to-primary text-primary-foreground">
       <CardContent className="p-6 text-center">
-        <div className="text-5xl font-bold tracking-tighter">
+        <div className="text-5xl font-bold tracking-tighter [text-shadow:0_2px_4px_rgba(0,0,0,0.2)]">
           {format(currentTime, 'hh:mm:ss a')}
         </div>
         <div className="text-lg opacity-80 mt-2">
