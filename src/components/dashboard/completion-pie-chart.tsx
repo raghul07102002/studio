@@ -19,7 +19,7 @@ import { ViewSelector } from "../layout/view-selector";
 import { Heart } from "lucide-react";
 
 export function CompletionPieChart() {
-  const { habits, habitData, filteredDates } = useApp();
+  const { habits, habitData, filteredDates, selectedView } = useApp();
 
   const overallCompletion = useMemo(() => {
     return calculateOverallCompletion(habitData, habits, filteredDates);
@@ -44,7 +44,7 @@ export function CompletionPieChart() {
         <ViewSelector />
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
-        <div className="grid w-full max-w-[250px] aspect-square">
+        <div className="grid w-full max-w-[300px] aspect-square place-items-center">
            <ChartContainer
             config={{}}
             className="row-start-1 col-start-1"
@@ -55,8 +55,7 @@ export function CompletionPieChart() {
                     cursor={false}
                     content={
                     <ChartTooltipContent
-                        formatter={(value) => `${(value as number).toFixed(1)}%`}
-                        hideLabel
+                        formatter={(value, name) => [`${(value as number).toFixed(1)}%`, name]}
                     />
                     }
                 />
@@ -79,9 +78,9 @@ export function CompletionPieChart() {
                 </PieChart>
             </ResponsiveContainer>
             </ChartContainer>
-            <div className="row-start-1 col-start-1 flex flex-col items-center justify-center">
-                <p className="text-5xl font-bold">{overallCompletion.toFixed(0)}%</p>
-                <p className="text-muted-foreground text-sm">Today</p>
+            <div className="row-start-1 col-start-1 flex flex-col items-center justify-center text-center">
+                <p className="text-5xl font-bold tracking-tighter">{overallCompletion.toFixed(0)}%</p>
+                <p className="text-muted-foreground text-sm font-medium">{selectedView}</p>
             </div>
         </div>
       </CardContent>
