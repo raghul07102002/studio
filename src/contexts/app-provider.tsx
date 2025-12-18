@@ -17,13 +17,12 @@ import { format, subDays } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter, usePathname } from "next/navigation";
 import { DateRange } from "react-day-picker";
-import { useUser, useFirestore, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from "@/firebase";
 import {
   collection,
   doc,
   query,
 } from "firebase/firestore";
-import { useCollection, useDoc } from "@/firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 interface AppContextType {
