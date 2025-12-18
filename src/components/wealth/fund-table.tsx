@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWealth } from '@/contexts/wealth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,11 +42,12 @@ export function FundTable({
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (newItemName.length < 3) {
       setSearchResults([]);
-      if (newItemName.length === 0) setIsPopoverOpen(false);
+      setIsPopoverOpen(false);
       return;
     }
 
@@ -56,10 +57,11 @@ export function FundTable({
         const response = await fetch(`https://api.mfapi.in/mf/search?q=${newItemName}`);
         const data: SearchResult[] = await response.json();
         setSearchResults(data);
-        setIsPopoverOpen(true);
+        setIsPopoverOpen(data.length > 0);
       } catch (error) {
         console.error("Error fetching funds:", error);
         setSearchResults([]);
+        setIsPopoverOpen(false);
       } finally {
         setIsSearching(false);
       }
@@ -76,6 +78,7 @@ export function FundTable({
       setNewItemName('');
       setNewItemAmount('');
       setIsAdding(false);
+      setIsPopoverOpen(false);
     }
   };
 
@@ -136,22 +139,35 @@ export function FundTable({
         </ScrollArea>
         
         {isAdding ? (
-            <div className="flex gap-1 items-center mt-2 relative">
+            <div className="mt-2" ref={anchorRef}>
                 <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                   <PopoverTrigger asChild>
-                    <Input
-                      placeholder="Search Fund Name..."
-                      value={newItemName}
-                      onChange={(e) => setNewItemName(e.target.value)}
-                      className="h-8 text-xs flex-1"
-                    />
+                    <div className="flex gap-1 items-center">
+                      <Input
+                        placeholder="Search Fund Name..."
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        className="h-8 text-xs flex-1"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Amount"
+                        className="h-8 w-24 text-xs"
+                        value={newItemAmount}
+                        onChange={(e) => setNewItemAmount(e.target.value)}
+                      />
+                      <Button size="icon" className='h-8 w-8' onClick={handleAddItem}><Plus className='h-4 w-4' /></Button>
+                    </div>
                   </PopoverTrigger>
-                  {searchResults.length > 0 && (
-                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align='start'>
+                  <PopoverContent 
+                    className="p-0" 
+                    style={{ width: anchorRef.current ? `${anchorRef.current.offsetWidth}px` : 'auto' }}
+                    align='start'
+                  >
                       <ScrollArea className="h-48">
                         <div className="p-2 space-y-1">
                           {isSearching ? <p className="p-2 text-xs text-muted-foreground">Searching...</p> : 
-                            searchResults.map((fund) => (
+                            (searchResults.length > 0 ? searchResults.map((fund) => (
                               <Button
                                 key={fund.schemeCode}
                                 variant="ghost"
@@ -160,21 +176,11 @@ export function FundTable({
                               >
                                 {fund.schemeName}
                               </Button>
-                            ))}
+                            )) : <p className="p-2 text-xs text-muted-foreground">No results found.</p>)}
                         </div>
                       </ScrollArea>
                     </PopoverContent>
-                  )}
                 </Popover>
-
-                <Input
-                type="number"
-                placeholder="Amount"
-                className="h-8 w-24 text-xs"
-                value={newItemAmount}
-                onChange={(e) => setNewItemAmount(e.target.value)}
-                />
-                <Button size="icon" className='h-8 w-8' onClick={handleAddItem}><Plus className='h-4 w-4' /></Button>
             </div>
         ) : (
             <Button variant="outline" size='sm' className='w-full mt-2' onClick={() => setIsAdding(true)}>Add Fund</Button>
