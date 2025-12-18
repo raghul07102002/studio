@@ -3,9 +3,10 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndiaMap } from './india-map';
+import Image from 'next/image';
 
 export function TravelDashboardView() {
+  // State for visited states can be used later if the map becomes interactive again
   const [visitedStates, setVisitedStates] = useState<string[]>(['MH', 'GJ', 'RJ']);
 
   const handleStateClick = (stateId: string) => {
@@ -21,16 +22,20 @@ export function TravelDashboardView() {
       <Card>
         <CardHeader>
           <CardTitle>Travel Dashboard</CardTitle>
-          <CardDescription>Click on a state to mark it as visited.</CardDescription>
+          <CardDescription>Your map of India. You can replace the placeholder below.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className='w-full h-[600px] flex items-center justify-center'>
-            <IndiaMap visitedStates={visitedStates} onStateClick={handleStateClick} />
+          <div className='w-full h-[600px] flex items-center justify-center relative bg-muted rounded-lg'>
+            <Image 
+              src="https://picsum.photos/seed/india-map/800/600"
+              alt="Map of India"
+              fill
+              style={{ objectFit: 'contain' }}
+              data-ai-hint="India map"
+            />
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    
