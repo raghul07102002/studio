@@ -49,15 +49,15 @@ export function EditableTable({
   const selectedMonthString = selectedDate ? format(selectedDate, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
 
   const items = type === 'expenses' 
-    ? (wealthData.expenses[selectedDateString] || [])
-    : wealthData.trips;
+    ? (wealthData?.expenses?.[selectedDateString] || [])
+    : wealthData?.trips || [];
   
   const monthlyBudget = type === 'expenses' 
-    ? wealthData.expenseBudgets[selectedMonthString] || 0
-    : wealthData.tripBudgets[selectedMonthString] || 0;
+    ? wealthData?.expenseBudgets?.[selectedMonthString] || 0
+    : wealthData?.tripBudgets?.[selectedMonthString] || 0;
 
   const monthlyTotalSpent = useMemo(() => {
-    if (type === 'expenses') {
+    if (type === 'expenses' && wealthData?.expenses) {
       return Object.entries(wealthData.expenses).reduce((total, [date, dailyExpenses]) => {
         if (date.startsWith(selectedMonthString)) {
           return total + dailyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -66,8 +66,8 @@ export function EditableTable({
       }, 0);
     }
     // For trips, we'll sum up all trips for now as they are not dated per month
-    return wealthData.trips.reduce((sum, item) => sum + item.amount, 0);
-  }, [wealthData.expenses, wealthData.trips, selectedMonthString, type]);
+    return wealthData?.trips?.reduce((sum, item) => sum + item.amount, 0) || 0;
+  }, [wealthData?.expenses, wealthData?.trips, selectedMonthString, type]);
 
   const addItem = (item: Omit<Expense, 'id'> | Omit<Trip, 'id'>) => {
     if (type === 'expenses') {
