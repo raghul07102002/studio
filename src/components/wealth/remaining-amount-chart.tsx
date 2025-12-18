@@ -105,10 +105,12 @@ export function RemainingAmountChart() {
               </p>
             </div>
           </div>
-          <ChartLegend
-            content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
-            className="flex items-center justify-center pt-4"
-          />
+          <div className='-mt-4'>
+            <ChartLegend
+                content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
+                className="flex items-center justify-center"
+            />
+          </div>
         </ChartContainer>
       </CardContent>
     </Card>

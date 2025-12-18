@@ -46,16 +46,11 @@ export function SavingsDistributionChart() {
   const chartConfig = useMemo(() => {
     const config: any = {};
     chartData.forEach(item => {
-        config[item.name] = { label: item.name, color: item.fill };
+        config[item.name] = { label: item.fullName, color: item.fill };
     });
     return config;
   }, [chartData]);
   
-  const totalSavingsValue = useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.value, 0);
-  }, [chartData]);
-
-
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -75,8 +70,8 @@ export function SavingsDistributionChart() {
                   cursor={false}
                   content={<ChartTooltipContent 
                     formatter={(value, name, props) => {
-                      const { fullName } = props.payload as any;
-                      return [`${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`, fullName]
+                      const itemConfig = chartConfig[name as keyof typeof chartConfig];
+                      return [`${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`, itemConfig.label]
                     }}
                     />}
                 />
@@ -109,10 +104,12 @@ export function SavingsDistributionChart() {
                 </p>
             </div>
           </div>
-          <ChartLegend
-            content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
-            className="flex items-center justify-center pt-4"
-          />
+            <div className='-mt-4'>
+                <ChartLegend
+                    content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
+                    className="flex items-center justify-center"
+                />
+            </div>
         </ChartContainer>
       </CardContent>
     </Card>
