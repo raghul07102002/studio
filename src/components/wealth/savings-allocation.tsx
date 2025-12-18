@@ -9,7 +9,7 @@ import { Progress } from '../ui/progress';
 
 export function SavingsAllocation() {
   const { wealthData, updateWealthData } = useWealth();
-  const { monthlySalary, monthlySavings, savingsAllocation } = wealthData;
+  const { monthlySavings, savingsAllocation } = wealthData;
   
   const totalAllocated = useMemo(() => {
     if (!savingsAllocation) return 0;
@@ -21,11 +21,6 @@ export function SavingsAllocation() {
   }, [savingsAllocation]);
 
   const allocationProgress = monthlySavings > 0 ? (totalAllocated / monthlySavings) * 100 : 0;
-
-  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    updateWealthData({ monthlySalary: parseFloat(value) || 0 });
-  };
   
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -41,23 +36,6 @@ export function SavingsAllocation() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-2">
-            <label htmlFor="monthly-salary" className="text-sm font-medium">
-              Monthly Salary
-            </label>
-            <div className="flex items-center">
-                <span className="p-2 text-muted-foreground">₹</span>
-                <input
-                id="monthly-salary"
-                type="number"
-                value={monthlySalary || ''}
-                onChange={handleSalaryChange}
-                placeholder="e.g., 100000"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                />
-            </div>
-        </div>
-
         <div className="space-y-2">
             <div className='flex justify-between items-center'>
                 <label htmlFor="monthly-savings" className="text-sm font-medium">
@@ -96,12 +74,12 @@ export function SavingsAllocation() {
           <FundTable 
             category="emergencyFunds"
             title="Emergency Funds"
-            maxAllocation={monthlySavings} // Or some other logic
+            maxAllocation={monthlySavings}
           />
           <FundTable 
             category="shortTermGoals"
             title="Short Term Goals"
-            maxAllocation={monthlySavings} // Or some other logic
+            maxAllocation={monthlySavings}
           />
         </div>
       </CardContent>
