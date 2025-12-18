@@ -40,13 +40,13 @@ export function WealthMetrics() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center">
-            <span className="p-2 text-2xl font-bold">₹</span>
+            <span className="p-2 text-muted-foreground">₹</span>
             <Input
               type="number"
               value={monthlySalary || ''}
               onChange={handleSalaryChange}
-              placeholder="0"
-              className="h-12 w-full rounded-md border-0 bg-transparent px-1 py-2 text-2xl font-bold ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
+              placeholder="Enter amount"
+              className="h-10 w-full rounded-md border-input bg-transparent px-1 py-2 text-lg font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
           <p className="text-xs text-muted-foreground">Your gross monthly income.</p>
