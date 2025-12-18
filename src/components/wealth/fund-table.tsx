@@ -25,9 +25,10 @@ export function FundTable({
 }: FundTableProps) {
   const { wealthData, addFund, updateFund, removeFund } = useWealth();
   
-  const funds = (category in wealthData.savingsAllocation.mutualFunds)
-    ? wealthData.savingsAllocation.mutualFunds[category as FundCategory]
-    : wealthData.savingsAllocation[category as TopLevelFundCategory];
+  const funds: Fund[] = 
+    wealthData.savingsAllocation && 'mutualFunds' in wealthData.savingsAllocation && wealthData.savingsAllocation.mutualFunds && (category in wealthData.savingsAllocation.mutualFunds)
+      ? wealthData.savingsAllocation.mutualFunds[category as FundCategory]
+      : (wealthData.savingsAllocation && (category in wealthData.savingsAllocation) ? wealthData.savingsAllocation[category as TopLevelFundCategory] : []);
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
