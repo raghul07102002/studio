@@ -69,48 +69,48 @@ export function SavingsDistributionChart() {
       <CardContent className="flex-1 flex flex-col items-center justify-center">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square w-full max-w-[300px]"
+          className="mx-auto w-full max-w-[300px] flex flex-col items-center"
         >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel formatter={(value) => `${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`} />}
-            />
-            <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius="70%"
-                outerRadius="100%"
-                strokeWidth={5}
-                stroke="hsl(var(--background))"
-                startAngle={90}
-                endAngle={450}
-                cornerRadius={8}
-            >
-                {chartData.map((entry) => (
-                <Cell
-                    key={`cell-${entry.name}`}
-                    fill={entry.fill}
-                    className="focus:outline-none"
-                />
-                ))}
-            </Pie>
-          </PieChart>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none">
+          <div className="aspect-square w-full">
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel formatter={(value) => `${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`} />}
+              />
+              <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius="70%"
+                  outerRadius="100%"
+                  strokeWidth={5}
+                  stroke="hsl(var(--background))"
+                  startAngle={90}
+                  endAngle={450}
+                  cornerRadius={8}
+              >
+                  {chartData.map((entry) => (
+                  <Cell
+                      key={`cell-${entry.name}`}
+                      fill={entry.fill}
+                      className="focus:outline-none"
+                  />
+                  ))}
+              </Pie>
+            </PieChart>
+          </div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none mt-12">
             <p className="text-sm text-muted-foreground">Total Savings</p>
             <p className="text-3xl font-bold tracking-tighter">
                 {(monthlySavings || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
+          <ChartLegend
+            content={<ChartLegendContent nameKey="name" className="flex-wrap justify-center" />}
+            className="flex items-center justify-center pt-2"
+          />
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <ChartLegend
-            content={<ChartLegendContent nameKey="name" />}
-            className="-mt-4 flex items-center justify-center"
-        />
-      </CardFooter>
     </Card>
   );
 }
