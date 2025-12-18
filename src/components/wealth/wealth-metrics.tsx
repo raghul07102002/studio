@@ -31,7 +31,7 @@ export function WealthMetrics() {
     updateWealthData({ monthlySalary: parseFloat(value) || 0 });
   };
 
-  const metricCardClasses = "transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105";
+  const metricCardClasses = "transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:shadow-primary/20";
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
