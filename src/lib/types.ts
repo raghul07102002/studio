@@ -55,7 +55,6 @@ export interface MonthlyBudget {
 
 export interface WealthData {
   monthlySalary: number;
-  monthlySavings: number;
   expenses: Record<string, Expense[]>; // Changed from Expense[]
   trips: Trip[];
   savingsAllocation: SavingsAllocation;

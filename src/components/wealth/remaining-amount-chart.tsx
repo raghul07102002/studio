@@ -15,11 +15,14 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useWealth } from '@/contexts/wealth-provider';
-import { isSameMonth } from 'date-fns';
+import { format, isSameMonth } from 'date-fns';
 
 export function RemainingAmountChart() {
   const { wealthData } = useWealth();
-  const { monthlySalary, expenses } = wealthData;
+  const { expenseBudgets, expenses } = wealthData;
+
+  const currentMonthString = format(new Date(), 'yyyy-MM');
+  const monthlyBudget = expenseBudgets?.[currentMonthString] || 0;
 
   const totalExpenses = useMemo(() => {
     const now = new Date();
@@ -31,24 +34,25 @@ export function RemainingAmountChart() {
     }, 0);
   }, [expenses]);
   
-  const remainingAmount = monthlySalary - totalExpenses > 0 ? monthlySalary - totalExpenses : 0;
+  const remainingAmount = monthlyBudget - totalExpenses > 0 ? monthlyBudget - totalExpenses : 0;
+  const spentAmount = totalExpenses > monthlyBudget ? monthlyBudget : totalExpenses;
 
   const chartData = useMemo(() => {
-    if (monthlySalary === 0 && totalExpenses === 0) {
-      return [{ name: 'No Data', value: 1, fill: 'hsl(var(--muted))' }];
+    if (monthlyBudget === 0 && totalExpenses === 0) {
+      return [{ name: 'No Budget Set', value: 1, fill: 'hsl(var(--muted))' }];
     }
     return [
-      { name: 'Total Expenses', value: totalExpenses, fill: 'hsl(var(--chart-4))' },
-      { name: 'Remaining Amount', value: remainingAmount, fill: 'hsl(var(--chart-1))' },
+      { name: 'Total Spent', value: spentAmount, fill: 'hsl(var(--chart-4))' },
+      { name: 'Remaining in Budget', value: remainingAmount, fill: 'hsl(var(--chart-1))' },
     ];
-  }, [totalExpenses, remainingAmount, monthlySalary]);
+  }, [spentAmount, remainingAmount, monthlyBudget, totalExpenses]);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle>Remaining Amount</CardTitle>
-          <CardDescription>Monthly Salary vs. Expenses</CardDescription>
+          <CardTitle>Remaining Budget</CardTitle>
+          <CardDescription>Monthly Expense Budget vs. Spent</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">

@@ -7,7 +7,6 @@ import { format } from "date-fns";
 
 const DEFAULT_WEALTH_DATA: WealthData = {
   monthlySalary: 0,
-  monthlySavings: 50000,
   expenses: {},
   trips: [],
   savingsAllocation: {
