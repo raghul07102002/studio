@@ -38,8 +38,8 @@ export function SavingsDistributionChart() {
 
     return [
       { name: 'MF', value: mfTotal, fill: 'hsl(var(--chart-1))' },
-      { name: 'EF', value: efTotal, fill: 'hsl(var(--chart-2))' },
-      { name: 'STG', value: stgTotal, fill: 'hsl(var(--chart-3))' },
+      { name: 'EF', value: efTotal, fill: 'hsl(var(--chart-3))' },
+      { name: 'STG', value: stgTotal, fill: 'hsl(var(--chart-5))' },
       { name: 'Unallocated', value: unallocated, fill: 'hsl(var(--muted))' },
     ].filter(item => item.value > 0);
   }, [monthlySavings, savingsAllocation]);
