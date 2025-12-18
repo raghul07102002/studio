@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useWealth } from '@/contexts/wealth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Sparkles } from 'lucide-react';
 import type { Fund, MutualFunds } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
+import { suggestFunds } from '@/ai/flows/suggest-funds-flow';
 
 type FundCategory = keyof MutualFunds;
 type TopLevelFundCategory = 'emergencyFunds' | 'shortTermGoals';
@@ -33,6 +34,7 @@ export function FundTable({
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
 
   const handleAddItem = () => {
     const amount = parseFloat(newItemAmount);
@@ -55,13 +57,38 @@ export function FundTable({
     }
   }
 
+  const handleSuggestFunds = async () => {
+    if (!['debt', 'gold', 'equity'].includes(category)) return;
+    setIsSuggesting(true);
+    try {
+      const result = await suggestFunds({ category: category as 'debt' | 'gold' | 'equity' });
+      // Clear existing funds in this category before adding new ones
+      funds.forEach(fund => removeFund(category, fund.id));
+
+      result.funds.forEach(fund => {
+        addFund(category, { name: `${fund.name} (${fund.cagr}%)`, amount: 0 });
+      });
+    } catch (error) {
+      console.error("Error suggesting funds:", error);
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
   const currentTotal = funds.reduce((sum, fund) => sum + fund.amount, 0);
   const remaining = maxAllocation - currentTotal;
   const isOverAllocated = remaining < 0;
 
   return (
     <div className="space-y-2 rounded-lg border p-4">
-        <h4 className="font-semibold text-center">{title}</h4>
+        <div className='flex justify-center items-center gap-2'>
+            <h4 className="font-semibold text-center">{title}</h4>
+            {['debt', 'gold', 'equity'].includes(category) && (
+              <Button variant="ghost" size="icon" className='h-6 w-6' onClick={handleSuggestFunds} disabled={isSuggesting}>
+                <Sparkles className={cn('h-4 w-4', isSuggesting && 'animate-spin')} />
+              </Button>
+            )}
+        </div>
         <div className={cn("text-center text-xs font-medium", isOverAllocated ? 'text-destructive' : 'text-muted-foreground')}>
             {currentTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             { maxAllocation !== Infinity && <span> / {maxAllocation.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>}
