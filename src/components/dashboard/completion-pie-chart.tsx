@@ -56,7 +56,6 @@ export function CompletionPieChart() {
                   content={
                     <ChartTooltipContent
                       formatter={(value) => `${(value as number).toFixed(1)}%`}
-                      hideLabel
                     />
                   }
                 />
@@ -79,9 +78,8 @@ export function CompletionPieChart() {
               </PieChart>
             </ResponsiveContainer>
           </ChartContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
             <p className="text-5xl font-bold tracking-tighter">{overallCompletion.toFixed(0)}%</p>
-            <p className="text-muted-foreground text-sm font-medium">{selectedView}</p>
           </div>
         </div>
       </CardContent>
