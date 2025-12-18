@@ -3,10 +3,10 @@
 
 import { HistoryMetrics } from './history-metrics';
 import { ExpenseTrendChart } from './expense-trend-chart';
-import { DateSelector } from './date-selector';
 import { useFinancialReport } from '@/contexts/financial-report-provider';
 import { Card, CardContent } from '../ui/card';
 import { format } from 'date-fns';
+import { DateSelector } from './date-selector';
 
 export function FinancialReportView() {
   const { view, filteredDates } = useFinancialReport();

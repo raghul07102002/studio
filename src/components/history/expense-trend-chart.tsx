@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -22,7 +23,6 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useFinancialReport } from '@/contexts/financial-report-provider';
-import { ViewSelector } from '../layout/view-selector';
 import { format } from 'date-fns';
 
 export function ExpenseTrendChart() {
@@ -47,9 +47,6 @@ export function ExpenseTrendChart() {
           <CardDescription>
             Your daily expenses over the selected period.
           </CardDescription>
-        </div>
-        <div className="w-40">
-          <ViewSelector />
         </div>
       </CardHeader>
       <CardContent>
