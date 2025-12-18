@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FundTable } from './fund-table';
 import { Progress } from '../ui/progress';
+import { isSameMonth } from 'date-fns';
 
 const ALLOCATION_CONFIG = {
   debt: { name: 'Debt', percentage: 0.4 },
@@ -15,7 +16,19 @@ const ALLOCATION_CONFIG = {
 
 export function SavingsAllocation() {
   const { wealthData, updateWealthData } = useWealth();
-  const { monthlySavings } = wealthData;
+  const { monthlySalary, expenses } = wealthData;
+
+  const totalExpenses = useMemo(() => {
+    const now = new Date();
+    return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
+      if (isSameMonth(new Date(date), now)) {
+        return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      }
+      return total;
+    }, 0);
+  }, [expenses]);
+  
+  const monthlySavings = monthlySalary - totalExpenses > 0 ? monthlySalary - totalExpenses : 0;
 
   const isSavingsLow = monthlySavings < 50000;
 
@@ -30,13 +43,9 @@ export function SavingsAllocation() {
   const totalAllocated = Object.values(wealthData.savingsAllocation).flat().reduce((sum, fund) => sum + fund.amount, 0);
   const allocationProgress = monthlySavings > 0 ? (totalAllocated / monthlySavings) * 100 : 0;
 
-  const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === '') {
-      updateWealthData({ monthlySavings: 0 });
-    } else {
-      updateWealthData({ monthlySavings: parseFloat(value) || 0 });
-    }
+    updateWealthData({ monthlySalary: parseFloat(value) || 0 });
   };
 
   return (
@@ -49,9 +58,26 @@ export function SavingsAllocation() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
+            <label htmlFor="monthly-salary" className="text-sm font-medium">
+              Monthly Salary
+            </label>
+            <div className="flex items-center">
+                <span className="p-2 text-muted-foreground">₹</span>
+                <input
+                id="monthly-salary"
+                type="number"
+                value={wealthData.monthlySalary || ''}
+                onChange={handleSalaryChange}
+                placeholder="e.g., 100000"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                />
+            </div>
+        </div>
+
+        <div className="space-y-2">
             <div className='flex justify-between items-center'>
                 <label htmlFor="monthly-savings" className="text-sm font-medium">
-                Monthly Savings Amount
+                Monthly Savings (Auto-calculated)
                 </label>
                 <span className='text-sm font-medium'>
                 {totalAllocated.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}
@@ -65,9 +91,9 @@ export function SavingsAllocation() {
                 id="monthly-savings"
                 type="number"
                 value={monthlySavings || ''}
-                onChange={handleSavingsChange}
+                readOnly
                 placeholder="e.g., 50000"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 />
             </div>
             {isSavingsLow && monthlySavings > 0 && (
