@@ -15,10 +15,10 @@ export function MonthlyBudgetInput({ type, selectedMonth }: MonthlyBudgetInputPr
   const { wealthData, setBudget } = useWealth();
   const budgets = type === 'expenses' ? wealthData.expenseBudgets : wealthData.tripBudgets;
   
-  const [amount, setAmount] = useState(budgets[selectedMonth] || '');
+  const [amount, setAmount] = useState((budgets && budgets[selectedMonth]) || '');
 
   useEffect(() => {
-    setAmount(budgets[selectedMonth] || '');
+    setAmount((budgets && budgets[selectedMonth]) || '');
   }, [selectedMonth, budgets]);
 
   const handleSetBudget = () => {
