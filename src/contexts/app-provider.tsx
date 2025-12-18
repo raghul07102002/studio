@@ -93,13 +93,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const handleDashboardChange = (dashboard: DashboardOption) => {
     setSelectedDashboard(dashboard);
     if (dashboard === 'habits') {
-      if (pathname.startsWith('/wealth') || pathname.startsWith('/history')) {
-        router.push('/dashboard');
-      }
-    } else {
-        if (!pathname.startsWith('/wealth') && !pathname.startsWith('/history')) {
-            router.push('/wealth');
-        }
+      router.push('/dashboard');
+    } else if (dashboard === 'wealth') {
+      router.push('/wealth');
+    } else if (dashboard === 'travel') {
+      router.push('/travel');
     }
   };
 

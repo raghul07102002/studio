@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Flame, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { habitNavItems, wealthNavItems } from "./navigation";
+import { habitNavItems, wealthNavItems, travelNavItems } from "./navigation";
 import { DashboardSelector } from "./dashboard-selector";
 import { useApp } from "@/contexts/app-provider";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,13 @@ export function AppHeader() {
   const pathname = usePathname();
   const { selectedDashboard } = useApp();
 
-  const currentNavItems = selectedDashboard === 'habits' ? habitNavItems : wealthNavItems;
+  const navItemsMap = {
+    habits: habitNavItems,
+    wealth: wealthNavItems,
+    travel: travelNavItems,
+  }
+
+  const currentNavItems = navItemsMap[selectedDashboard];
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 lg:px-8">

@@ -24,6 +24,7 @@ export function DashboardSelector() {
       <SelectContent>
         <SelectItem value="habits">Habit Dashboard</SelectItem>
         <SelectItem value="wealth">Wealth Dashboard</SelectItem>
+        <SelectItem value="travel">Travel Dashboard</SelectItem>
       </SelectContent>
     </Select>
   );

@@ -25,7 +25,7 @@ export type ViewOption =
   | "Month"
   | "Year";
 
-export type DashboardOption = "habits" | "wealth";
+export type DashboardOption = "habits" | "wealth" | "travel";
 
 // Wealth Dashboard Types
 export interface Expense {
