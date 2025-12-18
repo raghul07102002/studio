@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, ReactNode, useCallback } from "react";
@@ -58,7 +59,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   
   const addExpense = (date: string, expense: Omit<Expense, "id">) => {
     const newExpense = { ...expense, id: `exp-${Date.now()}` };
-    const newExpenses = { ...wealthData.expenses };
+    const newExpenses = { ...(wealthData.expenses || {}) };
     if (!newExpenses[date]) {
       newExpenses[date] = [];
     }
@@ -67,7 +68,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateExpense = (date: string, updatedExpense: Expense) => {
-    const newExpenses = { ...wealthData.expenses };
+    const newExpenses = { ...(wealthData.expenses || {}) };
     if (newExpenses[date]) {
       newExpenses[date] = newExpenses[date].map((e) =>
         e.id === updatedExpense.id ? updatedExpense : e
@@ -77,7 +78,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   };
 
   const removeExpense = (date: string, id: string) => {
-    const newExpenses = { ...wealthData.expenses };
+    const newExpenses = { ...(wealthData.expenses || {}) };
     if (newExpenses[date]) {
       newExpenses[date] = newExpenses[date].filter((e) => e.id !== id);
       if (newExpenses[date].length === 0) {
@@ -89,24 +90,27 @@ export function WealthProvider({ children }: { children: ReactNode }) {
 
   const addTrip = (trip: Omit<Trip, "id">) => {
     const newTrip = { ...trip, id: `trip-${Date.now()}` };
-    updateWealthData({ trips: [...wealthData.trips, newTrip] });
+    updateWealthData({ trips: [...(wealthData.trips || []), newTrip] });
   };
 
   const updateTrip = (updatedTrip: Trip) => {
     updateWealthData({
-      trips: wealthData.trips.map((t) =>
+      trips: (wealthData.trips || []).map((t) =>
         t.id === updatedTrip.id ? updatedTrip : t
       ),
     });
   };
 
   const removeTrip = (id: string) => {
-    updateWealthData({ trips: wealthData.trips.filter((t) => t.id !== id) });
+    updateWealthData({ trips: (wealthData.trips || []).filter((t) => t.id !== id) });
   };
 
   const addFund = (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id'>) => {
     const newFund = { ...fund, id: `fund-${Date.now()}` };
-    const currentAllocation = { ...wealthData.savingsAllocation };
+    const currentAllocation = { ...(wealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
+    if (!currentAllocation.mutualFunds) currentAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
+    if (!currentAllocation.emergencyFunds) currentAllocation.emergencyFunds = [];
+    if (!currentAllocation.shortTermGoals) currentAllocation.shortTermGoals = [];
 
     if (category in currentAllocation.mutualFunds) {
       currentAllocation.mutualFunds[category as FundCategory].push(newFund);
@@ -118,7 +122,8 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   };
   
   const updateFund = (category: FundCategory | TopLevelFundCategory, updatedFund: Fund) => {
-    const currentAllocation = { ...wealthData.savingsAllocation };
+    const currentAllocation = { ...(wealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
+    if (!currentAllocation.mutualFunds) return;
 
     if (category in currentAllocation.mutualFunds) {
       const cat = category as FundCategory;
@@ -132,7 +137,8 @@ export function WealthProvider({ children }: { children: ReactNode }) {
   };
   
   const removeFund = (category: FundCategory | TopLevelFundCategory, id: string) => {
-    const currentAllocation = { ...wealthData.savingsAllocation };
+    const currentAllocation = { ...(wealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
+    if (!currentAllocation.mutualFunds) return;
     
     if (category in currentAllocation.mutualFunds) {
       const cat = category as FundCategory;
