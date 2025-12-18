@@ -1,6 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { IndiaMap } from './india-map';
 
 export function TravelDashboardView() {
   return (
@@ -8,9 +9,12 @@ export function TravelDashboardView() {
       <Card>
         <CardHeader>
           <CardTitle>Travel Dashboard</CardTitle>
+          <CardDescription>Visualize your travels across India.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Welcome to your new travel dashboard!</p>
+          <div className='w-full h-[600px] flex items-center justify-center'>
+            <IndiaMap />
+          </div>
         </CardContent>
       </Card>
     </div>
