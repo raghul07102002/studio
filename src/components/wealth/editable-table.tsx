@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import type { Expense, Trip } from '@/lib/types';
 import { ScrollArea } from '../ui/scroll-area';
+import { Textarea } from '../ui/textarea';
 
 interface EditableTableProps {
   title: string;
@@ -75,23 +76,31 @@ export function EditableTable({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <ScrollArea className='h-40'>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="w-[100px] text-right">Amount</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="w-[100px] text-right">Amount</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                </TableHeader>
+            </Table>
+          <ScrollArea className='h-40 w-full pr-4'>
+            <Table>
               <TableBody>
                 {items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      <Input
+                      <Textarea
                         value={item.name}
                         onChange={(e) => handleUpdate(item.id, 'name', e.target.value)}
-                        className="h-8 border-none"
+                        className="h-8 border-none resize-none overflow-hidden"
+                        rows={1}
+                        onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = `${target.scrollHeight}px`;
+                        }}
                       />
                     </TableCell>
                     <TableCell className="text-right">
