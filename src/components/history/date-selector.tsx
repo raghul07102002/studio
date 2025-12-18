@@ -46,7 +46,7 @@ export function DateSelector() {
                 defaultMonth={reportDateRange?.from}
                 selected={reportDateRange}
                 onSelect={setReportDateRange}
-                numberOfMonths={2}
+                numberOfMonths={1}
             />
             </PopoverContent>
       </Popover>
