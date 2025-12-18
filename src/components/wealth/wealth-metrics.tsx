@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -7,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { isSameMonth } from 'date-fns';
 import { Input } from '../ui/input';
+import { cn } from '@/lib/utils';
 
 export function WealthMetrics() {
   const { wealthData, updateWealthData } = useWealth();
@@ -31,6 +31,8 @@ export function WealthMetrics() {
     updateWealthData({ monthlySalary: parseFloat(value) || 0 });
   };
 
+  const metricCardClasses = "transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105";
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -52,7 +54,7 @@ export function WealthMetrics() {
           <p className="text-xs text-muted-foreground">Your gross monthly income.</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className={metricCardClasses}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Target Savings</CardTitle>
           <PiggyBank className="h-4 w-4 text-muted-foreground" />
@@ -64,7 +66,7 @@ export function WealthMetrics() {
           <p className="text-xs text-muted-foreground">Your monthly savings goal.</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className={metricCardClasses}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Savings Rate</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -76,7 +78,7 @@ export function WealthMetrics() {
           </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className={metricCardClasses}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
           <TrendingDown className="h-4 w-4 text-muted-foreground" />
