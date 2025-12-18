@@ -22,13 +22,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import type { Expense, Trip } from '@/lib/types';
-import { ScrollArea } from '../ui/scroll-area';
 import { Textarea } from '../ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface EditableTableProps {
   title: string;
@@ -135,12 +135,12 @@ export function EditableTable({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <ScrollArea className='h-48 w-full'>
+          <ScrollArea className='h-48 w-full pr-4'>
             <Table>
                 <TableHeader>
                     <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead className="w-[100px] text-right">Amount</TableHead>
+                    <TableHead className="w-[120px] text-right">Amount</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -151,7 +151,7 @@ export function EditableTable({
                       <Textarea
                         value={item.name}
                         onChange={(e) => handleUpdate(item.id, 'name', e.target.value)}
-                        className="h-8 border-none resize-none overflow-hidden"
+                        className="h-8 border-none resize-none overflow-hidden bg-transparent focus-visible:ring-0"
                         rows={1}
                         onInput={(e) => {
                           const target = e.target as HTMLTextAreaElement;
@@ -165,7 +165,7 @@ export function EditableTable({
                         type="number"
                         value={item.amount}
                         onChange={(e) => handleUpdate(item.id, 'amount', e.target.value)}
-                        className="h-8 border-none text-right"
+                        className="h-8 border-none text-right bg-transparent focus-visible:ring-0"
                       />
                     </TableCell>
                     <TableCell>
@@ -197,7 +197,7 @@ export function EditableTable({
       </CardContent>
       <CardFooter className='justify-end'>
         <div className="text-right font-semibold">
-          Total: {totalAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}
+          Total for {selectedDate ? format(selectedDate, 'MMM d') : 'selected date'}: {totalAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}
         </div>
       </CardFooter>
     </Card>

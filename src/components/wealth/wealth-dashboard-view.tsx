@@ -26,14 +26,14 @@ export function WealthDashboardView() {
         <CardContent className="p-6">
           <Tabs defaultValue="expenses">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="expenses">Expenses</TabsTrigger>
+              <TabsTrigger value="expenses">Daily Expenses</TabsTrigger>
               <TabsTrigger value="trips">Trip Costs</TabsTrigger>
               <TabsTrigger value="savings">Savings Allocation</TabsTrigger>
             </TabsList>
             <TabsContent value="expenses" className="mt-6">
               <EditableTable
-                title="Expenses"
-                description="Manage your monthly expenses."
+                title="Daily Expenses"
+                description="Track and manage your expenses for any selected day."
                 type="expenses"
               />
             </TabsContent>
