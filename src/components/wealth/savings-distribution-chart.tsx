@@ -72,7 +72,8 @@ export function SavingsDistributionChart() {
                   content={<ChartTooltipContent 
                     formatter={(value, name, props) => {
                       const itemConfig = chartConfig[name as keyof typeof chartConfig];
-                      return [`${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`, itemConfig.label]
+                      const label = itemConfig ? itemConfig.label : name;
+                      return [`${(value as number).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}`, label]
                     }}
                     />}
                 />
