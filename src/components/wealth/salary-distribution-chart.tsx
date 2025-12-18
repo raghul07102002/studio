@@ -28,11 +28,14 @@ export function SalaryDistributionChart() {
   const savings = monthlySalary - totalExpenses > 0 ? monthlySalary - totalExpenses : 0;
 
   const chartData = useMemo(() => {
+    if (monthlySalary === 0 && totalExpenses === 0) {
+      return [{ name: 'No Data', value: 1, fill: 'hsl(var(--muted))' }];
+    }
     return [
       { name: 'Expenses', value: totalExpenses, fill: 'hsl(var(--chart-2))' },
       { name: 'Savings', value: savings, fill: 'hsl(var(--chart-1))' },
     ];
-  }, [totalExpenses, savings]);
+  }, [totalExpenses, savings, monthlySalary]);
 
   return (
     <Card className="h-full flex flex-col">
