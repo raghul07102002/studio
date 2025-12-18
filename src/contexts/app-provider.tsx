@@ -11,14 +11,20 @@ import {
   useCallback,
 } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import type { Habit, HabitData, ViewOption, DashboardOption } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
-import { generateInitialHabitData } from "@/data/initial-data";
 import { format, subDays } from "date-fns";
-import { YEAR } from "@/lib/constants";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter, usePathname } from "next/navigation";
 import { DateRange } from "react-day-picker";
+import { useUser, useFirestore, useMemoFirebase } from "@/firebase";
+import {
+  collection,
+  doc,
+  query,
+} from "firebase/firestore";
+import { useCollection, useDoc } from "@/firebase/firestore";
+import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 interface AppContextType {
   habits: Habit[];
@@ -42,16 +48,10 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [habits, setHabits] = useLocalStorage<Habit[]>(
-    "chrono-habits-2025",
-    DEFAULT_HABITS
-  );
-  const [habitData, setHabitData] = useLocalStorage<HabitData>(
-    "chrono-habit-data-2025",
-    {}
-  );
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
   const [selectedView, setSelectedView] = useState<ViewOption>("Week");
-  const [isInitialized, setIsInitialized] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useLocalStorage<DashboardOption>('chrono-dashboard-selection', 'habits');
   
   const defaultDateRange: DateRange = {
@@ -64,15 +64,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    // Check if data is initialized, if not, generate and set it.
-    const firstDate = format(new Date(YEAR, 0, 1), "yyyy-MM-dd");
-    if (!habitData[firstDate] || Object.keys(habitData).length < 365) {
-      const initialData = generateInitialHabitData(habits);
-      setHabitData(initialData);
-    }
-    setIsInitialized(true);
-  }, []); // Run once on mount
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, "users", user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile, isLoading: isUserProfileLoading } = useDoc<{habits: Habit[]}>(userDocRef);
+
+  const habits = useMemo(() => userProfile?.habits || DEFAULT_HABITS, [userProfile]);
+
+  const habitLogsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(collection(firestore, `users/${user.uid}/habitLogs`));
+  }, [user, firestore]);
+
+  const { data: habitLogs, isLoading: isHabitLogsLoading } = useCollection<HabitLog>(habitLogsQuery);
+
+  const habitData = useMemo(() => {
+    if (!habitLogs) return {};
+    return habitLogs.reduce((acc, log) => {
+      if (!acc[log.date]) {
+        acc[log.date] = {};
+      }
+      acc[log.date][log.habitId] = log;
+      return acc;
+    }, {} as HabitData);
+  }, [habitLogs]);
 
   const handleDashboardChange = (dashboard: DashboardOption) => {
     setSelectedDashboard(dashboard);
@@ -89,10 +106,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateHabits = useCallback(
     (newHabits: Habit[]) => {
-      setHabits(newHabits);
-      // Here you could add logic to migrate habitData if needed
+      if (userDocRef) {
+        setDocumentNonBlocking(userDocRef, { habits: newHabits }, { merge: true });
+      }
     },
-    [setHabits]
+    [userDocRef]
   );
 
   const updateHabitLog = useCallback(
@@ -101,25 +119,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
       habitId: string,
       log: { completed: boolean; value?: number }
     ) => {
-      setHabitData((prevData) => {
-        const newData = { ...prevData };
-        if (!newData[date]) {
-          newData[date] = {};
-        }
-        newData[date][habitId] = {
-            ...newData[date][habitId],
-            ...log
+        if (!user) return;
+
+        const logId = `${date}_${habitId}`;
+        const logDocRef = doc(firestore, `users/${user.uid}/habitLogs`, logId);
+        
+        const existingLog = (habitData[date] && habitData[date][habitId]) || {};
+
+        const newLogData: HabitLog = {
+            ...existingLog,
+            date,
+            habitId,
+            completed: log.completed,
+            ...(log.value !== undefined && { value: log.value }),
         };
-        return newData;
-      });
+
+        setDocumentNonBlocking(logDocRef, newLogData, { merge: true });
     },
-    [setHabitData]
+    [user, firestore, habitData]
   );
   
   const filteredDates = useMemo(
     () => getFilteredDates(selectedView, reportDateRange?.from || new Date()),
     [selectedView, reportDateRange]
   );
+
+  const isInitialized = !isUserLoading && !isUserProfileLoading && !isHabitLogsLoading;
 
   const value = {
     habits,

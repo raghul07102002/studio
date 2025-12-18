@@ -8,9 +8,12 @@ export interface Habit {
 }
 
 export interface HabitLog {
+  date: string;
+  habitId: string;
   completed: boolean;
   value?: number;
 }
+
 
 export type DailyHabitLogs = Record<string, HabitLog>;
 
@@ -69,3 +72,5 @@ export interface WealthData {
   expenseBudgets: MonthlyBudget;
   tripBudgets: MonthlyBudget;
 }
+
+    

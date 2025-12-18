@@ -1,5 +1,28 @@
 {
   "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's profile information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User Profile entity."
+        },
+        "habits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Habit"
+          },
+          "description": "The user's list of configured habits."
+        },
+        "wealthData": {
+          "$ref": "#/backend/entities/WealthData"
+        }
+      },
+      "required": ["id"]
+    },
     "Habit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Habit",
@@ -16,159 +39,171 @@
         },
         "type": {
           "type": "string",
+          "enum": ["checkbox", "numeric"],
           "description": "Type of habit (Checkbox or Numeric)."
+        },
+        "icon": {
+          "type": "string",
+          "description": "The name of the lucide-react icon for the habit."
         }
       },
-      "required": [
-        "id",
-        "name",
-        "type"
-      ]
+      "required": ["id", "name", "type", "icon"]
     },
-    "DailyHabitData": {
+    "HabitLog": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DailyHabitData",
+      "title": "Habit Log",
       "type": "object",
-      "description": "Represents the daily data for each habit.",
+      "description": "Represents a single log entry for a habit on a specific date.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the DailyHabitData entry."
-        },
         "date": {
           "type": "string",
-          "description": "The date for which the habit data is recorded in ISO 8601 format (YYYY-MM-DD).",
-          "format": "date"
-        },
-        "month": {
-          "type": "string",
-          "description": "The month for which the habit data is recorded (e.g., January, February)."
-        },
-        "year": {
-          "type": "number",
-          "description": "The year for which the habit data is recorded (e.g., 2025)."
-        },
-        "day": {
-          "type": "string",
-          "description": "The day of the week for which the habit data is recorded (e.g., Monday, Tuesday)."
-        },
-        "habitData": {
-          "type": "array",
-          "description": "An array of habit completion data. Each element corresponds to a specific habit and indicates its completion status.",
-          "items": {
-            "type": "boolean"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "date",
-        "month",
-        "year",
-        "day",
-        "habitData"
-      ]
-    },
-    "YearlyCompletionData": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "YearlyCompletionData",
-      "type": "object",
-      "description": "Represents the yearly habit completion data",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the YearlyCompletionData entry."
+          "format": "date",
+          "description": "The date for the log in YYYY-MM-DD format."
         },
         "habitId": {
-          "type": "string",
-          "description": "Reference to Habit. (Relationship: Habit 1:N YearlyCompletionData)"
+          "type": "string"
         },
-        "year": {
-          "type": "number",
-          "description": "The year for which the completion data is recorded (e.g., 2025)."
+        "completed": {
+          "type": "boolean"
         },
-        "completionRate": {
-          "type": "number",
-          "description": "The overall completion rate for the habit in the specified year."
+        "value": {
+          "type": "number"
         }
       },
-      "required": [
-        "id",
-        "habitId",
-        "year",
-        "completionRate"
-      ]
+      "required": ["date", "habitId", "completed"]
+    },
+    "WealthData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Wealth Data",
+      "type": "object",
+      "description": "Represents all financial data for a user.",
+      "properties": {
+        "monthlySalary": {
+          "type": "number"
+        },
+        "monthlySavings": {
+          "type": "number"
+        },
+        "expenses": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/backend/entities/Expense"
+            }
+          }
+        },
+        "trips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Trip"
+          }
+        },
+        "savingsAllocation": {
+          "$ref": "#/backend/entities/SavingsAllocation"
+        },
+        "expenseBudgets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "tripBudgets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "Expense": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "Trip": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "Fund": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "SavingsAllocation": {
+      "type": "object",
+      "properties": {
+        "mutualFunds": {
+          "type": "object",
+          "properties": {
+            "debt": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
+            "gold": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
+            "equity": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }}
+          }
+        },
+        "emergencyFunds": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
+        "shortTermGoals": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }}
+      }
     }
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}/habits/{habitId}",
+        "path": "/users/{userId}",
         "definition": {
-          "entityName": "Habit",
+          "entityName": "UserProfile",
           "schema": {
-            "$ref": "#/backend/entities/Habit"
+            "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user-defined habits. Includes denormalized 'userId' for authorization independence.",
+          "description": "Stores user profile and their associated data.",
           "params": [
             {
               "name": "userId",
-              "description": "The ID of the user who owns the habit."
-            },
-            {
-              "name": "habitId",
-              "description": "The unique ID of the habit."
+              "description": "The unique ID of the user."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/dailyHabitData/{dailyHabitDataId}",
+        "path": "/users/{userId}/habitLogs/{logId}",
         "definition": {
-          "entityName": "DailyHabitData",
+          "entityName": "HabitLog",
           "schema": {
-            "$ref": "#/backend/entities/DailyHabitData"
+            "$ref": "#/backend/entities/HabitLog"
           },
-          "description": "Stores daily habit data for each user. Includes denormalized 'userId' for authorization independence.",
+          "description": "Stores individual habit log entries for a user.",
           "params": [
             {
               "name": "userId",
-              "description": "The ID of the user who owns the daily habit data."
+              "description": "The ID of the user who owns the log."
             },
             {
-              "name": "dailyHabitDataId",
-              "description": "The unique ID of the daily habit data entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/yearlyCompletionData/{yearlyCompletionDataId}",
-        "definition": {
-          "entityName": "YearlyCompletionData",
-          "schema": {
-            "$ref": "#/backend/entities/YearlyCompletionData"
-          },
-          "description": "Stores yearly completion data for each user and habit. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user who owns the yearly completion data."
-            },
-            {
-              "name": "yearlyCompletionDataId",
-              "description": "The unique ID of the yearly completion data entry."
+              "name": "logId",
+              "description": "The unique ID of the habit log entry."
             }
           ]
         }
       }
-    ],
-    "reasoning": "Given the frontend-only nature of the ChronoHabits 2025 application and the absence of user authentication or a backend server, Firestore is not applicable. The user explicitly states local storage (LocalStorage or IndexedDB) as the persistence mechanism. Therefore, a Firestore data structure is irrelevant in this context. The request to store data on GitHub is also unrelated to Firestore database design. This application architecture inherently avoids all concerns about authorization independence and QAPs, since there is no backend at all."
+    ]
   }
 }
+
+    
