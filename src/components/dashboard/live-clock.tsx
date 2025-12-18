@@ -2,31 +2,51 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
+
+const TimeBox = ({ value }: { value: string }) => (
+    <div className="bg-primary/10 text-primary font-mono text-4xl sm:text-5xl lg:text-6xl p-2 sm:p-4 rounded-lg w-[50px] sm:w-[70px] text-center">
+        {value}
+    </div>
+)
 
 export function LiveClock() {
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [time, setTime] = useState({
+    hours: '00',
+    minutes: '00',
+    seconds: '00',
+    ampm: 'AM'
+  });
+  const [date, setDate] = useState('');
+
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+        const now = new Date();
+        setTime({
+            hours: format(now, 'hh'),
+            minutes: format(now, 'mm'),
+            seconds: format(now, 'ss'),
+            ampm: format(now, 'a')
+        });
+        setDate(format(now, 'eeee, MMMM d, yyyy'));
     }, 1000);
 
-    return () => {
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, []);
 
   return (
-    <Card className="h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/90 to-primary text-primary-foreground">
-      <CardContent className="p-6 text-center">
-        <div className="text-5xl font-bold tracking-tighter [text-shadow:0_2px_4px_rgba(0,0,0,0.2)]">
-          {format(currentTime, 'hh:mm:ss a')}
+    <div className="flex flex-col items-center justify-center gap-4 text-center">
+        <div className="flex items-center gap-2 sm:gap-3">
+            <TimeBox value={time.hours} />
+            <span className="text-4xl sm:text-5xl font-thin text-muted-foreground">:</span>
+            <TimeBox value={time.minutes} />
+            <span className="text-4xl sm:text-5xl font-thin text-muted-foreground">:</span>
+            <TimeBox value={time.seconds} />
         </div>
-        <div className="text-lg opacity-80 mt-2">
-          {format(currentTime, 'eeee, MMMM d, yyyy')}
+        <div className="text-xl sm:text-2xl font-semibold text-primary">{time.ampm}</div>
+        <div className="text-sm sm:text-base text-muted-foreground mt-2">
+          {date}
         </div>
-      </CardContent>
-    </Card>
+      </div>
   );
 }

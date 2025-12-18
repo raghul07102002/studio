@@ -17,23 +17,7 @@ import {
 import { useApp } from "@/contexts/app-provider";
 import { calculateOverallCompletion } from "@/lib/analysis";
 import { ViewSelector } from "../layout/view-selector";
-
-const getMotivationalQuote = (percentage: number) => {
-  if (percentage < 25) {
-    return "Every small step counts. Keep going!";
-  }
-  if (percentage < 50) {
-    return "You're building momentum. Great work!";
-  }
-  if (percentage < 75) {
-    return "Consistency is paying off. You're doing amazing!";
-  }
-  if (percentage < 100) {
-    return "Incredible progress! You're so close to your goal.";
-  }
-  return "Perfection! You've mastered your habits.";
-};
-
+import { Heart } from "lucide-react";
 
 export function CompletionPieChart() {
   const { habits, habitData, filteredDates } = useApp();
@@ -42,7 +26,6 @@ export function CompletionPieChart() {
     return calculateOverallCompletion(habitData, habits, filteredDates);
   }, [habitData, habits, filteredDates]);
 
-  const motivationalQuote = getMotivationalQuote(overallCompletion);
 
   const chartData = useMemo(() => {
     const completed = overallCompletion;
@@ -57,46 +40,55 @@ export function CompletionPieChart() {
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Overall Completion</CardTitle>
-          <CardDescription>Your progress for the selected period.</CardDescription>
+          <CardTitle>Completion Overview</CardTitle>
         </div>
         <ViewSelector />
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
-        <ChartContainer
-          config={{}}
-          className="mx-auto aspect-square w-full max-w-[300px]"
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => `${(value as number).toFixed(1)}%`}
-                    hideLabel
-                  />
-                }
-              />
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius="60%"
-                strokeWidth={5}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        <div className="relative w-full max-w-[250px] aspect-square">
+           <ChartContainer
+            config={{}}
+            className="absolute inset-0"
+            >
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                <ChartTooltip
+                    cursor={false}
+                    content={
+                    <ChartTooltipContent
+                        formatter={(value) => `${(value as number).toFixed(1)}%`}
+                        hideLabel
+                    />
+                    }
+                />
+                <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius="80%"
+                    outerRadius="100%"
+                    strokeWidth={0}
+                    startAngle={90}
+                    endAngle={450}
+                >
+                    {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                </Pie>
+                </PieChart>
+            </ResponsiveContainer>
+            </ChartContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-5xl font-bold text-primary">{overallCompletion.toFixed(1)}%</p>
+                <p className="text-muted-foreground">Completed</p>
+            </div>
+        </div>
       </CardContent>
        <div className="p-6 pt-0 text-center">
-        <p className="text-4xl font-bold [text-shadow:0_2px_4px_hsl(var(--primary)/0.2)]">{overallCompletion.toFixed(1)}%</p>
-        <p className="text-muted-foreground">Completed</p>
-        <p className="text-sm text-muted-foreground italic mt-2 h-8">{motivationalQuote}</p>
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-secondary/50 rounded-lg p-3">
+            <Heart className="h-5 w-5 text-primary/50" />
+            <p>Be kind to yourself. Small steps lead to big changes.</p>
+        </div>
       </div>
     </Card>
   );

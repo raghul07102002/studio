@@ -5,24 +5,45 @@ import { Button } from "@/components/ui/button";
 import { Flame, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navItems, habitNavItems } from "./navigation";
+import { habitNavItems } from "./navigation";
 import { DashboardSelector } from "./dashboard-selector";
 import { useApp } from "@/contexts/app-provider";
+import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const pathname = usePathname();
   const { selectedDashboard } = useApp();
 
-  const currentNavItems =
-    selectedDashboard === "habits" ? habitNavItems : navItems;
-  const currentLabel =
-    habitNavItems.find((item) => item.href === pathname)?.label || 
-    navItems.find((item) => item.href === pathname)?.label || 
-    "ChronoHabits";
-
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
+      <div className="flex items-center gap-6">
+        <Link
+            href="/dashboard"
+            className="flex items-center gap-2 font-bold text-lg"
+        >
+            <Flame className="h-6 w-6 text-primary" />
+            <span>Track2025</span>
+        </Link>
+        
+        <nav className="hidden md:flex items-center gap-4">
+            {selectedDashboard === 'habits' && habitNavItems.map((item) => (
+            <Link 
+                key={item.href}
+                href={item.href}
+                className={cn(
+                    "text-sm font-medium transition-colors hover:text-primary",
+                    pathname === item.href ? "text-primary" : "text-muted-foreground"
+                )}
+            >
+                {item.label}
+            </Link>
+            ))}
+        </nav>
+      </div>
+
       <div className="flex items-center gap-4">
+        <DashboardSelector />
+
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -37,33 +58,29 @@ export function AppHeader() {
                   className="flex items-center gap-2 font-bold text-lg"
                 >
                   <Flame className="h-6 w-6 text-primary" />
-                  <span>ChronoHabits</span>
+                  <span>Track2025</span>
                 </Link>
               </div>
-              <nav className="flex-1 px-4 py-6 space-y-2">
-                {currentNavItems.map((item) => (
-                  <Button
-                    key={item.href}
-                    variant={pathname === item.href ? "secondary" : "ghost"}
-                    className="w-full justify-start"
-                    asChild
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  </Button>
-                ))}
-              </nav>
+              {selectedDashboard === 'habits' && (
+                <nav className="flex-1 px-4 py-6 space-y-2">
+                  {habitNavItems.map((item) => (
+                    <Button
+                      key={item.href}
+                      variant={pathname === item.href ? "secondary" : "ghost"}
+                      className="w-full justify-start"
+                      asChild
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </Button>
+                  ))}
+                </nav>
+              )}
             </SheetContent>
           </Sheet>
         </div>
-        <h1 className="text-xl font-semibold hidden sm:block">
-          {currentLabel}
-        </h1>
-      </div>
-      <div className="flex items-center gap-4">
-        <DashboardSelector />
       </div>
     </header>
   );

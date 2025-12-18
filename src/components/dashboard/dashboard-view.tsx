@@ -5,6 +5,7 @@ import { Skeleton } from "../ui/skeleton";
 import { CompletionPieChart } from "./completion-pie-chart";
 import { DailyProgressChart } from "./daily-progress-chart";
 import { LiveClock } from "./live-clock";
+import { Card, CardContent } from "../ui/card";
 
 export function HabitDashboardView() {
   const { isInitialized } = useApp();
@@ -27,8 +28,12 @@ export function HabitDashboardView() {
         <div className="lg:col-span-2">
           <CompletionPieChart />
         </div>
-        <div className="lg:col-span-1">
-          <LiveClock />
+        <div className="lg:col-span-1 flex flex-col">
+            <Card className="flex-1">
+                <CardContent className="h-full flex flex-col items-center justify-center p-6">
+                    <LiveClock />
+                </CardContent>
+            </Card>
         </div>
       </div>
       <DailyProgressChart />
