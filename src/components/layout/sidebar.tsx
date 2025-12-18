@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   CalendarDays,
-  CalendarWeek,
+  CalendarRange,
   Settings,
   Flame,
 } from "lucide-react";
@@ -16,7 +16,7 @@ import {
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/daily", icon: CalendarDays, label: "Daily View" },
-  { href: "/weekly", icon: CalendarWeek, label: "Weekly View" },
+  { href: "/weekly", icon: CalendarRange, label: "Weekly View" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
 

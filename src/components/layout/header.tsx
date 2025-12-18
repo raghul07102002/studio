@@ -3,14 +3,14 @@
 import { ViewSelector } from "./view-selector";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Flame, Menu, LayoutDashboard, CalendarDays, CalendarWeek, Settings } from "lucide-react";
+import { Flame, Menu, LayoutDashboard, CalendarDays, CalendarRange, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/daily", icon: CalendarDays, label: "Daily View" },
-    { href: "/weekly", icon: CalendarWeek, label: "Weekly View" },
+    { href: "/weekly", icon: CalendarRange, label: "Weekly View" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
 
