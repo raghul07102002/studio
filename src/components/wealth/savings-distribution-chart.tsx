@@ -96,8 +96,12 @@ export function SavingsDistributionChart() {
                 />
                 ))}
             </Pie>
+            <ChartLegend
+                content={<ChartLegendContent nameKey="name" className="flex-wrap" />}
+                className="flex items-center justify-center pt-2"
+            />
           </PieChart>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center pointer-events-none mt-4">
             <p className="text-sm text-muted-foreground">Total Savings</p>
             <p className="text-3xl font-bold tracking-tighter">
                 {(monthlySavings || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -105,12 +109,6 @@ export function SavingsDistributionChart() {
           </div>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <ChartLegend
-            content={<ChartLegendContent nameKey="name" />}
-            className="flex items-center justify-center"
-        />
-      </CardFooter>
     </Card>
   );
 }
