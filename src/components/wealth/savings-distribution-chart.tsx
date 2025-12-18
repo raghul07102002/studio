@@ -2,18 +2,21 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Pie, PieChart, Cell, ResponsiveContainer } from 'recharts';
+import { Pie, PieChart, Cell, ResponsiveContainer, Legend } from 'recharts';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart';
 import { useWealth } from '@/contexts/wealth-provider';
 
@@ -43,6 +46,14 @@ export function SavingsDistributionChart() {
     ].filter(item => item.value > 0);
   }, [monthlySavings, savingsAllocation]);
 
+  const chartConfig = useMemo(() => {
+    const config: any = {};
+    chartData.forEach(item => {
+        config[item.name] = { label: item.name, color: item.fill };
+    });
+    return config;
+  }, [chartData]);
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -53,7 +64,7 @@ export function SavingsDistributionChart() {
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
         <div className="relative w-full max-w-[300px] aspect-square">
-          <ChartContainer config={{}} className="w-full h-full">
+          <ChartContainer config={chartConfig} className="w-full h-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <ChartTooltip
@@ -91,6 +102,9 @@ export function SavingsDistributionChart() {
           </div>
         </div>
       </CardContent>
+      <CardFooter className="flex-col gap-2 text-sm">
+        <ChartLegend content={<ChartLegendContent />} />
+      </CardFooter>
     </Card>
   );
 }

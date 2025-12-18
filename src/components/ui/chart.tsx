@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -219,8 +220,8 @@ const ChartTooltipContent = React.forwardRef<
                           )}
                           style={
                             {
-                              "--color-bg": indicatorColor,
-                              "--color-border": indicatorColor,
+                              "--color-bg": item.color || indicatorColor,
+                              "--color-border": item.color || indicatorColor,
                             } as React.CSSProperties
                           }
                         />
@@ -306,7 +307,7 @@ const ChartLegendContent = React.forwardRef<
                   }}
                 />
               )}
-              {itemConfig?.label}
+              <span className="text-muted-foreground">{itemConfig?.label || item.value}</span>
             </div>
           )
         })}
