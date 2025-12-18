@@ -47,7 +47,7 @@ export function CompletionPieChart() {
         <div className="relative w-full max-w-[300px] aspect-square">
           <ChartContainer
             config={{}}
-            className="absolute inset-0"
+            className="w-full h-full"
           >
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
