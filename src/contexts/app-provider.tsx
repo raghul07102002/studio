@@ -10,12 +10,13 @@ import {
   useCallback,
 } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import type { Habit, HabitData, ViewOption } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { generateInitialHabitData } from "@/data/initial-data";
 import { format } from "date-fns";
 import { YEAR } from "@/lib/constants";
 import { getFilteredDates } from "@/lib/analysis";
+import { useRouter, usePathname } from "next/navigation";
 
 interface AppContextType {
   habits: Habit[];
@@ -30,6 +31,8 @@ interface AppContextType {
   ) => void;
   filteredDates: Date[];
   isInitialized: boolean;
+  selectedDashboard: DashboardOption;
+  setSelectedDashboard: (dashboard: DashboardOption) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,6 +48,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const [selectedView, setSelectedView] = useState<ViewOption>("Year");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [selectedDashboard, setSelectedDashboard] = useLocalStorage<DashboardOption>('chrono-dashboard-selection', 'habits');
+
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Check if data is initialized, if not, generate and set it.
@@ -55,6 +62,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     setIsInitialized(true);
   }, []); // Run once on mount
+
+  const handleDashboardChange = (dashboard: DashboardOption) => {
+    setSelectedDashboard(dashboard);
+    if (dashboard === 'habits') {
+      if (pathname.startsWith('/wealth')) {
+        router.push('/dashboard');
+      }
+    } else {
+      router.push('/wealth');
+    }
+  };
 
   const updateHabits = useCallback(
     (newHabits: Habit[]) => {
@@ -99,6 +117,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateHabitLog,
     filteredDates,
     isInitialized,
+    selectedDashboard,
+    setSelectedDashboard: handleDashboardChange,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

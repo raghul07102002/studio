@@ -7,7 +7,7 @@ import { CompletionChart } from "./completion-chart";
 import { ActionPlan } from "./action-plan";
 import { Skeleton } from "../ui/skeleton";
 
-export function DashboardView() {
+export function HabitDashboardView() {
   const { isInitialized } = useApp();
 
   if (!isInitialized) {

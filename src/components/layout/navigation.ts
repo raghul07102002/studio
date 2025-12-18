@@ -1,0 +1,13 @@
+import { LayoutDashboard, CalendarDays, CalendarRange, Settings, DollarSign } from "lucide-react";
+
+export const navItems = [
+    { href: "/wealth", icon: DollarSign, label: "Wealth Dashboard" },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Habit Dashboard" },
+];
+
+export const habitNavItems = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/daily", icon: CalendarDays, label: "Daily View" },
+    { href: "/weekly", icon: CalendarRange, label: "Weekly View" },
+    { href: "/settings", icon: Settings, label: "Settings" },
+];

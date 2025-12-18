@@ -3,25 +3,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  CalendarDays,
-  CalendarRange,
-  Settings,
-  Flame,
-} from "lucide-react";
-
-const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/daily", icon: CalendarDays, label: "Daily View" },
-  { href: "/weekly", icon: CalendarRange, label: "Weekly View" },
-  { href: "/settings", icon: Settings, label: "Settings" },
-];
+import { Flame } from "lucide-react";
+import { navItems, habitNavItems } from "./navigation";
+import { useApp } from "@/contexts/app-provider";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { selectedDashboard } = useApp();
+
+  const currentNavItems = selectedDashboard === 'habits' ? habitNavItems : navItems;
 
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-card hidden md:flex flex-col">
@@ -32,7 +23,7 @@ export function AppSidebar() {
         </Link>
       </div>
       <nav className="flex-1 px-4 py-6 space-y-2">
-        {navItems.map((item) => (
+        {currentNavItems.map((item) => (
           <Button
             key={item.href}
             variant={pathname === item.href ? "secondary" : "ghost"}

@@ -30,3 +30,38 @@ export type ViewOption =
   | "October"
   | "November"
   | "December";
+
+export type DashboardOption = "habits" | "wealth";
+
+// Wealth Dashboard Types
+export interface Expense {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export interface Trip {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export interface Fund {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export interface SavingsAllocation {
+  debt: Fund[];
+  gold: Fund[];
+  equity: Fund[];
+}
+
+export interface WealthData {
+  monthlySalary: number;
+  monthlySavings: number;
+  expenses: Expense[];
+  trips: Trip[];
+  savingsAllocation: SavingsAllocation;
+}
