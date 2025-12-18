@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useWealth } from '@/contexts/wealth-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -30,6 +30,15 @@ export function SavingsAllocation() {
   const totalAllocated = Object.values(wealthData.savingsAllocation).flat().reduce((sum, fund) => sum + fund.amount, 0);
   const allocationProgress = monthlySavings > 0 ? (totalAllocated / monthlySavings) * 100 : 0;
 
+  const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      updateWealthData({ monthlySavings: 0 });
+    } else {
+      updateWealthData({ monthlySavings: parseFloat(value) || 0 });
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -55,17 +64,13 @@ export function SavingsAllocation() {
                 <input
                 id="monthly-savings"
                 type="number"
-                value={monthlySavings}
-                onChange={(e) =>
-                    updateWealthData({
-                    monthlySavings: parseFloat(e.target.value) || 0,
-                    })
-                }
+                value={monthlySavings || ''}
+                onChange={handleSavingsChange}
                 placeholder="e.g., 50000"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 />
             </div>
-            {isSavingsLow && (
+            {isSavingsLow && monthlySavings > 0 && (
                 <Alert variant="destructive" className="mt-2">
                 <AlertDescription>
                     Warning: Monthly savings is below the recommended minimum of ₹50,000.
@@ -75,7 +80,7 @@ export function SavingsAllocation() {
             <Progress value={allocationProgress} className="mt-2 h-2" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-6">
           <FundTable 
             category="debt"
             title="Debt (40%)"
