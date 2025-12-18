@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Pie, PieChart, Cell, ResponsiveContainer, Legend } from 'recharts';
+import { Pie, PieChart, Cell, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -30,7 +30,6 @@ export function SavingsDistributionChart() {
     }
     const { mutualFunds, emergencyFunds, shortTermGoals } = savingsAllocation;
     
-    // Add checks to prevent crash if data is not initialized
     const mfTotal = mutualFunds ? Object.values(mutualFunds).flat().reduce((sum, fund) => sum + fund.amount, 0) : 0;
     const efTotal = emergencyFunds ? emergencyFunds.reduce((sum, fund) => sum + fund.amount, 0) : 0;
     const stgTotal = shortTermGoals ? shortTermGoals.reduce((sum, fund) => sum + fund.amount, 0) : 0;
@@ -62,9 +61,8 @@ export function SavingsDistributionChart() {
           <CardDescription>How your savings are allocated</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 flex items-center justify-center">
-        <div className="relative w-full max-w-[300px] aspect-square">
-          <ChartContainer config={chartConfig} className="w-full h-full">
+      <CardContent className="flex-1 flex flex-col items-center justify-center">
+        <ChartContainer config={chartConfig} className="w-full max-w-[300px] aspect-square">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <ChartTooltip
@@ -91,20 +89,20 @@ export function SavingsDistributionChart() {
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
+                <ChartLegend
+                  content={<ChartLegendContent nameKey="name" />}
+                  className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                />
               </PieChart>
             </ResponsiveContainer>
           </ChartContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%_-_theme(spacing.4))] flex flex-col items-center justify-center text-center pointer-events-none">
             <p className="text-sm text-muted-foreground">Total Savings</p>
             <p className="text-3xl font-bold tracking-tighter">
                 {(monthlySavings || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
-        </div>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <ChartLegend content={<ChartLegendContent />} />
-      </CardFooter>
     </Card>
   );
 }
