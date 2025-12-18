@@ -52,7 +52,7 @@ export interface SavingsAllocation {
 export interface WealthData {
   monthlySalary: number;
   monthlySavings: number;
-  expenses: Expense[];
+  expenses: Record<string, Expense[]>; // Changed from Expense[]
   trips: Trip[];
   savingsAllocation: SavingsAllocation;
 }

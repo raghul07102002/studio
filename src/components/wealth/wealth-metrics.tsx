@@ -4,15 +4,21 @@ import { useMemo } from 'react';
 import { useWealth } from '@/contexts/wealth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
+import { isSameMonth } from 'date-fns';
 
 export function WealthMetrics() {
   const { wealthData } = useWealth();
   const { monthlySalary, expenses } = wealthData;
 
-  const totalExpenses = useMemo(
-    () => expenses.reduce((sum, expense) => sum + expense.amount, 0),
-    [expenses]
-  );
+  const totalExpenses = useMemo(() => {
+    const now = new Date();
+    return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
+      if (isSameMonth(new Date(date), now)) {
+        return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      }
+      return total;
+    }, 0);
+  }, [expenses]);
   
   const savings = monthlySalary - totalExpenses;
   const savingsRate = monthlySalary > 0 ? (savings / monthlySalary) * 100 : 0;

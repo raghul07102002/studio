@@ -3,11 +3,12 @@
 import { createContext, useContext, ReactNode, useCallback } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { WealthData, Expense, Trip, Fund } from "@/lib/types";
+import { format } from "date-fns";
 
 const DEFAULT_WEALTH_DATA: WealthData = {
   monthlySalary: 0,
   monthlySavings: 50000,
-  expenses: [],
+  expenses: {},
   trips: [],
   savingsAllocation: {
     debt: [],
@@ -19,9 +20,9 @@ const DEFAULT_WEALTH_DATA: WealthData = {
 interface WealthContextType {
   wealthData: WealthData;
   updateWealthData: (data: Partial<WealthData>) => void;
-  addExpense: (expense: Omit<Expense, "id">) => void;
-  updateExpense: (expense: Expense) => void;
-  removeExpense: (id: string) => void;
+  addExpense: (date: string, expense: Omit<Expense, "id">) => void;
+  updateExpense: (date: string, expense: Expense) => void;
+  removeExpense: (date: string, id: string) => void;
   addTrip: (trip: Omit<Trip, "id">) => void;
   updateTrip: (trip: Trip) => void;
   removeTrip: (id: string) => void;
@@ -45,23 +46,35 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     [setWealthData]
   );
   
-  const addExpense = (expense: Omit<Expense, "id">) => {
+  const addExpense = (date: string, expense: Omit<Expense, "id">) => {
     const newExpense = { ...expense, id: `exp-${Date.now()}` };
-    updateWealthData({ expenses: [...wealthData.expenses, newExpense] });
+    const newExpenses = { ...wealthData.expenses };
+    if (!newExpenses[date]) {
+      newExpenses[date] = [];
+    }
+    newExpenses[date].push(newExpense);
+    updateWealthData({ expenses: newExpenses });
   };
 
-  const updateExpense = (updatedExpense: Expense) => {
-    updateWealthData({
-      expenses: wealthData.expenses.map((e) =>
+  const updateExpense = (date: string, updatedExpense: Expense) => {
+    const newExpenses = { ...wealthData.expenses };
+    if (newExpenses[date]) {
+      newExpenses[date] = newExpenses[date].map((e) =>
         e.id === updatedExpense.id ? updatedExpense : e
-      ),
-    });
+      );
+      updateWealthData({ expenses: newExpenses });
+    }
   };
 
-  const removeExpense = (id: string) => {
-    updateWealthData({
-      expenses: wealthData.expenses.filter((e) => e.id !== id),
-    });
+  const removeExpense = (date: string, id: string) => {
+    const newExpenses = { ...wealthData.expenses };
+    if (newExpenses[date]) {
+      newExpenses[date] = newExpenses[date].filter((e) => e.id !== id);
+      if (newExpenses[date].length === 0) {
+        delete newExpenses[date];
+      }
+      updateWealthData({ expenses: newExpenses });
+    }
   };
 
   const addTrip = (trip: Omit<Trip, "id">) => {

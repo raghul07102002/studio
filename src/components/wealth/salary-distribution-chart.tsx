@@ -15,15 +15,21 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useWealth } from '@/contexts/wealth-provider';
+import { isSameMonth } from 'date-fns';
 
 export function SalaryDistributionChart() {
   const { wealthData } = useWealth();
   const { monthlySalary, expenses } = wealthData;
 
-  const totalExpenses = useMemo(
-    () => expenses.reduce((sum, expense) => sum + expense.amount, 0),
-    [expenses]
-  );
+  const totalExpenses = useMemo(() => {
+    const now = new Date();
+    return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
+      if (isSameMonth(new Date(date), now)) {
+        return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      }
+      return total;
+    }, 0);
+  }, [expenses]);
   
   const savings = monthlySalary - totalExpenses > 0 ? monthlySalary - totalExpenses : 0;
 
@@ -42,7 +48,7 @@ export function SalaryDistributionChart() {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle>Salary Distribution</CardTitle>
-          <CardDescription>Expenses vs. Savings</CardDescription>
+          <CardDescription>Current Month's Expenses vs. Savings</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
