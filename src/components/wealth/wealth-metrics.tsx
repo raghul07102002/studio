@@ -5,9 +5,10 @@ import { useWealth } from '@/contexts/wealth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { isSameMonth } from 'date-fns';
+import { Input } from '../ui/input';
 
 export function WealthMetrics() {
-  const { wealthData } = useWealth();
+  const { wealthData, updateWealthData } = useWealth();
   const { monthlySalary, expenses, monthlySavings } = wealthData;
 
   const totalExpenses = useMemo(() => {
@@ -23,7 +24,11 @@ export function WealthMetrics() {
   
   const savings = monthlySavings;
   const savingsRate = monthlySalary > 0 ? (savings / monthlySalary) * 100 : 0;
-  const expenseRate = monthlySalary > 0 ? (totalExpenses / monthlySalary) * 100 : 0;
+  
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    updateWealthData({ monthlySalary: parseFloat(value) || 0 });
+  };
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -33,8 +38,15 @@ export function WealthMetrics() {
           <Briefcase className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {monthlySalary.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0})}
+          <div className="flex items-center">
+            <span className="p-2 text-2xl font-bold">₹</span>
+            <Input
+              type="number"
+              value={monthlySalary || ''}
+              onChange={handleSalaryChange}
+              placeholder="e.g., 100000"
+              className="h-12 w-full rounded-md border-0 bg-transparent px-1 py-2 text-2xl font-bold ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0"
+            />
           </div>
           <p className="text-xs text-muted-foreground">Your gross monthly income.</p>
         </CardContent>
