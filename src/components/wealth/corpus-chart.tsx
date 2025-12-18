@@ -45,7 +45,7 @@ export function CorpusChart() {
     <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-start gap-4">
-          <div>
+          <div className='space-y-1'>
             <CardTitle>Target Corpus</CardTitle>
             <CardDescription>
               ₹{TARGET_CORPUS.toLocaleString('en-IN')} in 20 years
