@@ -124,17 +124,12 @@ export function CorpusChart() {
     ];
   }, [projectedValue]);
 
-  const achievedPercentage = (projectedValue / TARGET_CORPUS) * 100;
-
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-start gap-4">
           <div className='space-y-1'>
-            <CardTitle>20-Year Corpus Projection</CardTitle>
-            <CardDescription>
-              Target: ₹{TARGET_CORPUS.toLocaleString('en-IN')}
-            </CardDescription>
+            <CardTitle>Investment</CardTitle>
           </div>
         </div>
       </CardHeader>
@@ -181,7 +176,6 @@ export function CorpusChart() {
                         <p className="text-2xl font-bold tracking-tighter">
                         {projectedValue.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </p>
-                        <p className="text-sm font-medium text-primary">({achievedPercentage.toFixed(1)}% of Target)</p>
                     </>
                 )}
           </div>
