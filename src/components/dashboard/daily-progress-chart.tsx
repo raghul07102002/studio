@@ -23,6 +23,7 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { ViewSelector } from "../layout/view-selector";
 
 export function DailyProgressChart() {
   const { habits, habitData, filteredDates } = useApp();
@@ -33,11 +34,16 @@ export function DailyProgressChart() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Daily Progress</CardTitle>
-        <CardDescription>
-          Your daily habit completion percentage over the selected period.
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle>Daily Progress</CardTitle>
+            <CardDescription>
+            Your daily habit completion percentage over the selected period.
+            </CardDescription>
+        </div>
+        <div className="w-40">
+            <ViewSelector />
+        </div>
       </CardHeader>
       <CardContent>
         <ChartContainer config={{}} className="h-72 w-full">
