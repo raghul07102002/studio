@@ -4,9 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown, MapPin, Search, Target } from "lucide-react";
+import { ChevronsUpDown, MapPin, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TravelLocation } from "@/lib/types";
 
@@ -26,6 +25,7 @@ interface NominatimResult {
 const CACHE_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours
 
 const getCache = <T,>(key: string): T | null => {
+    if (typeof window === 'undefined') return null;
     try {
         const item = localStorage.getItem(key);
         if (!item) return null;
@@ -41,6 +41,7 @@ const getCache = <T,>(key: string): T | null => {
 };
 
 const setCache = <T,>(key: string, value: T) => {
+    if (typeof window === 'undefined') return;
     const item = {
         value,
         expiry: Date.now() + CACHE_EXPIRATION,
@@ -48,15 +49,19 @@ const setCache = <T,>(key: string, value: T) => {
     try {
         localStorage.setItem(key, JSON.stringify(item));
     } catch (error) {
-        // Cache is full, clear it
+        console.warn('Cache is full, clearing it');
         localStorage.clear();
-        localStorage.setItem(key, JSON.stringify(item));
+        try {
+            localStorage.setItem(key, JSON.stringify(item));
+        } catch (e) {
+            console.error('Failed to cache after clearing', e);
+        }
     }
 };
 
 export function LocationInput({ value, onValueChange, placeholder }: LocationInputProps) {
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(value?.name || "");
+  const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -99,6 +104,13 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
     };
   }, [searchQuery, fetchLocations]);
 
+  // Sync searchQuery with external value when popover opens and value exists
+  useEffect(() => {
+    if (open && value) {
+      setSearchQuery(value.name);
+    }
+  }, [open, value]);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -132,12 +144,10 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
                   key={result.place_id}
                   value={result.display_name}
                   onSelect={() => {
-                    const newLocation = {
+                    onValueChange({
                         name: result.display_name,
                         coords: { lat: parseFloat(result.lat), lng: parseFloat(result.lon) }
-                    };
-                    onValueChange(newLocation);
-                    setSearchQuery(newLocation.name);
+                    });
                     setOpen(false);
                   }}
                   className="text-xs"
@@ -151,17 +161,17 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
                <CommandGroup heading="Not in the list?">
                   <CommandItem 
                     onSelect={() => {
-                        const newLocation = {
+                        onValueChange({
                             name: searchQuery,
-                            coords: { lat: 0, lng: 0 } // User will need to fill this in
-                        };
-                        onValueChange(newLocation);
+                            // Providing 0,0 as a placeholder for manual entry
+                            coords: { lat: 0, lng: 0 } 
+                        });
                         setOpen(false);
                     }} 
                     className="text-xs"
                   >
                      <Target className="mr-2 h-4 w-4" />
-                     Use "{searchQuery}" and set coordinates manually
+                     Use "{searchQuery}"
                   </CommandItem>
                </CommandGroup>
             )}
