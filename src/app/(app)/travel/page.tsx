@@ -10,6 +10,7 @@ import TravelList from '@/components/travel/TravelList';
 import DateRangeFilter from '@/components/travel/DateRangeFilter';
 import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
+import 'leaflet/dist/leaflet.css';
 
 const Map = dynamic(() => import('@/components/travel/TravelMap'), {
   ssr: false,
