@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import { TravelEntry } from "@/lib/types";
 import { getStateByCode, indianStates } from "@/data/stateData";
-import { LatLngExpression, LatLngBoundsExpression } from "leaflet";
+import { LatLngExpression, LatLngBoundsExpression, Map } from "leaflet";
 
 interface TravelMapProps {
   entries: TravelEntry[];
@@ -106,6 +106,8 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
 };
 
 const TravelMap = ({ entries }: TravelMapProps) => {
+  const [map, setMap] = useState<Map | null>(null);
+
   return (
     <MapContainer
       center={[22.9734, 78.6569]}
@@ -113,6 +115,7 @@ const TravelMap = ({ entries }: TravelMapProps) => {
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       className="rounded-lg"
+      whenCreated={setMap}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -133,7 +136,7 @@ const TravelMap = ({ entries }: TravelMapProps) => {
           <Tooltip direction="top">{state.name}</Tooltip>
         </CircleMarker>
       ))}
-      <RouteLayer entries={entries} />
+      {map ? <RouteLayer entries={entries} /> : null}
     </MapContainer>
   );
 };
