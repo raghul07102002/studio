@@ -103,12 +103,12 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
   }, [searchQuery, fetchLocations]);
 
   useEffect(() => {
-    if (open && value) {
-      setSearchQuery(value.name);
-    } else if (!open) {
+    // When the popover is closed, clear the search query
+    // so it doesn't show up next time it's opened.
+    if (!open) {
       setSearchQuery('');
     }
-  }, [open, value]);
+  }, [open]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
