@@ -6,11 +6,11 @@ import { ExpenseTrendChart } from './expense-trend-chart';
 import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent } from '../ui/card';
 import { format, eachDayOfInterval, isWithinInterval } from 'date-fns';
-import { DateSelector } from './date-selector';
+import { DateRangePicker } from '../shared/date-range-picker';
 import { useMemo } from 'react';
 
 export function FinancialReportView() {
-  const { reportDateRange, wealthData } = useApp();
+  const { reportDateRange, setReportDateRange, wealthData } = useApp();
   
   const timeInterval = useMemo(() => {
     if (!reportDateRange || !reportDateRange.from) {
@@ -61,7 +61,10 @@ export function FinancialReportView() {
                     <h1 className="text-2xl font-bold">History</h1>
                     <p className="text-muted-foreground">{getSubtitle()}</p>
                 </div>
-                <DateSelector />
+                <DateRangePicker
+                    dateRange={reportDateRange}
+                    onDateChange={setReportDateRange}
+                />
             </div>
         </CardContent>
       </Card>

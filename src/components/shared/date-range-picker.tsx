@@ -1,19 +1,23 @@
 
 'use client';
 
-import { useApp } from '@/contexts/app-provider';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
+import { DateRange } from 'react-day-picker';
 
-export function DateSelector() {
-  const { reportDateRange, setReportDateRange } = useApp();
+interface DateRangePickerProps {
+    dateRange: DateRange | undefined;
+    onDateChange: (dateRange: DateRange | undefined) => void;
+    className?: string;
+}
 
+export function DateRangePicker({ dateRange, onDateChange, className }: DateRangePickerProps) {
   return (
-    <div className="flex items-center gap-2 self-start md:self-center">
+    <div className={cn("flex items-center gap-2 self-start md:self-center", className)}>
         <Popover>
             <PopoverTrigger asChild>
             <Button
@@ -21,18 +25,18 @@ export function DateSelector() {
                 variant={"outline"}
                 className={cn(
                 "w-[300px] justify-start text-left font-normal",
-                !reportDateRange && "text-muted-foreground"
+                !dateRange && "text-muted-foreground"
                 )}
             >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {reportDateRange?.from ? (
-                    reportDateRange.to ? (
+                {dateRange?.from ? (
+                    dateRange.to ? (
                     <>
-                        {format(reportDateRange.from, "LLL dd, y")} -{" "}
-                        {format(reportDateRange.to, "LLL dd, y")}
+                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                        {format(dateRange.to, "LLL dd, y")}
                     </>
                     ) : (
-                    format(reportDateRange.from, "LLL dd, y")
+                    format(dateRange.from, "LLL dd, y")
                     )
                 ) : (
                     <span>Pick a date range</span>
@@ -43,9 +47,9 @@ export function DateSelector() {
             <Calendar
                 initialFocus
                 mode="range"
-                defaultMonth={reportDateRange?.from}
-                selected={reportDateRange}
-                onSelect={setReportDateRange}
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={onDateChange}
                 numberOfMonths={1}
             />
             </PopoverContent>
