@@ -99,23 +99,6 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
     };
   }, [searchQuery, fetchLocations]);
 
-  const handleSelect = (result: NominatimResult) => {
-    onValueChange({
-      name: result.display_name,
-      coords: { lat: parseFloat(result.lat), lng: parseFloat(result.lon) }
-    });
-    setSearchQuery(result.display_name);
-    setOpen(false);
-  };
-  
-  const handleManualEntry = () => {
-     onValueChange({
-      name: searchQuery,
-      coords: { lat: 0, lng: 0 } // User will need to fill this in
-    });
-    setOpen(false);
-  }
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -148,7 +131,15 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
                 <CommandItem
                   key={result.place_id}
                   value={result.display_name}
-                  onSelect={() => handleSelect(result)}
+                  onSelect={() => {
+                    const newLocation = {
+                        name: result.display_name,
+                        coords: { lat: parseFloat(result.lat), lng: parseFloat(result.lon) }
+                    };
+                    onValueChange(newLocation);
+                    setSearchQuery(newLocation.name);
+                    setOpen(false);
+                  }}
                   className="text-xs"
                 >
                   <MapPin className="mr-2 h-4 w-4" />
@@ -158,7 +149,17 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
             </CommandGroup>
             {searchQuery.length > 2 && !isLoading && (
                <CommandGroup heading="Not in the list?">
-                  <CommandItem onSelect={handleManualEntry} className="text-xs">
+                  <CommandItem 
+                    onSelect={() => {
+                        const newLocation = {
+                            name: searchQuery,
+                            coords: { lat: 0, lng: 0 } // User will need to fill this in
+                        };
+                        onValueChange(newLocation);
+                        setOpen(false);
+                    }} 
+                    className="text-xs"
+                  >
                      <Target className="mr-2 h-4 w-4" />
                      Use "{searchQuery}" and set coordinates manually
                   </CommandItem>
