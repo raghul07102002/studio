@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useRef, memo } from "react";
 import 'leaflet/dist/leaflet.css';
@@ -7,6 +6,10 @@ import type { TravelEntry } from "@/lib/types";
 import { getStateByCode, indianStates } from "@/data/stateData";
 import type { LatLngExpression, LatLngBoundsExpression } from "leaflet";
 import L from 'leaflet';
+
+interface TravelMapProps {
+  entries: TravelEntry[];
+}
 
 const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
   const map = useMap();
@@ -135,4 +138,4 @@ const TravelMap = ({ entries }: TravelMapProps) => {
   );
 };
 
-export default memo(TravelMap);
+export default TravelMap;
