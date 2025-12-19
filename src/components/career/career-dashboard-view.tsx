@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight, ShieldCheck, UserCheck, Cloud, GitMerge } from 'lucide-react';
 import { RoadmapView } from './roadmap-view';
 import { CareerPieChart } from './career-pie-chart';
-import type { CareerPath } from '@/contexts/career-provider';
+import { CareerPath } from '@/lib/types';
+import { useApp } from '@/contexts/app-provider';
 
 const careerPaths: { name: CareerPath, description: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
     { name: 'CyberArk', description: 'Master the leading solution for Privileged Access Management.', icon: ShieldCheck },
@@ -15,7 +17,12 @@ const careerPaths: { name: CareerPath, description: string, icon: React.FC<React
 ];
 
 export function CareerDashboardView() {
+    const { isInitialized } = useApp();
     const [selectedPath, setSelectedPath] = useState<CareerPath | null>(null);
+
+    if (!isInitialized) {
+        return <div>Loading...</div>
+    }
 
     if (selectedPath) {
         return (
