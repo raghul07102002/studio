@@ -15,32 +15,34 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useApp } from "@/contexts/app-provider";
-import { calculateOverallCompletion } from "@/lib/analysis";
+import { calculateDailyCompletion } from "@/lib/analysis";
 import { Heart } from "lucide-react";
-import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 export function CompletionPieChart() {
-  const { habits, habitData, habitChartDateRange } = useApp();
+  const { habits, habitData } = useApp();
 
-  const overallCompletion = useMemo(() => {
-    return calculateOverallCompletion(habitData, habits, habitChartDateRange);
-  }, [habitData, habits, habitChartDateRange]);
+  const dailyCompletion = useMemo(() => {
+    const todayString = format(new Date(), "yyyy-MM-dd");
+    const todayLogs = habitData[todayString] || {};
+    return calculateDailyCompletion(todayLogs, habits);
+  }, [habitData, habits]);
 
 
   const chartData = useMemo(() => {
-    const completed = overallCompletion;
+    const completed = dailyCompletion;
     const remaining = 100 - completed;
     return [
       { name: "Completed", value: completed, fill: "hsl(var(--primary))" },
       { name: "Remaining", value: remaining, fill: "hsl(var(--muted))" },
     ];
-  }, [overallCompletion]);
+  }, [dailyCompletion]);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle>Completion Overview</CardTitle>
+          <CardTitle>Today's Completion</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
@@ -79,7 +81,7 @@ export function CompletionPieChart() {
             </ResponsiveContainer>
           </ChartContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <p className="text-5xl font-bold tracking-tighter">{overallCompletion.toFixed(0)}%</p>
+            <p className="text-5xl font-bold tracking-tighter">{dailyCompletion.toFixed(0)}%</p>
           </div>
         </div>
       </CardContent>
