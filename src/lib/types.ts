@@ -104,3 +104,11 @@ export interface TravelData {
   places: TravelPlace[];
   selectedStates: string[];
 }
+
+export interface TravelEntry {
+  id: string;
+  date: string; // ISO date string YYYY-MM-DD
+  fromState: string; // state code
+  toState: string; // state code
+  notes?: string;
+}
