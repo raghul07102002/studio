@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -38,7 +39,7 @@ export function CareerPieChart() {
 
   const chartData = useMemo(() => {
     return [
-      { name: "Completed", value: overallProgress, fill: "hsl(var(--primary))" },
+      { name: "Completed", value: overallProgress, fill: "hsl(var(--chart-2))" },
       { name: "Remaining", value: 100 - overallProgress, fill: "hsl(var(--muted))" },
     ];
   }, [overallProgress]);
