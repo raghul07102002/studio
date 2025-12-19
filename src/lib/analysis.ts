@@ -57,7 +57,12 @@ export const calculateHabitCompletion = (
 };
 
 export const getFilteredDates = (view: ViewOption, referenceDate: Date) => {
-    const now = referenceDate;
+    let now = referenceDate;
+    // For 'Day' view, always use the actual current date, not a potentially old reference.
+    if (view === 'Day') {
+        now = new Date();
+    }
+
     let start, end;
     
     switch (view) {
