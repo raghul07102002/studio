@@ -22,6 +22,9 @@ import {
 import { MONTHS, YEAR } from '@/lib/constants';
 import { DayCard } from './day-card';
 import { Skeleton } from '../ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Calendar } from '../ui/calendar';
+import { cn } from '@/lib/utils';
 
 const DAYS_PER_PAGE = 7;
 
@@ -45,20 +48,14 @@ export function DailyView() {
     const endIndex = startIndex + DAYS_PER_PAGE;
     return daysInMonth.slice(startIndex, endIndex);
   }, [daysInMonth, currentPage]);
+  
+  const handleMonthChange = (date: Date | undefined) => {
+    if (date) {
+      setCurrentDate(date);
+      setCurrentPage(0);
+    }
+  }
 
-  const handleYearChange = (year: string) => {
-    const newDate = new Date(currentDate);
-    newDate.setFullYear(parseInt(year));
-    setCurrentDate(newDate);
-    setCurrentPage(0);
-  };
-
-  const handleMonthChange = (month: string) => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(MONTHS.indexOf(month));
-    setCurrentDate(newDate);
-    setCurrentPage(0);
-  };
 
   const goToPreviousPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
@@ -92,41 +89,31 @@ export function DailyView() {
             </p>
         </div>
         <div className="flex items-center gap-2 self-start md:self-center">
-            <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-            <span className='text-sm font-medium'>Period:</span>
-            <Select
-                value={String(currentYear)}
-                onValueChange={handleYearChange}
-            >
-                <SelectTrigger className="w-28">
-                <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                {[...Array(5)].map((_, i) => (
-                    <SelectItem
-                    key={YEAR - 2 + i}
-                    value={String(YEAR - 2 + i)}
-                    >
-                    {YEAR - 2 + i}
-                    </SelectItem>
-                ))}
-                </SelectContent>
-            </Select>
-            <Select
-                value={MONTHS[currentMonth]}
-                onValueChange={handleMonthChange}
-            >
-                <SelectTrigger className="w-36">
-                <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                {MONTHS.map((month) => (
-                    <SelectItem key={month} value={month}>
-                    {month}
-                    </SelectItem>
-                ))}
-                </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[280px] justify-start text-left font-normal",
+                    !currentDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {currentDate ? format(currentDate, "MMMM yyyy") : <span>Pick a month</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={currentDate}
+                  onSelect={(day) => handleMonthChange(day)}
+                  initialFocus
+                  captionLayout="dropdown-nav"
+                  fromYear={YEAR-5}
+                  toYear={YEAR+5}
+                />
+              </PopoverContent>
+            </Popover>
         </div>
       </div>
       

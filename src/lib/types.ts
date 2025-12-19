@@ -1,6 +1,7 @@
 
 
 
+
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -20,7 +21,6 @@ export type DailyHabitLogs = Record<string, HabitLog>;
 export type HabitData = Record<string, DailyHabitLogs>;
 
 export type ViewOption =
-  | "Day"
   | "Week"
   | "Month"
   | "Year";
