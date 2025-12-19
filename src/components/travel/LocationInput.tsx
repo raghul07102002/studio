@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown, Search, Target } from "lucide-react";
+import { Check, ChevronsUpDown, MapPin, Search, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TravelLocation } from "@/lib/types";
 
