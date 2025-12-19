@@ -42,7 +42,7 @@ export function RoadmapProgressChart({ items }: RoadmapProgressChartProps) {
   }, [overallProgress]);
 
   return (
-    <div className="relative w-24 h-24">
+    <div className="relative w-40 h-40">
         <ChartContainer
         config={{}}
         className="w-full h-full"
@@ -78,9 +78,8 @@ export function RoadmapProgressChart({ items }: RoadmapProgressChartProps) {
         </ResponsiveContainer>
         </ChartContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <p className="text-2xl font-bold tracking-tighter">{overallProgress.toFixed(0)}%</p>
+            <p className="text-4xl font-bold tracking-tighter">{overallProgress.toFixed(0)}%</p>
         </div>
     </div>
   );
 }
-
