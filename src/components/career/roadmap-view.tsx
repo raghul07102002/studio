@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
@@ -9,83 +8,37 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RoadmapProgressChart } from './roadmap-progress-chart';
+import { useCareer, type RoadmapItem, type CareerPath } from '@/contexts/career-provider';
 
 interface RoadmapViewProps {
-    path: string;
+    path: CareerPath;
     onBack: () => void;
-}
-
-export interface RoadmapItem {
-    id: string;
-    title: string;
-    hoursSpent: number;
 }
 
 const MAX_HOURS_PER_DAY = 4;
 
-const initialRoadmapItems: Record<string, Omit<RoadmapItem, 'id'>[]> = {
-    'CyberArk': [
-        { title: 'Introduction to PAM, IAM & Vault Basics', hoursSpent: 0 },
-        { title: 'Core Components (PVWA, CPM, PSM, PSMP)', hoursSpent: 0 },
-        { title: 'Safes, Platforms, and Account Management', hoursSpent: 0 },
-        { title: 'Authentication & Session Monitoring', hoursSpent: 0 },
-        { title: 'Advanced Topics: PTA, AAM, and Conjur', hoursSpent: 0 },
-    ],
-    'Sailpoint IDN': [
-        { title: 'IdentityNow Basics & Terminology', hoursSpent: 0 },
-        { title: 'Sources, Accounts, and Entitlements', hoursSpent: 0 },
-        { title: 'Access Profiles and Roles', hoursSpent: 0 },
-        { title: 'Certification Campaigns & Policies', hoursSpent: 0 },
-        { title: 'Transforms and Provisioning Logic', hoursSpent: 0 },
-    ],
-    'Cloud computing': [
-        { title: 'Core Concepts: IaaS, PaaS, SaaS', hoursSpent: 0 },
-        { title: 'Networking & Security in the Cloud', hoursSpent: 0 },
-        { title: 'Compute Services (VMs, Containers, Serverless)', hoursSpent: 0 },
-        { title: 'Storage & Database Solutions', hoursSpent: 0 },
-        { title: 'Identity and Access Management (IAM)', hoursSpent: 0 },
-    ],
-    'Devops': [
-        { title: 'CI/CD Pipelines (e.g., Jenkins, GitLab CI)', hoursSpent: 0 },
-        { title: 'Infrastructure as Code (Terraform, Ansible)', hoursSpent: 0 },
-        { title: 'Containerization (Docker, Kubernetes)', hoursSpent: 0 },
-        { title: 'Monitoring & Observability (Prometheus, Grafana)', hoursSpent: 0 },
-        { title: 'Scripting & Automation (Bash, Python)', hoursSpent: 0 },
-    ],
-};
-
-
 export function RoadmapView({ path, onBack }: RoadmapViewProps) {
-    const [items, setItems] = useState<RoadmapItem[]>(() => {
-        const initialItems = initialRoadmapItems[path] || [];
-        return initialItems.map((item, index) => ({
-            ...item,
-            id: `item-${path}-${index}-${Date.now()}`
-        }));
-    });
+    const { roadmaps, setRoadmap, addRoadmapItem, updateRoadmapItem, removeRoadmapItem } = useCareer();
+    const items = roadmaps[path] || [];
     
     const [newItemTitle, setNewItemTitle] = useState('');
 
     const handleAddItem = () => {
         if (newItemTitle.trim() === '') return;
-        const newItem: RoadmapItem = {
-            id: `item-${Date.now()}`,
-            title: newItemTitle,
-            hoursSpent: 0,
-        };
-        setItems([...items, newItem]);
+        addRoadmapItem(path, newItemTitle);
         setNewItemTitle('');
     };
 
     const handleHoursChange = (id: string, hours: number) => {
         const newHours = Math.max(0, hours); // Ensure hours are not negative
-        setItems(items.map(item =>
-            item.id === id ? { ...item, hoursSpent: newHours } : item
-        ));
+        const item = items.find(i => i.id === id);
+        if (item) {
+            updateRoadmapItem(path, { ...item, hoursSpent: newHours });
+        }
     };
     
     const handleDeleteItem = (id: string) => {
-        setItems(items.filter(item => item.id !== id));
+        removeRoadmapItem(path, id);
     };
 
     const calculateProgress = (hours: number) => {
@@ -171,10 +124,6 @@ export function RoadmapView({ path, onBack }: RoadmapViewProps) {
                     <Button onClick={handleAddItem} size="icon" className="h-10 w-10">
                         <Plus className="h-4 w-4" />
                     </Button>
-                </div>
-                
-                <div className="flex justify-end pt-4">
-                    <Button>Save Progress</Button>
                 </div>
             </CardContent>
         </Card>

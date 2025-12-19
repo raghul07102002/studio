@@ -13,21 +13,41 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useCareer } from "@/contexts/career-provider";
+
+const MAX_HOURS_PER_DAY = 4;
 
 export function CareerPieChart() {
+    const { roadmaps } = useCareer();
+
+    const calculateItemProgress = (hours: number) => {
+        return Math.min((hours / MAX_HOURS_PER_DAY) * 100, 100);
+    };
+    
+    const overallProgress = useMemo(() => {
+        const allItems = Object.values(roadmaps).flat();
+        if (allItems.length === 0) {
+            return 0;
+        }
+        const totalProgress = allItems.reduce((sum, item) => {
+            return sum + calculateItemProgress(item.hoursSpent);
+        }, 0);
+
+        return totalProgress / allItems.length;
+    }, [roadmaps]);
+
   const chartData = useMemo(() => {
     return [
-      { name: "Completed", value: 45, fill: "hsl(var(--primary))" },
-      { name: "In Progress", value: 30, fill: "hsl(var(--chart-2))" },
-      { name: "Not Started", value: 25, fill: "hsl(var(--muted))" },
+      { name: "Completed", value: overallProgress, fill: "hsl(var(--primary))" },
+      { name: "Remaining", value: 100 - overallProgress, fill: "hsl(var(--muted))" },
     ];
-  }, []);
+  }, [overallProgress]);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle>Roadmap Progress</CardTitle>
+          <CardTitle>Overall Progress</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
@@ -66,7 +86,7 @@ export function CareerPieChart() {
             </ResponsiveContainer>
           </ChartContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <p className="text-5xl font-bold tracking-tighter">45%</p>
+            <p className="text-5xl font-bold tracking-tighter">{overallProgress.toFixed(0)}%</p>
             <p className="text-sm text-muted-foreground">Completed</p>
           </div>
         </div>

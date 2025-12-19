@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight, ShieldCheck, UserCheck, Cloud, GitMerge } from 'lucide-react';
 import { RoadmapView } from './roadmap-view';
 import { CareerPieChart } from './career-pie-chart';
-
-type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';
+import type { CareerPath } from '@/contexts/career-provider';
 
 const careerPaths: { name: CareerPath, description: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
     { name: 'CyberArk', description: 'Master the leading solution for Privileged Access Management.', icon: ShieldCheck },
@@ -29,12 +28,15 @@ export function CareerDashboardView() {
     }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="flex justify-center w-full">
+    <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-            <div className="text-center">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Career Progression</h1>
-                <p className="mt-2 text-lg text-muted-foreground">Choose your path and define your future.</p>
-            </div>
+            <Card>
+                <CardHeader>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Career Progression</h1>
+                    <p className="mt-2 text-lg text-muted-foreground">Choose your path and define your future.</p>
+                </CardHeader>
+            </Card>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {careerPaths.map((path) => {
                     const Icon = path.icon;
@@ -66,6 +68,7 @@ export function CareerDashboardView() {
         <div className="lg:col-span-1">
             <CareerPieChart />
         </div>
+    </div>
     </div>
   );
 }
