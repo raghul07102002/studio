@@ -130,8 +130,20 @@ export function DailyView() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {daysInMonth.map((day) => (
+       <div className="flex items-center justify-center gap-4">
+        <Button onClick={goToPreviousPage} disabled={currentPage === 0} variant="outline" size="icon">
+            <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-medium text-muted-foreground">
+            Week {currentPage + 1} of {totalPages}
+        </span>
+        <Button onClick={goToNextPage} disabled={currentPage >= totalPages - 1} variant="outline" size="icon">
+            <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+        {paginatedDays.map((day) => (
           <DayCard key={day.toISOString()} date={day} />
         ))}
       </div>
