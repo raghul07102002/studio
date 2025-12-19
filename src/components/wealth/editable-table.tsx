@@ -57,19 +57,21 @@ export function EditableTable({
     ? (wealthData?.expenses?.[selectedDateString] || [])
     : wealthData?.trips || [];
   
-  const monthlyBudget = type === 'expenses' 
+  const monthlyBudget = type === 'expenses'
     ? wealthData?.expenseBudgets?.[selectedMonthString] || 0
-    : wealthData?.tripBudgets?.[selectedMonthString] || 0;
+    : wealthData?.tripBudgets?.[format(new Date(), 'yyyy-MM')] || 0;
 
   const monthlyTotalSpent = useMemo(() => {
-    if (type === 'expenses' && wealthData?.expenses) {
-      return Object.entries(wealthData.expenses).reduce((total, [date, dailyExpenses]) => {
-        if (date.startsWith(selectedMonthString)) {
-          return total + dailyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-        }
-        return total;
-      }, 0);
+    if (type === 'expenses') {
+        if (!wealthData?.expenses) return 0;
+        return Object.entries(wealthData.expenses).reduce((total, [date, dailyExpenses]) => {
+            if (date.startsWith(selectedMonthString)) {
+            return total + dailyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            }
+            return total;
+        }, 0);
     }
+    // For trips, we sum up all trips regardless of month for the total
     return wealthData?.trips?.reduce((sum, item) => sum + item.amount, 0) || 0;
   }, [wealthData?.expenses, wealthData?.trips, selectedMonthString, type]);
 
@@ -127,6 +129,7 @@ export function EditableTable({
   };
 
   const dailyTotal = items.reduce((sum, item) => sum + item.amount, 0);
+  
   const remainingBudget = monthlyBudget - monthlyTotalSpent;
 
   return (
@@ -160,9 +163,11 @@ export function EditableTable({
                     />
                     </PopoverContent>
                 </Popover>
-            ) : type === 'trips' ? <MonthlyBudgetInput type={type} selectedMonth={selectedMonthString} /> : null}
+            ) : null}
         </div>
-        {type === 'expenses' && <div className="pt-4"><MonthlyBudgetInput type="expenses" selectedMonth={selectedMonthString} /></div>}
+        <div className="pt-4">
+            <MonthlyBudgetInput type={type} selectedMonth={type === 'expenses' ? selectedMonthString : format(new Date(), 'yyyy-MM')} />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
