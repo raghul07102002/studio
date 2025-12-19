@@ -29,11 +29,14 @@ export function RoadmapView({ path, onBack }: RoadmapViewProps) {
         setNewItemTitle('');
     };
 
-    const handleHoursChange = (id: string, hours: number) => {
-        const newHours = Math.max(0, hours); // Ensure hours are not negative
+    const handleHoursChange = (id: string, value: string) => {
+        const hours = parseFloat(value);
+        const newHours = isNaN(hours) ? 0 : Math.max(0, hours);
         const item = items.find(i => i.id === id);
         if (item) {
-            updateRoadmapItem(path, { ...item, hoursSpent: newHours });
+            // We store the potentially empty string for display, but use 0 for logic
+            const displayValue = value;
+            updateRoadmapItem(path, { ...item, hoursSpent: newHours, displayHours: displayValue });
         }
     };
     
@@ -84,10 +87,11 @@ export function RoadmapView({ path, onBack }: RoadmapViewProps) {
                                     <div className="flex items-center gap-3 w-full md:w-auto">
                                         <Input
                                             type="number"
-                                            value={item.hoursSpent}
-                                            onChange={(e) => handleHoursChange(item.id, parseFloat(e.target.value) || 0)}
+                                            value={item.displayHours ?? item.hoursSpent}
+                                            onChange={(e) => handleHoursChange(item.id, e.target.value)}
                                             className="h-9 w-20 text-center font-medium"
                                             min="0"
+                                            placeholder="0"
                                         />
                                         <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">Hours Today</label>
                                         <Button

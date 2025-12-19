@@ -9,6 +9,7 @@ export interface RoadmapItem {
     id: string;
     title: string;
     hoursSpent: number;
+    displayHours?: string;
 }
 
 const initialRoadmapItems: Omit<RoadmapItem, 'id'>[] = [
