@@ -14,7 +14,6 @@ export const habitNavItems = [
 export const wealthNavItems = [
     { href: "/wealth", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/history", icon: History, label: "History" },
-    { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export const careerNavItems = [
