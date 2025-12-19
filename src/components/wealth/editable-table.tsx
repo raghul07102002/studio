@@ -57,9 +57,8 @@ export function EditableTable({
     ? (wealthData?.expenses?.[selectedDateString] || [])
     : wealthData?.trips || [];
   
-  const monthlyBudget = type === 'expenses'
-    ? wealthData?.expenseBudgets?.[selectedMonthString] || 0
-    : wealthData?.tripBudgets?.[format(new Date(), 'yyyy-MM')] || 0;
+  // Both budgets are now the same, read from expenseBudgets
+  const monthlyBudget = wealthData?.expenseBudgets?.[selectedMonthString] || 0;
 
   const monthlyTotalSpent = useMemo(() => {
     if (type === 'expenses') {
@@ -130,7 +129,8 @@ export function EditableTable({
 
   const dailyTotal = items.reduce((sum, item) => sum + item.amount, 0);
   
-  const remainingBudget = monthlyBudget - monthlyTotalSpent;
+  const totalForFooter = type === 'expenses' ? monthlyTotalSpent : dailyTotal;
+  const remainingBudget = monthlyBudget - totalForFooter;
 
   return (
     <Card>
@@ -165,9 +165,11 @@ export function EditableTable({
                 </Popover>
             ) : null}
         </div>
-        <div className="pt-4">
-            <MonthlyBudgetInput type={type} selectedMonth={type === 'expenses' ? selectedMonthString : format(new Date(), 'yyyy-MM')} />
-        </div>
+        {type === 'expenses' && (
+          <div className="pt-4">
+              <MonthlyBudgetInput type={type} selectedMonth={selectedMonthString} />
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -242,7 +244,7 @@ export function EditableTable({
         </div>
         <div className="w-full flex justify-between font-semibold text-muted-foreground text-sm">
           <span>Total Spent this Month:</span>
-          <span>{monthlyTotalSpent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
+          <span>{totalForFooter.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}</span>
         </div>
         <div className={cn("w-full flex justify-between font-bold text-lg", remainingBudget < 0 ? "text-destructive" : "text-primary")}>
           <span>Remaining Budget:</span>

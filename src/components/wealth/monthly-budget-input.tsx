@@ -14,7 +14,8 @@ interface MonthlyBudgetInputProps {
 
 export function MonthlyBudgetInput({ type, selectedMonth }: MonthlyBudgetInputProps) {
   const { wealthData, updateWealthData } = useApp();
-  const budgets = type === 'expenses' ? wealthData.expenseBudgets : wealthData.tripBudgets;
+  // We will now only use expenseBudgets as the source of truth
+  const budgets = wealthData.expenseBudgets;
   
   const [amount, setAmount] = useState((budgets && budgets[selectedMonth]) || '');
 
@@ -25,13 +26,17 @@ export function MonthlyBudgetInput({ type, selectedMonth }: MonthlyBudgetInputPr
   const handleSetBudget = () => {
     const numericAmount = parseFloat(String(amount));
     if (!isNaN(numericAmount)) {
-      const budgetType = type === 'expenses' ? 'expenseBudgets' : 'tripBudgets';
-      const newBudgets = { ...(wealthData[budgetType] || {}), [selectedMonth]: numericAmount };
-      updateWealthData({ [budgetType]: newBudgets });
+      // Update both expense and trip budgets simultaneously
+      const newExpenseBudgets = { ...(wealthData.expenseBudgets || {}), [selectedMonth]: numericAmount };
+      const newTripBudgets = { ...(wealthData.tripBudgets || {}), [selectedMonth]: numericAmount };
+      updateWealthData({ 
+        expenseBudgets: newExpenseBudgets,
+        tripBudgets: newTripBudgets 
+      });
     }
   };
   
-  const budgetLabel = type === 'expenses' ? 'Monthly Expense Budget' : 'Monthly Trip Budget';
+  const budgetLabel = 'Monthly Budget';
 
   return (
     <div className="flex w-full items-center gap-2">
