@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -23,26 +24,44 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { ViewSelector } from "../layout/view-selector";
+import { format, parseISO } from "date-fns";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
 
 export function DailyProgressChart() {
-  const { habits, habitData, filteredDates } = useApp();
+  const { habits, habitData, habitChartDateRange, setHabitChartDateRange, selectedView } = useApp();
+
+  const [startDate, setStartDate] = useState(habitChartDateRange?.from ? format(habitChartDateRange.from, 'yyyy-MM-dd') : '');
+  const [endDate, setEndDate] = useState(habitChartDateRange?.to ? format(habitChartDateRange.to, 'yyyy-MM-dd') : '');
+
+  const handleApplyFilter = () => {
+    const from = startDate ? parseISO(startDate) : undefined;
+    const to = endDate ? parseISO(endDate) : from;
+    setHabitChartDateRange({ from, to });
+  };
 
   const chartData = useMemo(() => {
-    return getDailyProgression(habitData, habits, filteredDates);
-  }, [habitData, habits, filteredDates]);
+    return getDailyProgression(habitData, habits, habitChartDateRange);
+  }, [habitData, habits, habitChartDateRange]);
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-            <CardTitle>Daily Progress</CardTitle>
-            <CardDescription>
-            Your daily habit completion percentage over the selected period.
-            </CardDescription>
-        </div>
-        <div className="w-40">
-            <ViewSelector />
+      <CardHeader>
+        <CardTitle>Daily Progress</CardTitle>
+        <CardDescription>
+          Your daily habit completion percentage over the selected period.
+        </CardDescription>
+        <div className="flex flex-col sm:flex-row items-end gap-4 pt-2">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="start-date-habit">Start Date</Label>
+                <Input id="start-date-habit" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="end-date-habit">End Date</Label>
+                <Input id="end-date-habit" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+            </div>
+            <Button onClick={handleApplyFilter}>Apply</Button>
         </div>
       </CardHeader>
       <CardContent>

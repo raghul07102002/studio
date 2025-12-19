@@ -2,7 +2,8 @@
 import { Habit, HabitData, ViewOption } from "./types";
 import { getDaysInYear } from "./utils";
 import { YEAR } from "./constants";
-import { format, isSameMonth, parse, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval } from "date-fns";
+import { format, isSameMonth, parse, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, isWithinInterval } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 export const calculateDailyCompletion = (
   dailyLogs: Record<string, { completed: boolean }>,
@@ -18,9 +19,11 @@ export const calculateDailyCompletion = (
 export const calculateOverallCompletion = (
   habitData: HabitData,
   habits: Habit[],
-  filteredDates: Date[]
+  dateRange: DateRange
 ) => {
-  if (habits.length === 0 || filteredDates.length === 0) return 0;
+  if (habits.length === 0 || !dateRange.from) return 0;
+
+  const filteredDates = eachDayOfInterval({start: dateRange.from, end: dateRange.to || dateRange.from});
 
   const totalPossible = filteredDates.length * habits.length;
   if (totalPossible === 0) return 0;
@@ -66,10 +69,6 @@ export const getFilteredDates = (view: ViewOption, referenceDate: Date) => {
     let start, end;
     
     switch (view) {
-      case 'Day':
-        start = now;
-        end = now;
-        return eachDayOfInterval({ start, end });
       case 'Week':
         start = startOfWeek(now);
         end = endOfWeek(now);
@@ -87,9 +86,11 @@ export const getFilteredDates = (view: ViewOption, referenceDate: Date) => {
     }
 };
 
-export const getDailyProgression = (habitData: HabitData, habits: Habit[], filteredDates: Date[]) => {
-  if (habits.length === 0 || filteredDates.length === 0) return [];
+export const getDailyProgression = (habitData: HabitData, habits: Habit[], dateRange: DateRange) => {
+  if (habits.length === 0 || !dateRange.from) return [];
   
+  const filteredDates = eachDayOfInterval({start: dateRange.from, end: dateRange.to || dateRange.from});
+
   return filteredDates.map(date => {
     const dateString = format(date, "yyyy-MM-dd");
     const dayData = habitData[dateString] || {};

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -15,15 +16,15 @@ import {
 } from "@/components/ui/chart";
 import { useApp } from "@/contexts/app-provider";
 import { calculateOverallCompletion } from "@/lib/analysis";
-import { ViewSelector } from "../layout/view-selector";
 import { Heart } from "lucide-react";
+import { DateRange } from "react-day-picker";
 
 export function CompletionPieChart() {
-  const { habits, habitData, filteredDates, selectedView } = useApp();
+  const { habits, habitData, habitChartDateRange } = useApp();
 
   const overallCompletion = useMemo(() => {
-    return calculateOverallCompletion(habitData, habits, filteredDates);
-  }, [habitData, habits, filteredDates]);
+    return calculateOverallCompletion(habitData, habits, habitChartDateRange);
+  }, [habitData, habits, habitChartDateRange]);
 
 
   const chartData = useMemo(() => {
@@ -41,7 +42,6 @@ export function CompletionPieChart() {
         <div>
           <CardTitle>Completion Overview</CardTitle>
         </div>
-        <ViewSelector />
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center">
         <div className="relative w-full max-w-[300px] aspect-square">

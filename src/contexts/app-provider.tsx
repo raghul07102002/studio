@@ -12,7 +12,7 @@ import {
 } from "react";
 import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
-import { subDays } from "date-fns";
+import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
@@ -100,6 +100,10 @@ interface AppContextType {
 
   selectedView: ViewOption;
   setSelectedView: (view: ViewOption) => void;
+  
+  habitChartDateRange: DateRange;
+  setHabitChartDateRange: (range: DateRange) => void;
+
   filteredDates: Date[];
   isInitialized: boolean;
   
@@ -128,6 +132,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     to: new Date(),
   };
   const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(defaultDateRange);
+  const [habitChartDateRange, setHabitChartDateRange] = useLocalStorage<DateRange>("habitChartDateRange", { 
+    from: startOfWeek(new Date()), 
+    to: endOfWeek(new Date()) 
+  });
+
 
   const router = useRouter();
   
@@ -242,10 +251,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setRoadmaps]);
 
 
-  const filteredDates = useMemo(
-    () => getFilteredDates(selectedView, reportDateRange?.from || new Date()),
-    [selectedView, reportDateRange]
-  );
+  const filteredDates = useMemo(() => {
+    if (!habitChartDateRange?.from) {
+      return [];
+    }
+    return eachDayOfInterval({
+      start: habitChartDateRange.from,
+      end: habitChartDateRange.to || habitChartDateRange.from,
+    });
+  }, [habitChartDateRange]);
   
   const value: AppContextType = {
     habits,
@@ -265,6 +279,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     removeSubtask,
     selectedView,
     setSelectedView,
+    habitChartDateRange,
+    setHabitChartDateRange: setHabitChartDateRange as (range: DateRange) => void,
     filteredDates,
     isInitialized,
     selectedDashboard,
@@ -283,5 +299,3 @@ export function useApp() {
   }
   return context;
 }
-
-    
