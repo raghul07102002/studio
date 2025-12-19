@@ -142,7 +142,6 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
               {results.map((result) => (
                 <CommandItem
                   key={result.place_id}
-                  value={result.display_name}
                   onSelect={() => {
                     onValueChange({
                         name: result.display_name,
