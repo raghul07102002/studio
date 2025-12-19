@@ -13,6 +13,7 @@ import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
 import 'leaflet/dist/leaflet.css';
 import { DateRange } from 'react-day-picker';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Map = dynamic(() => import('@/components/travel/TravelMap'), {
   ssr: false,
@@ -95,60 +96,72 @@ const TravelPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-4">
-        <div className="grid lg:grid-cols-[380px_1fr] gap-4">
-          {/* Sidebar */}
-          <div className="space-y-4 relative z-10">
-            {/* Add Journey Card */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Add Journey
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TravelForm onAdd={handleAdd} />
-              </CardContent>
-            </Card>
+        <Tabs defaultValue="journeys">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="journeys">Journeys</TabsTrigger>
+            <TabsTrigger value="map">Map</TabsTrigger>
+          </TabsList>
+          <TabsContent value="journeys" className="mt-6">
+            <div className="space-y-4">
+                {/* Add Journey Card */}
+                <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Add Journey
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <TravelForm onAdd={handleAdd} />
+                </CardContent>
+                </Card>
 
-            {/* Filter & Stats Card */}
-            <Card>
-              <CardContent className="pt-4 space-y-4">
-                <DateRangeFilter
-                  dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
-                  onClear={() => setDateRange(undefined)}
-                />
-                <Separator />
-                <TravelStats entries={filteredEntries} />
-              </CardContent>
-            </Card>
+                {/* Stats */}
+                <Card>
+                    <CardContent className="pt-4">
+                        <TravelStats entries={filteredEntries} />
+                    </CardContent>
+                </Card>
 
-            {/* Journey List Card */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">
-                  Your Journeys
-                  {filteredEntries.length > 0 && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      ({filteredEntries.length})
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TravelList entries={filteredEntries} onDelete={handleDelete} />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Map */}
-          <Card className="relative z-0">
-            <div className="h-[calc(100vh-120px)] min-h-[500px]">
-              <Map entries={pathCoordinates} />
+                {/* Journey List Card */}
+                <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">
+                    Your Journeys
+                    {filteredEntries.length > 0 && (
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        ({filteredEntries.length})
+                        </span>
+                    )}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <TravelList entries={filteredEntries} onDelete={handleDelete} />
+                </CardContent>
+                </Card>
             </div>
-          </Card>
-        </div>
+          </TabsContent>
+          <TabsContent value="map" className="mt-6">
+            <div className="grid lg:grid-cols-[380px_1fr] gap-4">
+                <div>
+                     <Card>
+                        <CardContent className="pt-4 space-y-4">
+                            <DateRangeFilter
+                            dateRange={dateRange}
+                            onDateRangeChange={setDateRange}
+                            onClear={() => setDateRange(undefined)}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+                 <Card className="relative z-0">
+                    <div className="h-[calc(100vh-220px)] min-h-[500px]">
+                        <Map entries={pathCoordinates} />
+                    </div>
+                </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
