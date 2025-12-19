@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
@@ -120,7 +120,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [habitData, setHabitData] = useLocalStorage<HabitData>("habitData", {});
   const [wealthData, setWealthData] = useLocalStorage<WealthData>("wealthData", DEFAULT_WEALTH_DATA);
   const [roadmaps, setRoadmaps] = useLocalStorage<Record<CareerPath, RoadmapItem[]>>("careerRoadmaps", initialRoadmaps);
-  const [travelData, setTravelData] = useLocalStorage<TravelData>("travelData", DEFAULT_TRAVEL_DATA);
+  
+  const [rawTravelData, setRawTravelData] = useLocalStorage<{ places: (TravelEntry | TravelData['places'][0])[] }>("travel-entries", { places: [] });
 
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -136,6 +137,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     from: startOfWeek(new Date()), 
     to: endOfWeek(new Date()) 
   });
+
+  const travelData = useMemo(() => {
+    const places = (rawTravelData.places || []).map(p => {
+        if ('from' in p && 'to' in p) { // It's a TravelEntry
+            return p;
+        }
+        return p;
+    });
+    return { places: places, selectedStates: [] };
+  }, [rawTravelData]);
+
+  const updateTravelData = useCallback((data: Partial<TravelData>) => {
+    const currentPlaces = travelData.places || [];
+    const newPlaces = data.places || currentPlaces;
+    setRawTravelData({ places: newPlaces });
+  }, [travelData, setRawTravelData]);
 
 
   const router = useRouter();
@@ -172,10 +189,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateWealthData = useCallback((data: Partial<WealthData>) => {
     setWealthData(prev => ({ ...prev, ...data }));
   }, [setWealthData]);
-
-  const updateTravelData = useCallback((data: Partial<TravelData>) => {
-    setTravelData(prev => ({ ...prev, ...data }));
-  }, [setTravelData]);
 
   const updateRoadmapItem = useCallback((path: CareerPath, updatedItem: RoadmapItem) => {
     setRoadmaps(prev => {
