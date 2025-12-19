@@ -8,23 +8,15 @@ import {
   getMonth,
   getDaysInMonth,
   setDate,
+  parseISO,
 } from 'date-fns';
 import { Button } from '../ui/button';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import { MONTHS, YEAR } from '@/lib/constants';
 import { DayCard } from './day-card';
 import { Skeleton } from '../ui/skeleton';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { Calendar } from '../ui/calendar';
-import { cn } from '@/lib/utils';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 const DAYS_PER_PAGE = 7;
 
@@ -49,13 +41,13 @@ export function DailyView() {
     return daysInMonth.slice(startIndex, endIndex);
   }, [daysInMonth, currentPage]);
   
-  const handleMonthChange = (date: Date | undefined) => {
-    if (date) {
-      setCurrentDate(date);
+  const handleMonthChange = (dateString: string) => {
+    if (dateString) {
+      const newDate = parseISO(dateString + '-01'); // Treat it as the first of the month
+      setCurrentDate(newDate);
       setCurrentPage(0);
     }
   }
-
 
   const goToPreviousPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
@@ -89,31 +81,15 @@ export function DailyView() {
             </p>
         </div>
         <div className="flex items-center gap-2 self-start md:self-center">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[280px] justify-start text-left font-normal",
-                    !currentDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {currentDate ? format(currentDate, "MMMM yyyy") : <span>Pick a month</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={currentDate}
-                  onSelect={(day) => handleMonthChange(day)}
-                  initialFocus
-                  captionLayout="dropdown-nav"
-                  fromYear={YEAR-5}
-                  toYear={YEAR+5}
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="month-picker">Select Month</Label>
+                <Input
+                    id="month-picker"
+                    type="month"
+                    value={format(currentDate, 'yyyy-MM')}
+                    onChange={(e) => handleMonthChange(e.target.value)}
                 />
-              </PopoverContent>
-            </Popover>
+            </div>
         </div>
       </div>
       
