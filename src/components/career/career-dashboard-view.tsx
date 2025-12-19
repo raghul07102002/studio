@@ -22,32 +22,34 @@ export function CareerDashboardView() {
     }
 
   return (
-    <div className="space-y-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>Career Progression</CardTitle>
-                <CardDescription>Select a path to define and track your career roadmap.</CardDescription>
-            </CardHeader>
-        </Card>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {careerPaths.map((path) => (
-                <Card 
-                    key={path.name} 
-                    className="hover:shadow-lg hover:border-primary transition-all cursor-pointer"
-                    onClick={() => setSelectedPath(path.name)}
-                >
-                    <CardHeader>
-                        <CardTitle>{path.name}</CardTitle>
-                        <CardDescription>{path.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex justify-end items-center">
-                        <div className='flex items-center text-sm font-medium text-primary'>
-                            Define Roadmap <ArrowRight className="ml-2 h-4 w-4" />
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
+    <div className="flex justify-center w-full">
+      <div className="space-y-6 w-full max-w-4xl">
+          <Card>
+              <CardHeader>
+                  <CardTitle>Career Progression</CardTitle>
+                  <CardDescription>Select a path to define and track your career roadmap.</CardDescription>
+              </CardHeader>
+          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {careerPaths.map((path) => (
+                  <Card 
+                      key={path.name} 
+                      className="hover:shadow-lg hover:border-primary transition-all cursor-pointer"
+                      onClick={() => setSelectedPath(path.name)}
+                  >
+                      <CardHeader>
+                          <CardTitle>{path.name}</CardTitle>
+                          <CardDescription>{path.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex justify-end items-center">
+                          <div className='flex items-center text-sm font-medium text-primary'>
+                              Define Roadmap <ArrowRight className="ml-2 h-4 w-4" />
+                          </div>
+                      </CardContent>
+                  </Card>
+              ))}
+          </div>
+      </div>
     </div>
   );
 }
