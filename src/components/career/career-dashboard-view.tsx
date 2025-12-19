@@ -18,7 +18,13 @@ export function CareerDashboardView() {
     const [selectedPath, setSelectedPath] = useState<CareerPath | null>(null);
 
     if (selectedPath) {
-        return <RoadmapView path={selectedPath} onBack={() => setSelectedPath(null)} />;
+        return (
+            <div className="flex justify-center w-full">
+                <div className="w-full max-w-4xl">
+                    <RoadmapView path={selectedPath} onBack={() => setSelectedPath(null)} />
+                </div>
+            </div>
+        );
     }
 
   return (
