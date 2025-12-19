@@ -11,6 +11,18 @@ import DateRangeFilter from '@/components/travel/DateRangeFilter';
 import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
 
+const Map = dynamic(() => import('@/components/travel/TravelMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full flex items-center justify-center bg-muted/30">
+      <div className="text-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
+        <p className="text-sm text-muted-foreground">Loading map...</p>
+      </div>
+    </div>
+  ),
+});
+
 const TravelPage = () => {
   const [entries, setEntries] = useState<TravelEntry[]>([]);
 
@@ -32,18 +44,6 @@ const TravelPage = () => {
   useEffect(() => {
     localStorage.setItem("travel-entries", JSON.stringify(entries));
   }, [entries]);
-
-  const Map = useMemo(() => dynamic(() => import('@/components/travel/TravelMap'), {
-    ssr: false,
-    loading: () => (
-      <div className="h-full w-full flex items-center justify-center bg-muted/30">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p className="text-sm text-muted-foreground">Loading map...</p>
-        </div>
-      </div>
-    )
-  }), []);
 
   const handleAdd = (entry: Omit<TravelEntry, "id">) => {
     setEntries((prev) => [

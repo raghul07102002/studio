@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useRef, memo } from "react";
+import { useEffect, useRef } from "react";
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import type { TravelEntry } from "@/lib/types";
 import { getStateByCode, indianStates } from "@/data/stateData";
-import type { LatLngExpression, LatLngBoundsExpression } from "leaflet";
+import type { LatLngExpression, LatLngBoundsExpression, Map as LeafletMap } from "leaflet";
 import L from 'leaflet';
 
 interface TravelMapProps {
@@ -103,9 +103,9 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
   return null;
 };
 
-const MemoizedRouteLayer = memo(RouteLayer);
-
 const TravelMap = ({ entries }: TravelMapProps) => {
+  const mapRef = useRef<LeafletMap | null>(null);
+
   return (
     <MapContainer
       center={[22.9734, 78.6569]}
@@ -113,6 +113,7 @@ const TravelMap = ({ entries }: TravelMapProps) => {
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       className="rounded-lg"
+      whenCreated={map => { mapRef.current = map; }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -133,7 +134,7 @@ const TravelMap = ({ entries }: TravelMapProps) => {
           <Tooltip direction="top">{state.name}</Tooltip>
         </CircleMarker>
       ))}
-      <MemoizedRouteLayer entries={entries} />
+      <RouteLayer entries={entries} />
     </MapContainer>
   );
 };
