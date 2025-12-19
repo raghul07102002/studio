@@ -1,24 +1,25 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
+import { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { X, Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface DateRangeFilterProps {
-  startDate: string;
-  endDate: string;
-  onStartDateChange: (date: string) => void;
-  onEndDateChange: (date: string) => void;
+  dateRange: DateRange | undefined;
+  onDateRangeChange: (dateRange: DateRange | undefined) => void;
   onClear: () => void;
 }
 
 const DateRangeFilter = ({
-  startDate,
-  endDate,
-  onStartDateChange,
-  onEndDateChange,
+  dateRange,
+  onDateRangeChange,
   onClear,
 }: DateRangeFilterProps) => {
-  const hasFilter = startDate || endDate;
+  const hasFilter = dateRange?.from || dateRange?.to;
 
   return (
     <div className="space-y-2">
@@ -38,23 +39,42 @@ const DateRangeFilter = ({
           </Button>
         )}
       </div>
-      <div className="flex gap-2">
-        <Input
-          type="date"
-          value={startDate}
-          onChange={(e) => onStartDateChange(e.target.value)}
-          className="h-8 text-xs"
-          placeholder="Start"
-        />
-        <span className="text-muted-foreground self-center">to</span>
-        <Input
-          type="date"
-          value={endDate}
-          onChange={(e) => onEndDateChange(e.target.value)}
-          className="h-8 text-xs"
-          placeholder="End"
-        />
-      </div>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            id="date"
+            variant={"outline"}
+            className={cn(
+              "w-full justify-start text-left font-normal h-9",
+              !dateRange && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {dateRange?.from ? (
+              dateRange.to ? (
+                <>
+                  {format(dateRange.from, "LLL dd, y")} -{" "}
+                  {format(dateRange.to, "LLL dd, y")}
+                </>
+              ) : (
+                format(dateRange.from, "LLL dd, y")
+              )
+            ) : (
+              <span>Pick a date range</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            initialFocus
+            mode="range"
+            defaultMonth={dateRange?.from}
+            selected={dateRange}
+            onSelect={onDateRangeChange}
+            numberOfMonths={1}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

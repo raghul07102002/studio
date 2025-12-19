@@ -12,6 +12,7 @@ import DateRangeFilter from '@/components/travel/DateRangeFilter';
 import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
 import 'leaflet/dist/leaflet.css';
+import { DateRange } from 'react-day-picker';
 
 const Map = dynamic(() => import('@/components/travel/TravelMap'), {
   ssr: false,
@@ -27,6 +28,7 @@ const Map = dynamic(() => import('@/components/travel/TravelMap'), {
 
 const TravelPage = () => {
   const [entries, setEntries] = useState<TravelEntry[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
     try {
@@ -38,9 +40,6 @@ const TravelPage = () => {
       console.error("Failed to load travel entries from localStorage", error);
     }
   }, []);
-
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   // Save to localStorage
   useEffect(() => {
@@ -61,12 +60,18 @@ const TravelPage = () => {
   const filteredEntries = useMemo(() => {
     return entries
       .filter((entry) => {
-        if (startDate && entry.date < startDate) return false;
-        if (endDate && entry.date > endDate) return false;
+        const entryDate = new Date(entry.date);
+        if (dateRange?.from && entryDate < dateRange.from) return false;
+        // Add a day to the end date to make it inclusive
+        if (dateRange?.to) {
+            const toDate = new Date(dateRange.to);
+            toDate.setDate(toDate.getDate() + 1);
+            if (entryDate >= toDate) return false;
+        }
         return true;
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [entries, startDate, endDate]);
+  }, [entries, dateRange]);
   
   const pathCoordinates = useMemo(() => {
     const coords: { lat: number; lng: number }[] = [];
@@ -110,14 +115,9 @@ const TravelPage = () => {
             <Card>
               <CardContent className="pt-4 space-y-4">
                 <DateRangeFilter
-                  startDate={startDate}
-                  endDate={endDate}
-                  onStartDateChange={setStartDate}
-                  onEndDateChange={setEndDate}
-                  onClear={() => {
-                    setStartDate("");
-                    setEndDate("");
-                  }}
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  onClear={() => setDateRange(undefined)}
                 />
                 <Separator />
                 <TravelStats entries={filteredEntries} />
