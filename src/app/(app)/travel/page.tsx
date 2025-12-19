@@ -11,6 +11,7 @@ import DateRangeFilter from '@/components/travel/DateRangeFilter';
 import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
 import 'leaflet/dist/leaflet.css';
+import { getStateByCode } from '@/data/stateData';
 
 const Map = dynamic(() => import('@/components/travel/TravelMap'), {
   ssr: false,
@@ -66,6 +67,27 @@ const TravelPage = () => {
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [entries, startDate, endDate]);
+
+  const pathCoordinates = useMemo(() => {
+    const coords: { lat: number; lng: number }[] = [];
+    filteredEntries.forEach(entry => {
+      const fromState = getStateByCode(entry.fromState);
+      const toState = getStateByCode(entry.toState);
+      if (fromState) {
+        coords.push({ lat: fromState.center[0], lng: fromState.center[1] });
+      }
+      if (toState) {
+        coords.push({ lat: toState.center[0], lng: toState.center[1] });
+      }
+    });
+    // Remove duplicates
+    return coords.filter((c, index, self) => 
+      index === self.findIndex((t) => (
+        t.lat === c.lat && t.lng === c.lng
+      ))
+    );
+  }, [filteredEntries]);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,7 +147,7 @@ const TravelPage = () => {
           {/* Map */}
           <Card className="overflow-hidden">
             <div className="h-[calc(100vh-120px)] min-h-[500px]">
-              <Map entries={filteredEntries} />
+              <Map entries={pathCoordinates} />
             </div>
           </Card>
         </div>
