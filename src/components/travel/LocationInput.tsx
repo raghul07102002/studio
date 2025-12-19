@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown, MapPin, Target } from "lucide-react";
 import type { TravelLocation } from "@/lib/types";
@@ -103,12 +103,10 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
   }, [searchQuery, fetchLocations]);
 
   useEffect(() => {
-    // When the popover is closed, clear the search query
-    // so it doesn't show up next time it's opened.
-    if (!open) {
+    if (value === null) {
       setSearchQuery('');
     }
-  }, [open]);
+  }, [value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

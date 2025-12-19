@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationInput } from "./LocationInput";
 import { TravelEntry, TravelLocation } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 interface TravelFormProps {
   onAdd: (entry: Omit<TravelEntry, "id">) => void;
@@ -15,10 +16,18 @@ const TravelForm = ({ onAdd }: TravelFormProps) => {
   const [from, setFrom] = useState<TravelLocation | null>(null);
   const [to, setTo] = useState<TravelLocation | null>(null);
   const [notes, setNotes] = useState("");
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !from || !to) return;
+    if (!date || !from || !to) {
+        toast({
+            title: "Missing Information",
+            description: "Please select a date, a 'From' location, and a 'To' location.",
+            variant: "destructive",
+        });
+        return;
+    }
 
     onAdd({
       date,
@@ -47,7 +56,6 @@ const TravelForm = ({ onAdd }: TravelFormProps) => {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="h-9"
-            required
           />
         </div>
         <div className="space-y-1.5">
@@ -80,7 +88,7 @@ const TravelForm = ({ onAdd }: TravelFormProps) => {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={!date || !from || !to}>
+      <Button type="submit" className="w-full">
         <Plus className="h-4 w-4 mr-2" />
         Add Journey
       </Button>
