@@ -1,11 +1,9 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
 import { ChevronsUpDown, MapPin, Target } from "lucide-react";
 import type { TravelLocation } from "@/lib/types";
 
@@ -145,8 +143,8 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
                   key={result.place_id}
                   onSelect={() => {
                     onValueChange({
-                        name: result.display_name,
-                        coords: { lat: parseFloat(result.lat), lng: parseFloat(result.lon) }
+                      name: result.display_name,
+                      coords: { lat: parseFloat(result.lat), lng: parseFloat(result.lon) }
                     });
                     setOpen(false);
                   }}
@@ -159,14 +157,14 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
             </CommandGroup>
             {searchQuery.length > 2 && !isLoading && (
                <CommandGroup heading="Not in the list?">
-                  <CommandItem 
+                  <CommandItem
                     onSelect={() => {
                         onValueChange({
                             name: searchQuery,
-                            coords: { lat: 0, lng: 0 } 
+                            coords: { lat: 0, lng: 0 } // Placeholder coords
                         });
                         setOpen(false);
-                    }} 
+                    }}
                     className="text-xs cursor-pointer"
                   >
                      <Target className="mr-2 h-4 w-4" />
