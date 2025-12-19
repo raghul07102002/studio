@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -17,8 +18,18 @@
           },
           "description": "The user's list of configured habits."
         },
+        "habitData": {
+          "type": "object",
+          "description": "A map of dates to habit logs for that day."
+        },
         "wealthData": {
           "$ref": "#/backend/entities/WealthData"
+        },
+        "careerRoadmaps": {
+          "$ref": "#/backend/entities/CareerRoadmaps"
+        },
+        "travelData": {
+            "$ref": "#/backend/entities/TravelData"
         }
       },
       "required": ["id"]
@@ -71,6 +82,41 @@
         }
       },
       "required": ["date", "habitId", "completed"]
+    },
+    "CareerRoadmaps": {
+      "type": "object",
+      "description": "Stores the roadmaps for all career paths.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "#/backend/entities/RoadmapItem"
+        }
+      }
+    },
+    "RoadmapItem": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "hoursSpent": { "type": "number" },
+        "displayHours": { "type": "string" },
+        "subtasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Subtask"
+          }
+        }
+      },
+      "required": ["id", "title", "hoursSpent"]
+    },
+    "Subtask": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" }
+      },
+      "required": ["id", "title", "completed"]
     },
     "WealthData": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -139,7 +185,8 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "amount": { "type": "number" }
+        "amount": { "type": "number" },
+        "schemeCode": { "type": "string" }
       },
       "required": ["id", "name", "amount"]
     },
@@ -157,52 +204,40 @@
         "emergencyFunds": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
         "shortTermGoals": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }}
       }
-    }
-  },
-  "auth": {
-    "providers": [
-      "anonymous"
-    ]
-  },
-  "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores user profile and their associated data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/habitLogs/{logId}",
-        "definition": {
-          "entityName": "HabitLog",
-          "schema": {
-            "$ref": "#/backend/entities/HabitLog"
-          },
-          "description": "Stores individual habit log entries for a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user who owns the log."
+    },
+    "TravelData": {
+        "type": "object",
+        "properties": {
+            "places": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/TravelPlace"
+                }
             },
-            {
-              "name": "logId",
-              "description": "The unique ID of the habit log entry."
+            "selectedStates": {
+                "type": "array",
+                "items": { "type": "string" }
             }
-          ]
         }
-      }
-    ]
+    },
+    "TravelPlace": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "district": { "type": "string" },
+            "state": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "coords": {
+                "type": "object",
+                "properties": {
+                    "lat": { "type": "number" },
+                    "lng": { "type": "number" }
+                }
+            }
+        },
+        "required": ["id", "name", "state", "date", "coords"]
+    }
   }
 }
 

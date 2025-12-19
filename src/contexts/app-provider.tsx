@@ -16,8 +16,7 @@ import { subDays } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
-import { doc } from "firebase/firestore";
-import { useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking, useDoc } from "@/firebase";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 // Default initial states
 const DEFAULT_WEALTH_DATA: WealthData = {
@@ -113,23 +112,11 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
-
-  const userDocRef = useMemoFirebase(
-    () => (user ? doc(firestore, "users", user.uid) : null),
-    [user, firestore]
-  );
-  
-  const { data: userProfileData, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
-  
-  const [localData, setLocalData] = useState<UserProfile>({
-    habits: DEFAULT_HABITS,
-    habitData: {},
-    wealthData: DEFAULT_WEALTH_DATA,
-    careerRoadmaps: initialRoadmaps,
-    travelData: DEFAULT_TRAVEL_DATA,
-  });
+  const [habits, setHabits] = useLocalStorage<Habit[]>("habits", DEFAULT_HABITS);
+  const [habitData, setHabitData] = useLocalStorage<HabitData>("habitData", {});
+  const [wealthData, setWealthData] = useLocalStorage<WealthData>("wealthData", DEFAULT_WEALTH_DATA);
+  const [roadmaps, setRoadmaps] = useLocalStorage<Record<CareerPath, RoadmapItem[]>>("careerRoadmaps", initialRoadmaps);
+  const [travelData, setTravelData] = useLocalStorage<TravelData>("travelData", DEFAULT_TRAVEL_DATA);
 
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -143,39 +130,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(defaultDateRange);
 
   const router = useRouter();
-
+  
   useEffect(() => {
-    if (!isProfileLoading && !isUserLoading) {
-      if (userProfileData) {
-        setLocalData({
-          habits: userProfileData.habits || DEFAULT_HABITS,
-          habitData: userProfileData.habitData || {},
-          wealthData: userProfileData.wealthData || DEFAULT_WEALTH_DATA,
-          careerRoadmaps: userProfileData.careerRoadmaps || initialRoadmaps,
-          travelData: userProfileData.travelData || DEFAULT_TRAVEL_DATA,
-        });
-      } else if (user) {
-        // New user, set default data
-        const defaultData = {
-          habits: DEFAULT_HABITS,
-          habitData: {},
-          wealthData: DEFAULT_WEALTH_DATA,
-          careerRoadmaps: initialRoadmaps,
-          travelData: DEFAULT_TRAVEL_DATA,
-        };
-        setLocalData(defaultData);
-        updateDocument(defaultData);
-      }
-      setIsInitialized(true);
-    }
-  }, [user, userProfileData, isProfileLoading, isUserLoading]);
+    // Since useLocalStorage is async, we can consider the app initialized once the first value is loaded.
+    // A more robust solution might check if all local storage values are loaded.
+    setIsInitialized(true);
+  }, []);
 
-
-  const updateDocument = useCallback((data: Partial<UserProfile>) => {
-    if (userDocRef) {
-      updateDocumentNonBlocking(userDocRef, data);
-    }
-  }, [userDocRef]);
 
   const handleDashboardChange = (dashboard: DashboardOption) => {
     setSelectedDashboard(dashboard);
@@ -186,72 +147,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateHabits = useCallback((newHabits: Habit[]) => {
-    setLocalData(prev => {
-        const newState = {...prev, habits: newHabits };
-        updateDocument({ habits: newHabits });
-        return newState;
-    });
-  }, [updateDocument]);
+    setHabits(newHabits);
+  }, [setHabits]);
   
   const updateHabitLog = useCallback((date: string, habitId: string, log: Partial<HabitLog>) => {
-    setLocalData(prev => {
-        const newHabitData = { ...prev.habitData };
+    setHabitData(prev => {
+        const newHabitData = { ...prev };
         if (!newHabitData[date]) newHabitData[date] = {};
         const existingLog = newHabitData[date][habitId] || {};
         newHabitData[date][habitId] = { ...existingLog, ...log };
-        updateDocument({ habitData: newHabitData });
-        return { ...prev, habitData: newHabitData };
+        return newHabitData;
     });
-  }, [updateDocument]);
+  }, [setHabitData]);
   
   const updateWealthData = useCallback((data: Partial<WealthData>) => {
-    setLocalData(prev => {
-        const newWealthData = { ...prev.wealthData, ...data } as WealthData;
-        updateDocument({ wealthData: newWealthData });
-        return { ...prev, wealthData: newWealthData };
-    });
-  }, [updateDocument]);
+    setWealthData(prev => ({ ...prev, ...data }));
+  }, [setWealthData]);
 
   const updateTravelData = useCallback((data: Partial<TravelData>) => {
-    setLocalData(prev => {
-        const newTravelData = { ...prev.travelData, ...data } as TravelData;
-        updateDocument({ travelData: newTravelData });
-        return { ...prev, travelData: newTravelData };
-    });
-  }, [updateDocument]);
+    setTravelData(prev => ({ ...prev, ...data }));
+  }, [setTravelData]);
 
   const updateRoadmapItem = useCallback((path: CareerPath, updatedItem: RoadmapItem) => {
-    setLocalData(prev => {
-        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+    setRoadmaps(prev => {
+        const newRoadmaps = { ...prev };
         newRoadmaps[path] = (newRoadmaps[path] || []).map(item => item.id === updatedItem.id ? updatedItem : item);
-        updateDocument({ careerRoadmaps: newRoadmaps });
-        return { ...prev, careerRoadmaps: newRoadmaps };
+        return newRoadmaps;
     });
-  }, [updateDocument]);
+  }, [setRoadmaps]);
 
   const addRoadmapItem = useCallback((path: CareerPath, title: string) => {
       const newItem: RoadmapItem = { id: `item-${path}-${Date.now()}`, title, hoursSpent: 0, subtasks: [] };
-      setLocalData(prev => {
-          const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+      setRoadmaps(prev => {
+          const newRoadmaps = { ...prev };
           newRoadmaps[path] = [...(newRoadmaps[path] || []), newItem];
-          updateDocument({ careerRoadmaps: newRoadmaps });
-          return { ...prev, careerRoadmaps: newRoadmaps };
+          return newRoadmaps;
       });
-  }, [updateDocument]);
+  }, [setRoadmaps]);
 
   const removeRoadmapItem = useCallback((path: CareerPath, itemId: string) => {
-      setLocalData(prev => {
-          const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+      setRoadmaps(prev => {
+          const newRoadmaps = { ...prev };
           newRoadmaps[path] = (newRoadmaps[path] || []).filter(item => item.id !== itemId);
-          updateDocument({ careerRoadmaps: newRoadmaps });
-          return { ...prev, careerRoadmaps: newRoadmaps };
+          return newRoadmaps;
       });
-  }, [updateDocument]);
+  }, [setRoadmaps]);
   
   const addSubtask = useCallback((path: CareerPath, itemId: string, title: string) => {
     const newSubtask: Subtask = { id: `subtask-${Date.now()}`, title, completed: false };
-    setLocalData(prev => {
-        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+    setRoadmaps(prev => {
+        const newRoadmaps = { ...prev };
         const newItems = (newRoadmaps[path] || []).map(item => {
             if (item.id === itemId) {
                 const subtasks = [...(item.subtasks || []), newSubtask];
@@ -260,14 +205,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
             return item;
         });
         newRoadmaps[path] = newItems;
-        updateDocument({ careerRoadmaps: newRoadmaps });
-        return { ...prev, careerRoadmaps: newRoadmaps };
+        return newRoadmaps;
     });
-  }, [updateDocument]);
+  }, [setRoadmaps]);
   
   const updateSubtask = useCallback((path: CareerPath, itemId: string, subtaskId: string, updates: Partial<Subtask>) => {
-    setLocalData(prev => {
-        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+    setRoadmaps(prev => {
+        const newRoadmaps = { ...prev };
         const newItems = (newRoadmaps[path] || []).map(item => {
             if (item.id === itemId) {
                 const subtasks = (item.subtasks || []).map(subtask => 
@@ -278,14 +222,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
             return item;
         });
         newRoadmaps[path] = newItems;
-        updateDocument({ careerRoadmaps: newRoadmaps });
-        return { ...prev, careerRoadmaps: newRoadmaps };
+        return newRoadmaps;
     });
-  }, [updateDocument]);
+  }, [setRoadmaps]);
 
   const removeSubtask = useCallback((path: CareerPath, itemId: string, subtaskId: string) => {
-    setLocalData(prev => {
-        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+    setRoadmaps(prev => {
+        const newRoadmaps = { ...prev };
         const newItems = (newRoadmaps[path] || []).map(item => {
             if (item.id === itemId) {
                 const subtasks = (item.subtasks || []).filter(subtask => subtask.id !== subtaskId);
@@ -294,10 +237,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             return item;
         });
         newRoadmaps[path] = newItems;
-        updateDocument({ careerRoadmaps: newRoadmaps });
-        return { ...prev, careerRoadmaps: newRoadmaps };
+        return newRoadmaps;
     });
-  }, [updateDocument]);
+  }, [setRoadmaps]);
 
 
   const filteredDates = useMemo(
@@ -306,12 +248,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   
   const value: AppContextType = {
-    ...localData,
-    habits: localData.habits || DEFAULT_HABITS,
-    habitData: localData.habitData || {},
-    wealthData: localData.wealthData || DEFAULT_WEALTH_DATA,
-    roadmaps: localData.careerRoadmaps || initialRoadmaps,
-    travelData: localData.travelData || DEFAULT_TRAVEL_DATA,
+    habits,
+    habitData,
+    wealthData,
+    roadmaps,
+    travelData,
     updateHabits,
     updateHabitLog,
     updateWealthData,
@@ -342,3 +283,5 @@ export function useApp() {
   }
   return context;
 }
+
+    
