@@ -2,16 +2,16 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ShieldCheck, UserCheck, Cloud, GitMerge } from 'lucide-react';
 import { RoadmapView } from './roadmap-view';
 
 type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';
 
-const careerPaths: { name: CareerPath, description: string }[] = [
-    { name: 'CyberArk', description: 'Master the leading solution for Privileged Access Management.' },
-    { name: 'Sailpoint IDN', description: 'Become an expert in Identity Governance and Administration.' },
-    { name: 'Cloud computing', description: 'Specialize in cloud infrastructure and services.' },
-    { name: 'Devops', description: 'Bridge the gap between development and operations.' },
+const careerPaths: { name: CareerPath, description: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
+    { name: 'CyberArk', description: 'Master the leading solution for Privileged Access Management.', icon: ShieldCheck },
+    { name: 'Sailpoint IDN', description: 'Become an expert in Identity Governance and Administration.', icon: UserCheck },
+    { name: 'Cloud computing', description: 'Specialize in cloud infrastructure and services.', icon: Cloud },
+    { name: 'Devops', description: 'Bridge the gap between development and operations.', icon: GitMerge },
 ];
 
 export function CareerDashboardView() {
@@ -29,31 +29,37 @@ export function CareerDashboardView() {
 
   return (
     <div className="flex justify-center w-full">
-      <div className="space-y-6 w-full max-w-4xl">
-          <Card>
-              <CardHeader>
-                  <CardTitle>Career Progression</CardTitle>
-                  <CardDescription>Select a path to define and track your career roadmap.</CardDescription>
-              </CardHeader>
-          </Card>
+      <div className="space-y-8 w-full max-w-4xl">
+          <div className="text-center">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Career Progression</h1>
+              <p className="mt-2 text-lg text-muted-foreground">Choose your path and define your future.</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {careerPaths.map((path) => (
-                  <Card 
-                      key={path.name} 
-                      className="hover:shadow-lg hover:border-primary transition-all cursor-pointer"
-                      onClick={() => setSelectedPath(path.name)}
-                  >
-                      <CardHeader>
-                          <CardTitle>{path.name}</CardTitle>
-                          <CardDescription>{path.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex justify-end items-center">
-                          <div className='flex items-center text-sm font-medium text-primary'>
-                              Define Roadmap <ArrowRight className="ml-2 h-4 w-4" />
-                          </div>
-                      </CardContent>
-                  </Card>
-              ))}
+              {careerPaths.map((path) => {
+                  const Icon = path.icon;
+                  return (
+                    <div 
+                        key={path.name}
+                        className="group relative cursor-pointer"
+                        onClick={() => setSelectedPath(path.name)}
+                    >
+                        <Card className="h-full transition-all duration-200 ease-in-out group-hover:shadow-lg group-hover:border-primary group-hover:-translate-y-1">
+                            <CardHeader>
+                                <div className="flex items-start justify-between">
+                                    <CardTitle className="text-xl font-semibold">{path.name}</CardTitle>
+                                    <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                                </div>
+                                <CardDescription className="pt-2">{path.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex justify-end items-center pt-4">
+                                <div className='flex items-center text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity'>
+                                    Define Roadmap <ArrowRight className="ml-2 h-4 w-4" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                  );
+              })}
           </div>
       </div>
     </div>
