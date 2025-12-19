@@ -36,7 +36,7 @@ export function RoadmapProgressChart({ items }: RoadmapProgressChartProps) {
     const completed = overallProgress;
     const remaining = 100 - completed;
     return [
-      { name: "Completed", value: completed, fill: "hsl(var(--chart-2))" },
+      { name: "Completed", value: completed, fill: "hsl(var(--destructive))" },
       { name: "Remaining", value: remaining, fill: "hsl(var(--muted))" },
     ];
   }, [overallProgress]);

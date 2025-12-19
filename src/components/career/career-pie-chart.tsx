@@ -39,7 +39,7 @@ export function CareerPieChart() {
 
   const chartData = useMemo(() => {
     return [
-      { name: "Completed", value: overallProgress, fill: "hsl(var(--chart-2))" },
+      { name: "Completed", value: overallProgress, fill: "hsl(var(--destructive))" },
       { name: "Remaining", value: 100 - overallProgress, fill: "hsl(var(--muted))" },
     ];
   }, [overallProgress]);
