@@ -38,6 +38,11 @@ const TravelMap = ({ entries }: TravelMapProps) => {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
+    
+    // Invalidate size to make sure tiles are loaded correctly
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
 
     // Cleanup on unmount
     return () => {
@@ -114,6 +119,9 @@ const TravelMap = ({ entries }: TravelMapProps) => {
         map.fitBounds(bounds as LatLngBoundsExpression, { padding: [50, 50] });
       }
     }
+    
+    // Invalidate size to make sure tiles are loaded correctly after updates
+    map.invalidateSize();
 
   }, [entries]); // This effect runs only when entries change
 
