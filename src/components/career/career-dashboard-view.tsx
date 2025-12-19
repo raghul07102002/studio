@@ -4,11 +4,16 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, ShieldCheck, UserCheck, Cloud, GitMerge } from 'lucide-react';
 import { RoadmapView } from './roadmap-view';
+import Image from 'next/image';
 
 type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';
 
-const careerPaths: { name: CareerPath, description: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
-    { name: 'CyberArk', description: 'Master the leading solution for Privileged Access Management.', icon: ShieldCheck },
+const careerPaths: { name: CareerPath, description: string, icon?: React.FC<React.SVGProps<SVGSVGElement>>, imageUrl?: string }[] = [
+    { 
+        name: 'CyberArk', 
+        description: 'Master the leading solution for Privileged Access Management.', 
+        imageUrl: 'https://picsum.photos/seed/cyberark/48/48'
+    },
     { name: 'Sailpoint IDN', description: 'Become an expert in Identity Governance and Administration.', icon: UserCheck },
     { name: 'Cloud computing', description: 'Specialize in cloud infrastructure and services.', icon: Cloud },
     { name: 'Devops', description: 'Bridge the gap between development and operations.', icon: GitMerge },
@@ -47,7 +52,17 @@ export function CareerDashboardView() {
                             <CardHeader>
                                 <div className="flex items-start justify-between">
                                     <CardTitle className="text-xl font-semibold">{path.name}</CardTitle>
-                                    <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                                    {path.imageUrl ? (
+                                        <Image 
+                                            src={path.imageUrl} 
+                                            alt={`${path.name} logo`} 
+                                            width={24} 
+                                            height={24} 
+                                            className="rounded-sm"
+                                        />
+                                    ) : Icon ? (
+                                        <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                                    ) : null}
                                 </div>
                                 <CardDescription className="pt-2">{path.description}</CardDescription>
                             </CardHeader>
