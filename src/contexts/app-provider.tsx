@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import {
   createContext,
@@ -10,13 +10,13 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
-import { doc, DocumentReference } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 import { useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
 
 // Default initial states
@@ -36,32 +36,32 @@ const DEFAULT_WEALTH_DATA: WealthData = {
 
 const initialRoadmaps: Record<CareerPath, RoadmapItem[]> = {
     'CyberArk': [
-        { id: 'cyberark-0', title: 'Introduction to PAM, IAM & Vault Basics', hoursSpent: 0 },
-        { id: 'cyberark-1', title: 'Core Components (PVWA, CPM, PSM, PSMP)', hoursSpent: 0 },
-        { id: 'cyberark-2', title: 'Safes, Platforms, and Account Management', hoursSpent: 0 },
-        { id: 'cyberark-3', title: 'Authentication & Session Monitoring', hoursSpent: 0 },
-        { id: 'cyberark-4', title: 'Advanced Topics: PTA, AAM, and Conjur', hoursSpent: 0 },
+        { id: 'cyberark-0', title: 'Introduction to PAM, IAM & Vault Basics', hoursSpent: 0, subtasks: [] },
+        { id: 'cyberark-1', title: 'Core Components (PVWA, CPM, PSM, PSMP)', hoursSpent: 0, subtasks: [] },
+        { id: 'cyberark-2', title: 'Safes, Platforms, and Account Management', hoursSpent: 0, subtasks: [] },
+        { id: 'cyberark-3', title: 'Authentication & Session Monitoring', hoursSpent: 0, subtasks: [] },
+        { id: 'cyberark-4', title: 'Advanced Topics: PTA, AAM, and Conjur', hoursSpent: 0, subtasks: [] },
     ],
     'Sailpoint IDN': [
-        { id: 'sailpoint-0', title: 'IdentityNow Basics & Terminology', hoursSpent: 0 },
-        { id: 'sailpoint-1', title: 'Sources, Accounts, and Entitlements', hoursSpent: 0 },
-        { id: 'sailpoint-2', title: 'Access Profiles and Roles', hoursSpent: 0 },
-        { id: 'sailpoint-3', title: 'Certification Campaigns & Policies', hoursSpent: 0 },
-        { id: 'sailpoint-4', title: 'Transforms and Provisioning Logic', hoursSpent: 0 },
+        { id: 'sailpoint-0', title: 'IdentityNow Basics & Terminology', hoursSpent: 0, subtasks: [] },
+        { id: 'sailpoint-1', title: 'Sources, Accounts, and Entitlements', hoursSpent: 0, subtasks: [] },
+        { id: 'sailpoint-2', title: 'Access Profiles and Roles', hoursSpent: 0, subtasks: [] },
+        { id: 'sailpoint-3', title: 'Certification Campaigns & Policies', hoursSpent: 0, subtasks: [] },
+        { id: 'sailpoint-4', title: 'Transforms and Provisioning Logic', hoursSpent: 0, subtasks: [] },
     ],
     'Cloud computing': [
-        { id: 'cloud-0', title: 'Core Concepts: IaaS, PaaS, SaaS', hoursSpent: 0 },
-        { id: 'cloud-1', title: 'Networking & Security in the Cloud', hoursSpent: 0 },
-        { id: 'cloud-2', title: 'Compute Services (VMs, Containers, Serverless)', hoursSpent: 0 },
-        { id: 'cloud-3', title: 'Storage & Database Solutions', hoursSpent: 0 },
-        { id: 'cloud-4', title: 'Identity and Access Management (IAM)', hoursSpent: 0 },
+        { id: 'cloud-0', title: 'Core Concepts: IaaS, PaaS, SaaS', hoursSpent: 0, subtasks: [] },
+        { id: 'cloud-1', title: 'Networking & Security in the Cloud', hoursSpent: 0, subtasks: [] },
+        { id: 'cloud-2', title: 'Compute Services (VMs, Containers, Serverless)', hoursSpent: 0, subtasks: [] },
+        { id: 'cloud-3', title: 'Storage & Database Solutions', hoursSpent: 0, subtasks: [] },
+        { id: 'cloud-4', title: 'Identity and Access Management (IAM)', hoursSpent: 0, subtasks: [] },
     ],
     'Devops': [
-        { id: 'devops-0', title: 'CI/CD Pipelines (e.g., Jenkins, GitLab CI)', hoursSpent: 0 },
-        { id: 'devops-1', title: 'Infrastructure as Code (Terraform, Ansible)', hoursSpent: 0 },
-        { id: 'devops-2', title: 'Containerization (Docker, Kubernetes)', hoursSpent: 0 },
-        { id: 'devops-3', title: 'Monitoring & Observability (Prometheus, Grafana)', hoursSpent: 0 },
-        { id: 'devops-4', title: 'Scripting & Automation (Bash, Python)', hoursSpent: 0 },
+        { id: 'devops-0', title: 'CI/CD Pipelines (e.g., Jenkins, GitLab CI)', hoursSpent: 0, subtasks: [] },
+        { id: 'devops-1', title: 'Infrastructure as Code (Terraform, Ansible)', hoursSpent: 0, subtasks: [] },
+        { id: 'devops-2', title: 'Containerization (Docker, Kubernetes)', hoursSpent: 0, subtasks: [] },
+        { id: 'devops-3', title: 'Monitoring & Observability (Prometheus, Grafana)', hoursSpent: 0, subtasks: [] },
+        { id: 'devops-4', title: 'Scripting & Automation (Bash, Python)', hoursSpent: 0, subtasks: [] },
     ],
 };
 
@@ -81,10 +81,15 @@ interface AppContextType {
   updateHabits: (habits: Habit[]) => void;
   updateHabitLog: (date: string, habitId: string, log: Partial<HabitLog>) => void;
   updateWealthData: (data: Partial<WealthData>) => void;
+  
   updateRoadmapItem: (path: CareerPath, item: RoadmapItem) => void;
   addRoadmapItem: (path: CareerPath, title: string) => void;
   removeRoadmapItem: (path: CareerPath, itemId: string) => void;
   
+  addSubtask: (path: CareerPath, itemId: string, title: string) => void;
+  updateSubtask: (path: CareerPath, itemId: string, subtaskId: string, updates: Partial<Subtask>) => void;
+  removeSubtask: (path: CareerPath, itemId: string, subtaskId: string) => void;
+
   selectedView: ViewOption;
   setSelectedView: (view: ViewOption) => void;
   filteredDates: Date[];
@@ -107,7 +112,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [user, firestore]
   );
   
-  // Local state for all our app data
   const [appData, setAppData] = useState<UserProfile>({
     habits: DEFAULT_HABITS,
     habitData: {},
@@ -142,7 +146,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     careerRoadmaps: data.careerRoadmaps || initialRoadmaps,
                 });
             } else {
-                // If user doc doesn't exist, create it with default data
                 const initialData = {
                     habits: DEFAULT_HABITS,
                     habitData: {},
@@ -156,7 +159,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         fetchAndInitData();
     } else if (!isUserLoading) {
-        // Handle logged out state
         setIsInitialized(true);
     }
   }, [user, isUserLoading, userDocRef]);
@@ -209,7 +211,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [updateDocument]);
 
   const addRoadmapItem = useCallback((path: CareerPath, title: string) => {
-      const newItem: RoadmapItem = { id: `item-${path}-${Date.now()}`, title, hoursSpent: 0 };
+      const newItem: RoadmapItem = { id: `item-${path}-${Date.now()}`, title, hoursSpent: 0, subtasks: [] };
       setAppData(prev => {
           const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
           newRoadmaps[path] = [...(newRoadmaps[path] || []), newItem];
@@ -225,6 +227,57 @@ export function AppProvider({ children }: { children: ReactNode }) {
           updateDocument({ careerRoadmaps: newRoadmaps });
           return { ...prev, careerRoadmaps: newRoadmaps };
       });
+  }, [updateDocument]);
+  
+  const addSubtask = useCallback((path: CareerPath, itemId: string, title: string) => {
+    const newSubtask: Subtask = { id: `subtask-${Date.now()}`, title, completed: false };
+    setAppData(prev => {
+        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+        const newItems = (newRoadmaps[path] || []).map(item => {
+            if (item.id === itemId) {
+                const subtasks = [...(item.subtasks || []), newSubtask];
+                return { ...item, subtasks };
+            }
+            return item;
+        });
+        newRoadmaps[path] = newItems;
+        updateDocument({ careerRoadmaps: newRoadmaps });
+        return { ...prev, careerRoadmaps: newRoadmaps };
+    });
+  }, [updateDocument]);
+  
+  const updateSubtask = useCallback((path: CareerPath, itemId: string, subtaskId: string, updates: Partial<Subtask>) => {
+    setAppData(prev => {
+        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+        const newItems = (newRoadmaps[path] || []).map(item => {
+            if (item.id === itemId) {
+                const subtasks = (item.subtasks || []).map(subtask => 
+                    subtask.id === subtaskId ? { ...subtask, ...updates } : subtask
+                );
+                return { ...item, subtasks };
+            }
+            return item;
+        });
+        newRoadmaps[path] = newItems;
+        updateDocument({ careerRoadmaps: newRoadmaps });
+        return { ...prev, careerRoadmaps: newRoadmaps };
+    });
+  }, [updateDocument]);
+
+  const removeSubtask = useCallback((path: CareerPath, itemId: string, subtaskId: string) => {
+    setAppData(prev => {
+        const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
+        const newItems = (newRoadmaps[path] || []).map(item => {
+            if (item.id === itemId) {
+                const subtasks = (item.subtasks || []).filter(subtask => subtask.id !== subtaskId);
+                return { ...item, subtasks };
+            }
+            return item;
+        });
+        newRoadmaps[path] = newItems;
+        updateDocument({ careerRoadmaps: newRoadmaps });
+        return { ...prev, careerRoadmaps: newRoadmaps };
+    });
   }, [updateDocument]);
 
 
@@ -245,6 +298,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateRoadmapItem,
     addRoadmapItem,
     removeRoadmapItem,
+    addSubtask,
+    updateSubtask,
+    removeSubtask,
     selectedView,
     setSelectedView,
     filteredDates,

@@ -96,9 +96,24 @@
         "id": { "type": "string" },
         "title": { "type": "string" },
         "hoursSpent": { "type": "number" },
-        "displayHours": { "type": "string" }
+        "displayHours": { "type": "string" },
+        "subtasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Subtask"
+          }
+        }
       },
       "required": ["id", "title", "hoursSpent"]
+    },
+    "Subtask": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" }
+      },
+      "required": ["id", "title", "completed"]
     },
     "WealthData": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -167,7 +182,8 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "amount": { "type": "number" }
+        "amount": { "type": "number" },
+        "schemeCode": { "type": "string" }
       },
       "required": ["id", "name", "amount"]
     },

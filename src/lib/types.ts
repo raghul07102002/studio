@@ -28,11 +28,18 @@ export type DashboardOption = "habits" | "wealth" | "career";
 // Career Dashboard Types
 export type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';
 
+export interface Subtask {
+    id: string;
+    title: string;
+    completed: boolean;
+}
+
 export interface RoadmapItem {
     id: string;
     title: string;
     hoursSpent: number;
     displayHours?: string;
+    subtasks?: Subtask[];
 }
 
 // Wealth Dashboard Types

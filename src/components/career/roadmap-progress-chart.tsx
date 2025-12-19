@@ -8,18 +8,27 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import type { RoadmapItem } from './roadmap-view';
+import type { RoadmapItem, Subtask } from '@/lib/types';
 
 interface RoadmapProgressChartProps {
     items: RoadmapItem[];
 }
 
 const MAX_HOURS_PER_DAY = 4;
+const SUBTASK_PROGRESS_BONUS = 5;
 
 export function RoadmapProgressChart({ items }: RoadmapProgressChartProps) {
 
-  const calculateItemProgress = (hours: number) => {
-    return Math.min((hours / MAX_HOURS_PER_DAY) * 100, 100);
+  const calculateItemProgress = (item: { hoursSpent: number; subtasks?: Subtask[] }) => {
+    const hoursProgress = Math.min((item.hoursSpent / MAX_HOURS_PER_DAY) * 100, 100);
+    
+    let subtaskBonus = 0;
+    if (item.subtasks && item.subtasks.length > 0) {
+        const completedSubtasks = item.subtasks.filter(st => st.completed).length;
+        subtaskBonus = completedSubtasks * SUBTASK_PROGRESS_BONUS;
+    }
+
+    return Math.min(hoursProgress + subtaskBonus, 100);
   };
   
   const overallProgress = useMemo(() => {
@@ -27,7 +36,7 @@ export function RoadmapProgressChart({ items }: RoadmapProgressChartProps) {
       return 0;
     }
     const totalProgress = items.reduce((sum, item) => {
-      return sum + calculateItemProgress(item.hoursSpent);
+      return sum + calculateItemProgress(item);
     }, 0);
     return totalProgress / items.length;
   }, [items]);
