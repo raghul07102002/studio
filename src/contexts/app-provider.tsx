@@ -16,14 +16,7 @@ import { format, subDays } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter, usePathname } from "next/navigation";
 import { DateRange } from "react-day-picker";
-import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from "@/firebase";
-import {
-  collection,
-  doc,
-  query,
-  writeBatch,
-} from "firebase/firestore";
-import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 interface AppContextType {
   habits: Habit[];
@@ -47,8 +40,10 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const [habits, setHabits] = useLocalStorage<Habit[]>("chrono-habits", DEFAULT_HABITS);
+  const [habitData, setHabitData] = useLocalStorage<HabitData>("chrono-habit-data", {});
+
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [selectedView, setSelectedView] = useState<ViewOption>("Week");
   const [selectedDashboard, setSelectedDashboard] = useState<DashboardOption>('habits');
@@ -61,35 +56,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 
   const router = useRouter();
-  const pathname = usePathname();
-
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, "users", user.uid);
-  }, [user, firestore]);
-
-  const { data: userProfile, isLoading: isUserProfileLoading } = useDoc<{habits?: Habit[]}>(userDocRef);
-
-  const habits = useMemo(() => userProfile?.habits || DEFAULT_HABITS, [userProfile]);
-
-  const habitLogsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    return query(collection(firestore, `users/${user.uid}/habitLogs`));
-  }, [user, firestore]);
-
-  const { data: habitLogs, isLoading: isHabitLogsLoading } = useCollection<HabitLog>(habitLogsQuery);
-
-  const habitData = useMemo(() => {
-    if (!habitLogs) return {};
-    return habitLogs.reduce((acc, log) => {
-      if (!acc[log.date]) {
-        acc[log.date] = {};
-      }
-      acc[log.date][log.habitId] = log;
-      return acc;
-    }, {} as HabitData);
-  }, [habitLogs]);
   
+  useEffect(() => {
+    setIsInitialized(true);
+  }, []);
+
   const handleDashboardChange = (dashboard: DashboardOption) => {
     setSelectedDashboard(dashboard);
     if (dashboard === 'habits') {
@@ -101,14 +72,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateHabits = useCallback(
-    (newHabits: Habit[]) => {
-      if (userDocRef) {
-        setDocumentNonBlocking(userDocRef, { habits: newHabits }, { merge: true });
-      }
-    },
-    [userDocRef]
-  );
+  const updateHabits = (newHabits: Habit[]) => {
+    setHabits(newHabits);
+  };
 
   const updateHabitLog = useCallback(
     (
@@ -116,85 +82,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
       habitId: string,
       log: { completed: boolean; value?: number }
     ) => {
-        if (!user) return;
-
-        const logId = `${date}_${habitId}`;
-        const logDocRef = doc(firestore, `users/${user.uid}/habitLogs`, logId);
-        
-        const existingLog = (habitData[date] && habitData[date][habitId]) || {};
-
-        const newLogData: HabitLog = {
-            date,
-            habitId,
-            completed: log.completed,
-            ...(log.value !== undefined && { value: log.value }),
-            ...(existingLog.value !== undefined && log.value === undefined && { value: existingLog.value })
+      setHabitData((prevData) => {
+        const newData = { ...prevData };
+        if (!newData[date]) {
+          newData[date] = {};
+        }
+        const existingLog = newData[date][habitId] || {};
+        newData[date][habitId] = {
+          ...existingLog,
+          completed: log.completed,
+          ...(log.value !== undefined && { value: log.value }),
         };
-
-        setDocumentNonBlocking(logDocRef, newLogData, { merge: true });
+        return newData;
+      });
     },
-    [user, firestore, habitData]
+    [setHabitData]
   );
   
   const filteredDates = useMemo(
     () => getFilteredDates(selectedView, reportDateRange?.from || new Date()),
     [selectedView, reportDateRange]
   );
-
-  const isInitialized = !isUserLoading && !isUserProfileLoading && !isHabitLogsLoading;
-
-  // One-time data migration from localStorage to Firestore
-  useEffect(() => {
-    if (isInitialized && user && firestore) {
-      const migrationFlag = `migration-complete-${user.uid}`;
-      if (localStorage.getItem(migrationFlag)) {
-        return;
-      }
-
-      const oldHabits = localStorage.getItem('chrono-habits');
-      const oldHabitData = localStorage.getItem('chrono-habit-data');
-
-      if (oldHabits) {
-        const habitsToMigrate = JSON.parse(oldHabits);
-        if (userDocRef) {
-          setDocumentNonBlocking(userDocRef, { habits: habitsToMigrate }, { merge: true });
-        }
-      }
-
-      if (oldHabitData) {
-        const habitDataToMigrate: HabitData = JSON.parse(oldHabitData);
-        const batch = writeBatch(firestore);
-
-        Object.entries(habitDataToMigrate).forEach(([date, dailyLogs]) => {
-          Object.entries(dailyLogs).forEach(([habitId, log]) => {
-            const logId = `${date}_${habitId}`;
-            const logDocRef = doc(firestore, `users/${user.uid}/habitLogs`, logId);
-            const logData: HabitLog = {
-                date,
-                habitId,
-                completed: log.completed,
-                ...(log.value !== undefined && {value: log.value})
-            };
-            batch.set(logDocRef, logData, { merge: true });
-          });
-        });
-        
-        batch.commit().then(() => {
-            console.log("Habit data migration successful.");
-            localStorage.setItem(migrationFlag, 'true');
-            // Optionally clear old data
-            // localStorage.removeItem('chrono-habits');
-            // localStorage.removeItem('chrono-habit-data');
-        }).catch(error => {
-            console.error("Error migrating habit data: ", error);
-        });
-      } else {
-        // If no old data, still set flag to prevent future checks
-        localStorage.setItem(migrationFlag, 'true');
-      }
-    }
-  }, [isInitialized, user, firestore, userDocRef]);
-
 
   const value = {
     habits,

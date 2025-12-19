@@ -1,11 +1,9 @@
 
 "use client";
 
-import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react";
+import { createContext, useContext, ReactNode, useCallback } from "react";
 import type { WealthData, Expense, Trip, Fund, MutualFunds } from "@/lib/types";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
-import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const DEFAULT_WEALTH_DATA: WealthData = {
   monthlySalary: 0,
@@ -48,178 +46,138 @@ interface WealthContextType {
 const WealthContext = createContext<WealthContextType | undefined>(undefined);
 
 export function WealthProvider({ children }: { children: ReactNode }) {
-  const { user } = useUser();
-  const firestore = useFirestore();
-  const [localWealthData, setLocalWealthData] = useState<WealthData>(DEFAULT_WEALTH_DATA);
-
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, "users", user.uid);
-  }, [user, firestore]);
-
-  const { data: userProfile, isLoading: isUserLoading } = useDoc<{wealthData?: WealthData}>(userDocRef);
-
-  useEffect(() => {
-    if (userProfile && userProfile.wealthData) {
-      // Deep merge to preserve structure if some fields are missing from Firestore
-      const mergedData = {
-        ...DEFAULT_WEALTH_DATA,
-        ...userProfile.wealthData,
-        savingsAllocation: {
-          ...DEFAULT_WEALTH_DATA.savingsAllocation,
-          ...(userProfile.wealthData.savingsAllocation || {}),
-          mutualFunds: {
-            ...DEFAULT_WEALTH_DATA.savingsAllocation.mutualFunds,
-            ...(userProfile.wealthData.savingsAllocation?.mutualFunds || {}),
-          },
-        },
-      };
-      setLocalWealthData(mergedData);
-    }
-  }, [userProfile]);
+  const [wealthData, setWealthData] = useLocalStorage<WealthData>(
+    "chrono-wealth-data",
+    DEFAULT_WEALTH_DATA
+  );
 
   const updateWealthData = useCallback(
     (data: Partial<WealthData>) => {
-      if (userDocRef) {
-        const updatedData = { ...localWealthData, ...data };
-        setLocalWealthData(updatedData); // Optimistic update
-        setDocumentNonBlocking(userDocRef, { wealthData: updatedData }, { merge: true });
-      }
+      setWealthData((prev) => ({ ...prev, ...data }));
     },
-    [userDocRef, localWealthData]
+    [setWealthData]
   );
   
-  useEffect(() => {
-    if (user && userProfile && !isUserLoading) {
-      const migrationFlag = `wealth-migration-complete-${user.uid}`;
-      if (localStorage.getItem(migrationFlag)) {
-        return;
-      }
-
-      const oldWealthData = localStorage.getItem('chrono-wealth-data');
-      if (oldWealthData) {
-        try {
-          const dataToMigrate = JSON.parse(oldWealthData);
-          // Only migrate if there's no existing wealth data in Firestore
-          if (!userProfile.wealthData) {
-            updateWealthData(dataToMigrate);
-             console.log("Wealth data migration successful.");
-          }
-        } catch (e) {
-          console.error("Error parsing old wealth data for migration:", e);
-        }
-      }
-      localStorage.setItem(migrationFlag, 'true');
-    }
-  }, [user, userProfile, isUserLoading, updateWealthData]);
-
   const addExpense = (date: string, expense: Omit<Expense, "id">) => {
     const newExpense = { ...expense, id: `exp-${Date.now()}-${Math.random()}` };
-    const newExpenses = { ...(localWealthData.expenses || {}) };
-    if (!newExpenses[date]) {
-      newExpenses[date] = [];
-    }
-    newExpenses[date].push(newExpense);
-    updateWealthData({ expenses: newExpenses });
+    setWealthData(prev => {
+        const newExpenses = { ...(prev.expenses || {}) };
+        if (!newExpenses[date]) {
+            newExpenses[date] = [];
+        }
+        newExpenses[date].push(newExpense);
+        return { ...prev, expenses: newExpenses };
+    });
   };
 
   const updateExpense = (date: string, updatedExpense: Expense) => {
-    const newExpenses = { ...(localWealthData.expenses || {}) };
-    if (newExpenses[date]) {
-      newExpenses[date] = newExpenses[date].map((e) =>
-        e.id === updatedExpense.id ? updatedExpense : e
-      );
-      updateWealthData({ expenses: newExpenses });
-    }
+    setWealthData(prev => {
+        const newExpenses = { ...(prev.expenses || {}) };
+        if (newExpenses[date]) {
+            newExpenses[date] = newExpenses[date].map((e) =>
+                e.id === updatedExpense.id ? updatedExpense : e
+            );
+        }
+        return { ...prev, expenses: newExpenses };
+    });
   };
 
   const removeExpense = (date: string, id: string) => {
-    const newExpenses = { ...(localWealthData.expenses || {}) };
-    if (newExpenses[date]) {
-      newExpenses[date] = newExpenses[date].filter((e) => e.id !== id);
-      if (newExpenses[date].length === 0) {
-        delete newExpenses[date];
-      }
-      updateWealthData({ expenses: newExpenses });
-    }
+    setWealthData(prev => {
+        const newExpenses = { ...(prev.expenses || {}) };
+        if (newExpenses[date]) {
+            newExpenses[date] = newExpenses[date].filter((e) => e.id !== id);
+             if (newExpenses[date].length === 0) {
+                delete newExpenses[date];
+            }
+        }
+        return { ...prev, expenses: newExpenses };
+    });
   };
 
   const addTrip = (trip: Omit<Trip, "id">) => {
     const newTrip = { ...trip, id: `trip-${Date.now()}-${Math.random()}` };
-    updateWealthData({ trips: [...(localWealthData.trips || []), newTrip] });
+    setWealthData(prev => ({...prev, trips: [...(prev.trips || []), newTrip] }));
   };
 
   const updateTrip = (updatedTrip: Trip) => {
-    updateWealthData({
-      trips: (localWealthData.trips || []).map((t) =>
-        t.id === updatedTrip.id ? updatedTrip : t
-      ),
-    });
+    setWealthData(prev => ({
+        ...prev,
+        trips: (prev.trips || []).map((t) =>
+            t.id === updatedTrip.id ? updatedTrip : t
+        ),
+    }));
   };
 
   const removeTrip = (id: string) => {
-    updateWealthData({ trips: (localWealthData.trips || []).filter((t) => t.id !== id) });
+    setWealthData(prev => ({ ...prev, trips: (prev.trips || []).filter((t) => t.id !== id) }));
   };
 
   const addFund = (category: FundCategory | TopLevelFundCategory, fund: Omit<Fund, 'id' | 'schemeCode'> & { schemeCode?: string }) => {
     const newFund: Fund = { ...fund, id: `fund-${Date.now()}-${Math.random()}` };
-    const currentAllocation = { ...(localWealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
-    if (!currentAllocation.mutualFunds) currentAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
-    if (!currentAllocation.emergencyFunds) currentAllocation.emergencyFunds = [];
-    if (!currentAllocation.shortTermGoals) currentAllocation.shortTermGoals = [];
+    setWealthData(prev => {
+        const currentAllocation = { ...(prev.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
+        if (!currentAllocation.mutualFunds) currentAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
+        if (!currentAllocation.emergencyFunds) currentAllocation.emergencyFunds = [];
+        if (!currentAllocation.shortTermGoals) currentAllocation.shortTermGoals = [];
 
-    if (['debt', 'gold', 'equity'].includes(category)) {
-      currentAllocation.mutualFunds[category as FundCategory].push(newFund);
-    } else {
-      currentAllocation[category as TopLevelFundCategory].push(newFund);
-    }
-    
-    updateWealthData({ savingsAllocation: currentAllocation });
+        if (['debt', 'gold', 'equity'].includes(category)) {
+            currentAllocation.mutualFunds[category as FundCategory].push(newFund);
+        } else {
+            currentAllocation[category as TopLevelFundCategory].push(newFund);
+        }
+        return { ...prev, savingsAllocation: currentAllocation };
+    });
   };
   
   const updateFund = (category: FundCategory | TopLevelFundCategory, updatedFund: Fund) => {
-    const currentAllocation = { ...(localWealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
-    if (!currentAllocation.mutualFunds) return;
+     setWealthData(prev => {
+        const currentAllocation = { ...(prev.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
+        if (!currentAllocation.mutualFunds) return prev;
 
-    if (['debt', 'gold', 'equity'].includes(category)) {
-      const cat = category as FundCategory;
-      currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].map(f => f.id === updatedFund.id ? updatedFund : f);
-    } else {
-        const cat = category as TopLevelFundCategory;
-        currentAllocation[cat] = (currentAllocation[cat] || []).map(f => f.id === updatedFund.id ? updatedFund : f)
-    }
-
-    updateWealthData({ savingsAllocation: currentAllocation });
+        if (['debt', 'gold', 'equity'].includes(category)) {
+            const cat = category as FundCategory;
+            currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].map(f => f.id === updatedFund.id ? updatedFund : f);
+        } else {
+            const cat = category as TopLevelFundCategory;
+            currentAllocation[cat] = (currentAllocation[cat] || []).map(f => f.id === updatedFund.id ? updatedFund : f)
+        }
+        return { ...prev, savingsAllocation: currentAllocation };
+    });
   };
   
   const removeFund = (category: FundCategory | TopLevelFundCategory, id: string) => {
-    const currentAllocation = { ...(localWealthData.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
-    if (!currentAllocation.mutualFunds) return;
-    
-    if (['debt', 'gold', 'equity'].includes(category)) {
-      const cat = category as FundCategory;
-      currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].filter(f => f.id !== id);
-    } else {
-        const cat = category as TopLevelFundCategory;
-        currentAllocation[cat] = (currentAllocation[cat] || []).filter(f => f.id !== id);
-    }
-
-    updateWealthData({ savingsAllocation: currentAllocation });
+    setWealthData(prev => {
+        const currentAllocation = { ...(prev.savingsAllocation || DEFAULT_WEALTH_DATA.savingsAllocation) };
+        if (!currentAllocation.mutualFunds) return prev;
+        
+        if (['debt', 'gold', 'equity'].includes(category)) {
+            const cat = category as FundCategory;
+            currentAllocation.mutualFunds[cat] = currentAllocation.mutualFunds[cat].filter(f => f.id !== id);
+        } else {
+            const cat = category as TopLevelFundCategory;
+            currentAllocation[cat] = (currentAllocation[cat] || []).filter(f => f.id !== id);
+        }
+        return { ...prev, savingsAllocation: currentAllocation };
+    });
   };
 
   const setBudget = (type: 'expenses' | 'trips', month: string, amount: number) => {
       const budgetType = type === 'expenses' ? 'expenseBudgets' : 'tripBudgets';
-      const budgets = localWealthData[budgetType] || {};
-      updateWealthData({
-        [budgetType]: {
-          ...budgets,
-          [month]: amount,
-        },
+      setWealthData(prev => {
+          const budgets = prev[budgetType] || {};
+          return {
+              ...prev,
+              [budgetType]: {
+                  ...budgets,
+                  [month]: amount,
+              },
+          };
       });
   };
 
   const value = {
-    wealthData: localWealthData,
+    wealthData: wealthData || DEFAULT_WEALTH_DATA,
     updateWealthData,
     addExpense,
     updateExpense,
@@ -231,7 +189,7 @@ export function WealthProvider({ children }: { children: ReactNode }) {
     updateFund,
     removeFund,
     setBudget,
-    isWealthDataLoading: isUserLoading,
+    isWealthDataLoading: false,
   };
 
   return (
