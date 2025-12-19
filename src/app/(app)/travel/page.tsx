@@ -92,7 +92,7 @@ const TravelPage = () => {
       <main className="container mx-auto px-4 py-4">
         <div className="grid lg:grid-cols-[380px_1fr] gap-4">
           {/* Sidebar */}
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             {/* Add Journey Card */}
             <Card>
               <CardHeader className="pb-3">
@@ -143,7 +143,7 @@ const TravelPage = () => {
           </div>
 
           {/* Map */}
-          <Card className="overflow-hidden">
+          <Card className="relative z-0">
             <div className="h-[calc(100vh-120px)] min-h-[500px]">
               <Map entries={pathCoordinates} />
             </div>

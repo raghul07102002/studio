@@ -1,12 +1,12 @@
+
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { ChevronsUpDown, MapPin, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { TravelLocation } from "@/lib/types";
 
 interface LocationInputProps {
@@ -104,10 +104,11 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
     };
   }, [searchQuery, fetchLocations]);
 
-  // Sync searchQuery with external value when popover opens and value exists
   useEffect(() => {
     if (open && value) {
       setSearchQuery(value.name);
+    } else if (!open) {
+      setSearchQuery('');
     }
   }, [open, value]);
 
@@ -126,7 +127,7 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[310px] p-0" align="start">
+      <PopoverContent className="w-[310px] p-0 z-50" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search city, state, or place..."
@@ -149,7 +150,7 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
                     });
                     setOpen(false);
                   }}
-                  className="text-xs"
+                  className="text-xs cursor-pointer"
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   <span className="truncate">{result.display_name}</span>
@@ -162,12 +163,11 @@ export function LocationInput({ value, onValueChange, placeholder }: LocationInp
                     onSelect={() => {
                         onValueChange({
                             name: searchQuery,
-                            // Providing 0,0 as a placeholder for manual entry
                             coords: { lat: 0, lng: 0 } 
                         });
                         setOpen(false);
                     }} 
-                    className="text-xs"
+                    className="text-xs cursor-pointer"
                   >
                      <Target className="mr-2 h-4 w-4" />
                      Use "{searchQuery}"
