@@ -1,22 +1,19 @@
 
 'use client';
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
-import { TravelEntry } from "@/lib/types";
+import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import type { TravelEntry } from "@/lib/types";
 import { getStateByCode, indianStates } from "@/data/stateData";
-import { LatLngExpression, LatLngBoundsExpression } from "leaflet";
-
-interface TravelMapProps {
-  entries: TravelEntry[];
-}
+import type { LatLngExpression, LatLngBoundsExpression } from "leaflet";
+import L from 'leaflet';
 
 const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
   const map = useMap();
   const routeLayersRef = useRef<L.Layer[]>([]);
 
   useEffect(() => {
-    // Clear existing routes
+    // Clear existing routes and markers
     routeLayersRef.current.forEach((layer) => {
       if (map.hasLayer(layer)) {
         map.removeLayer(layer);
@@ -103,6 +100,8 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
   return null;
 };
 
+const MemoizedRouteLayer = memo(RouteLayer);
+
 const TravelMap = ({ entries }: TravelMapProps) => {
   return (
     <MapContainer
@@ -131,9 +130,9 @@ const TravelMap = ({ entries }: TravelMapProps) => {
           <Tooltip direction="top">{state.name}</Tooltip>
         </CircleMarker>
       ))}
-      <RouteLayer entries={entries} />
+      <MemoizedRouteLayer entries={entries} />
     </MapContainer>
   );
 };
 
-export default TravelMap;
+export default memo(TravelMap);
