@@ -1,11 +1,11 @@
 
 'use client';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import { TravelEntry } from "@/lib/types";
 import { getStateByCode, indianStates } from "@/data/stateData";
-import { LatLngExpression, LatLngBoundsExpression, Map } from "leaflet";
+import { LatLngExpression, LatLngBoundsExpression } from "leaflet";
 
 interface TravelMapProps {
   entries: TravelEntry[];
@@ -17,10 +17,17 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
 
   useEffect(() => {
     // Clear existing routes
-    routeLayersRef.current.forEach((layer) => layer.remove());
+    routeLayersRef.current.forEach((layer) => {
+      if (map.hasLayer(layer)) {
+        map.removeLayer(layer);
+      }
+    });
     routeLayersRef.current = [];
 
-    if (entries.length === 0) return;
+    if (entries.length === 0) {
+      map.setView([22.9734, 78.6569], 5);
+      return;
+    };
 
     const sortedEntries = [...entries].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -29,27 +36,13 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
     const visitedStates = new Set<string>();
     const drawnRoutes: L.Layer[] = [];
 
-    sortedEntries.forEach((entry, index) => {
+    sortedEntries.forEach((entry) => {
       const from = getStateByCode(entry.fromState);
       const to = getStateByCode(entry.toState);
 
       if (from && to) {
         visitedStates.add(entry.fromState);
         visitedStates.add(entry.toState);
-
-        const line = (
-          <Polyline
-            key={`line-${entry.id}`}
-            positions={[from.center as LatLngExpression, to.center as LatLngExpression]}
-            pathOptions={{
-              color: `hsl(${(index * 40) % 360}, 70%, 50%)`,
-              weight: 3,
-              opacity: 0.8,
-              dashArray: "8, 4",
-            }}
-          />
-        );
-        // This is a conceptual representation. In reality, you'd add this to a layer group.
       }
     });
 
@@ -93,13 +86,17 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
         const state = getStateByCode(code);
         if (state) bounds.push(state.center as LatLngExpression);
       });
-      if (bounds.length > 1) {
+      if (bounds.length > 0) {
         map.fitBounds(bounds as LatLngBoundsExpression, { padding: [50, 50] });
       }
     }
 
     return () => {
-      routeLayersRef.current.forEach((layer) => layer.remove());
+      routeLayersRef.current.forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
     };
   }, [entries, map]);
 
@@ -107,8 +104,6 @@ const RouteLayer = ({ entries }: { entries: TravelEntry[] }) => {
 };
 
 const TravelMap = ({ entries }: TravelMapProps) => {
-  const [map, setMap] = useState<Map | null>(null);
-
   return (
     <MapContainer
       center={[22.9734, 78.6569]}
@@ -116,7 +111,6 @@ const TravelMap = ({ entries }: TravelMapProps) => {
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       className="rounded-lg"
-      whenCreated={setMap}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -137,7 +131,7 @@ const TravelMap = ({ entries }: TravelMapProps) => {
           <Tooltip direction="top">{state.name}</Tooltip>
         </CircleMarker>
       ))}
-      {map ? <RouteLayer entries={entries} /> : null}
+      <RouteLayer entries={entries} />
     </MapContainer>
   );
 };
