@@ -11,10 +11,29 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RemainingAmountChart } from './remaining-amount-chart';
 import { SavingsDistributionChart } from './savings-distribution-chart';
 import { format } from 'date-fns';
+import { useApp } from '@/contexts/app-provider';
+import { Skeleton } from '../ui/skeleton';
 
 export function WealthDashboardView() {
+  const { isInitialized } = useApp();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const selectedMonthString = selectedDate ? format(selectedDate, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
+
+  if (!isInitialized) {
+      return (
+          <div className="space-y-6">
+              <Skeleton className="h-24 w-full" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <Skeleton className="lg:col-span-1 h-96" />
+                  <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Skeleton className="h-96" />
+                      <Skeleton className="h-96" />
+                  </div>
+              </div>
+              <Skeleton className="h-[30rem] w-full" />
+          </div>
+      )
+  }
 
   return (
     <div className="space-y-6">

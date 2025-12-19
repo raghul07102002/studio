@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useMemo } from 'react';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { isSameMonth } from 'date-fns';
@@ -9,7 +10,7 @@ import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
 
 export function WealthMetrics() {
-  const { wealthData, updateWealthData } = useWealth();
+  const { wealthData, updateWealthData } = useApp();
   const { monthlySalary, expenses, monthlySavings } = wealthData;
 
   const totalExpenses = useMemo(() => {

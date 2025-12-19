@@ -14,7 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 
 const TARGET_CORPUS = 70000000; // 7 Crore
 const YEARS = 20;
@@ -31,7 +31,7 @@ const calculateFutureValue = (monthlyInvestment: number) => {
 
 
 export function CorpusChart() {
-  const { wealthData } = useWealth();
+  const { wealthData } = useApp();
 
   const investmentData = useMemo(() => {
     const { savingsAllocation } = wealthData;

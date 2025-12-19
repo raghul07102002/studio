@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -14,11 +15,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import { isSameMonth } from 'date-fns';
 
 export function SalaryDistributionChart() {
-  const { wealthData } = useWealth();
+  const { wealthData } = useApp();
   const { monthlySalary, expenses } = wealthData;
 
   const totalExpenses = useMemo(() => {

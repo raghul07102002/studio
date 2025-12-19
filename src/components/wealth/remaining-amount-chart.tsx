@@ -17,7 +17,7 @@ import {
   ChartLegend,
   ChartLegendContent
 } from '@/components/ui/chart';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import { format } from 'date-fns';
 
 interface RemainingAmountChartProps {
@@ -25,7 +25,7 @@ interface RemainingAmountChartProps {
 }
 
 export function RemainingAmountChart({ selectedMonth }: RemainingAmountChartProps) {
-  const { wealthData } = useWealth();
+  const { wealthData } = useApp();
   const { expenseBudgets, expenses } = wealthData;
 
   const monthlyBudget = expenseBudgets?.[selectedMonth] || 0;

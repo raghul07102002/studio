@@ -1,0 +1,215 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's profile information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User Profile entity."
+        },
+        "habits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Habit"
+          },
+          "description": "The user's list of configured habits."
+        },
+        "habitData": {
+          "type": "object",
+          "description": "A map of dates to habit logs for that day."
+        },
+        "wealthData": {
+          "$ref": "#/backend/entities/WealthData"
+        },
+        "careerRoadmaps": {
+          "$ref": "#/backend/entities/CareerRoadmaps"
+        }
+      },
+      "required": ["id"]
+    },
+    "Habit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Habit",
+      "type": "object",
+      "description": "Represents a user-defined habit.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Habit entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the habit."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["checkbox", "numeric"],
+          "description": "Type of habit (Checkbox or Numeric)."
+        },
+        "icon": {
+          "type": "string",
+          "description": "The name of the lucide-react icon for the habit."
+        }
+      },
+      "required": ["id", "name", "type", "icon"]
+    },
+    "HabitLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Habit Log",
+      "type": "object",
+      "description": "Represents a single log entry for a habit on a specific date.",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date for the log in YYYY-MM-DD format."
+        },
+        "habitId": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "value": {
+          "type": "number"
+        }
+      },
+      "required": ["date", "habitId", "completed"]
+    },
+    "CareerRoadmaps": {
+      "type": "object",
+      "description": "Stores the roadmaps for all career paths.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "#/backend/entities/RoadmapItem"
+        }
+      }
+    },
+    "RoadmapItem": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "hoursSpent": { "type": "number" },
+        "displayHours": { "type": "string" }
+      },
+      "required": ["id", "title", "hoursSpent"]
+    },
+    "WealthData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Wealth Data",
+      "type": "object",
+      "description": "Represents all financial data for a user.",
+      "properties": {
+        "monthlySalary": {
+          "type": "number"
+        },
+        "monthlySavings": {
+          "type": "number"
+        },
+        "expenses": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/backend/entities/Expense"
+            }
+          }
+        },
+        "trips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Trip"
+          }
+        },
+        "savingsAllocation": {
+          "$ref": "#/backend/entities/SavingsAllocation"
+        },
+        "expenseBudgets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "tripBudgets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "Expense": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "Trip": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "Fund": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "SavingsAllocation": {
+      "type": "object",
+      "properties": {
+        "mutualFunds": {
+          "type": "object",
+          "properties": {
+            "debt": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
+            "gold": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
+            "equity": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }}
+          }
+        },
+        "emergencyFunds": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
+        "shortTermGoals": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }}
+      }
+    }
+  },
+  "auth": {
+    "providers": [
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile and their associated data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

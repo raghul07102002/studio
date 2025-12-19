@@ -17,10 +17,10 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 
 export function SavingsDistributionChart() {
-  const { wealthData } = useWealth();
+  const { wealthData } = useApp();
   const { monthlySavings, savingsAllocation } = wealthData;
 
   const chartData = useMemo(() => {

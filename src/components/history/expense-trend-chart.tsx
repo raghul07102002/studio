@@ -22,11 +22,17 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { useFinancialReport } from '@/contexts/financial-report-provider';
+import { useApp } from '@/contexts/app-provider';
 import { format } from 'date-fns';
+import { Expense } from '@/lib/types';
 
-export function ExpenseTrendChart() {
-  const { filteredExpenses, filteredDates, view } = useFinancialReport();
+interface ExpenseTrendChartProps {
+    filteredExpenses: Record<string, Expense[]>;
+    filteredDates: Date[];
+}
+
+export function ExpenseTrendChart({ filteredExpenses, filteredDates }: ExpenseTrendChartProps) {
+  const { selectedView } = useApp();
 
   const chartData = useMemo(() => {
     return filteredDates.map(date => {
@@ -65,7 +71,7 @@ export function ExpenseTrendChart() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => view === 'Month' ? value : value.slice(0, 6)}
+                tickFormatter={(value) => selectedView === 'Month' ? value : value.slice(0, 6)}
               />
               <YAxis
                 tickLine={false}

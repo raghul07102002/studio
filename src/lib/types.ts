@@ -1,3 +1,4 @@
+
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -8,12 +9,9 @@ export interface Habit {
 }
 
 export interface HabitLog {
-  date: string;
-  habitId: string;
   completed: boolean;
   value?: number;
 }
-
 
 export type DailyHabitLogs = Record<string, HabitLog>;
 
@@ -26,6 +24,16 @@ export type ViewOption =
   | "Year";
 
 export type DashboardOption = "habits" | "wealth" | "career";
+
+// Career Dashboard Types
+export type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';
+
+export interface RoadmapItem {
+    id: string;
+    title: string;
+    hoursSpent: number;
+    displayHours?: string;
+}
 
 // Wealth Dashboard Types
 export interface Expense {
@@ -67,7 +75,7 @@ export interface MonthlyBudget {
 export interface WealthData {
   monthlySalary: number;
   monthlySavings: number;
-  expenses: Record<string, Expense[]>; // Changed from Expense[]
+  expenses: Record<string, Expense[]>;
   trips: Trip[];
   savingsAllocation: SavingsAllocation;
   expenseBudgets: MonthlyBudget;

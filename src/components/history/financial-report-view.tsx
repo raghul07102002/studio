@@ -3,14 +3,43 @@
 
 import { HistoryMetrics } from './history-metrics';
 import { ExpenseTrendChart } from './expense-trend-chart';
-import { useFinancialReport } from '@/contexts/financial-report-provider';
+import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent } from '../ui/card';
-import { format } from 'date-fns';
+import { format, eachDayOfInterval, isWithinInterval } from 'date-fns';
 import { DateSelector } from './date-selector';
+import { useMemo } from 'react';
 
 export function FinancialReportView() {
-  const { filteredDates } = useFinancialReport();
+  const { reportDateRange, wealthData } = useApp();
   
+  const timeInterval = useMemo(() => {
+    if (!reportDateRange || !reportDateRange.from) {
+      const now = new Date();
+      return { start: now, end: now };
+    }
+    return { start: reportDateRange.from, end: reportDateRange.to || reportDateRange.from };
+  }, [reportDateRange]);
+
+  const filteredDates = useMemo(() => {
+    return eachDayOfInterval(timeInterval);
+  }, [timeInterval]);
+
+  const { totalExpenses, filteredExpenses } = useMemo(() => {
+    let total = 0;
+    const filtered: Record<string, { id: string; name: string; amount: number }[]> = {};
+    
+    if (wealthData && wealthData.expenses) {
+        Object.entries(wealthData.expenses).forEach(([dateStr, expenses]) => {
+          const date = new Date(dateStr);
+          if (isWithinInterval(date, timeInterval)) {
+            filtered[dateStr] = expenses;
+            total += expenses.reduce((sum, exp) => sum + exp.amount, 0);
+          }
+        });
+    }
+    return { totalExpenses: total, filteredExpenses: filtered };
+  }, [wealthData.expenses, timeInterval]);
+
   const getSubtitle = () => {
     if (!filteredDates.length) return 'Select a date range to view your history';
     const start = filteredDates[0];
@@ -36,8 +65,14 @@ export function FinancialReportView() {
             </div>
         </CardContent>
       </Card>
-      <HistoryMetrics />
-      <ExpenseTrendChart />
+      <HistoryMetrics 
+        totalExpenses={totalExpenses} 
+        timeInterval={timeInterval}
+      />
+      <ExpenseTrendChart 
+        filteredDates={filteredDates} 
+        filteredExpenses={filteredExpenses} 
+      />
     </div>
   );
 }

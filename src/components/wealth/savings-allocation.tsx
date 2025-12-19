@@ -2,13 +2,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FundTable } from './fund-table';
 import { Progress } from '../ui/progress';
 
 export function SavingsAllocation() {
-  const { wealthData, updateWealthData } = useWealth();
+  const { wealthData, updateWealthData } = useApp();
   const { monthlySavings, savingsAllocation } = wealthData;
   
   const totalAllocated = useMemo(() => {

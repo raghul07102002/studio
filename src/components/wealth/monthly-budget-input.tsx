@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,7 @@ interface MonthlyBudgetInputProps {
 }
 
 export function MonthlyBudgetInput({ type, selectedMonth }: MonthlyBudgetInputProps) {
-  const { wealthData, setBudget } = useWealth();
+  const { wealthData, updateWealthData } = useApp();
   const budgets = type === 'expenses' ? wealthData.expenseBudgets : wealthData.tripBudgets;
   
   const [amount, setAmount] = useState((budgets && budgets[selectedMonth]) || '');
@@ -24,7 +25,9 @@ export function MonthlyBudgetInput({ type, selectedMonth }: MonthlyBudgetInputPr
   const handleSetBudget = () => {
     const numericAmount = parseFloat(String(amount));
     if (!isNaN(numericAmount)) {
-      setBudget(type, selectedMonth, numericAmount);
+      const budgetType = type === 'expenses' ? 'expenseBudgets' : 'tripBudgets';
+      const newBudgets = { ...(wealthData[budgetType] || {}), [selectedMonth]: numericAmount };
+      updateWealthData({ [budgetType]: newBudgets });
     }
   };
   

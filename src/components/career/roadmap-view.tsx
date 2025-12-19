@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RoadmapProgressChart } from './roadmap-progress-chart';
-import { useCareer, type RoadmapItem, type CareerPath } from '@/contexts/career-provider';
+import { useApp } from '@/contexts/app-provider';
+import type { RoadmapItem, CareerPath } from '@/lib/types';
+
 
 interface RoadmapViewProps {
     path: CareerPath;
@@ -18,7 +21,7 @@ interface RoadmapViewProps {
 const MAX_HOURS_PER_DAY = 4;
 
 export function RoadmapView({ path, onBack }: RoadmapViewProps) {
-    const { roadmaps, setRoadmap, addRoadmapItem, updateRoadmapItem, removeRoadmapItem } = useCareer();
+    const { roadmaps, addRoadmapItem, updateRoadmapItem, removeRoadmapItem } = useApp();
     const items = roadmaps[path] || [];
     
     const [newItemTitle, setNewItemTitle] = useState('');

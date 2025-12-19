@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, Plus } from 'lucide-react';
@@ -30,7 +30,7 @@ export function FundTable({
   title,
   maxAllocation,
 }: FundTableProps) {
-  const { wealthData, addFund, updateFund, removeFund } = useWealth();
+  const { wealthData, updateWealthData } = useApp();
   
   const funds: Fund[] = 
     wealthData.savingsAllocation && 'mutualFunds' in wealthData.savingsAllocation && wealthData.savingsAllocation.mutualFunds && (category in wealthData.savingsAllocation.mutualFunds)
@@ -73,28 +73,51 @@ export function FundTable({
     return () => clearTimeout(debounce);
   }, [newItemName]);
 
-  const handleAddItem = () => {
-    const amount = parseFloat(newItemAmount);
-    if (newItemName && !isNaN(amount)) {
-      addFund(category, { name: newItemName, amount, schemeCode: newItemSchemeCode });
-      setNewItemName('');
-      setNewItemAmount('');
-      setNewItemSchemeCode(undefined);
-      setIsAdding(false);
-      setIsPopoverOpen(false);
-    }
-  };
+    const handleAddItem = () => {
+        const amount = parseFloat(newItemAmount);
+        if (newItemName && !isNaN(amount)) {
+            const newFund: Fund = { name: newItemName, amount, id: `fund-${Date.now()}`, schemeCode: newItemSchemeCode };
+            const newAllocation = { ...(wealthData.savingsAllocation) };
+            if (!newAllocation.mutualFunds) newAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
 
-  const handleUpdate = (id: string, field: 'name' | 'amount', value: string) => {
-    const item = funds.find(i => i.id === id);
-    if (!item) return;
+            if (['debt', 'gold', 'equity'].includes(category)) {
+                newAllocation.mutualFunds[category as FundCategory].push(newFund);
+            } else {
+                newAllocation[category as TopLevelFundCategory] = [...(newAllocation[category as TopLevelFundCategory] || []), newFund];
+            }
+            updateWealthData({ savingsAllocation: newAllocation });
 
-    if (field === 'name') {
-      updateFund(category, { ...item, name: value });
-    } else {
-      updateFund(category, { ...item, amount: parseFloat(value) || 0 });
+            setNewItemName('');
+            setNewItemAmount('');
+            setNewItemSchemeCode(undefined);
+            setIsAdding(false);
+            setIsPopoverOpen(false);
+        }
+    };
+    
+    const handleUpdate = (id: string, field: 'name' | 'amount', value: string) => {
+        const newAllocation = { ...(wealthData.savingsAllocation) };
+         if (['debt', 'gold', 'equity'].includes(category)) {
+            const cat = category as FundCategory;
+            newAllocation.mutualFunds[cat] = newAllocation.mutualFunds[cat].map(f => f.id === id ? { ...f, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : f);
+        } else {
+            const cat = category as TopLevelFundCategory;
+            newAllocation[cat] = (newAllocation[cat] || []).map(f => f.id === id ? { ...f, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : f);
+        }
+        updateWealthData({ savingsAllocation: newAllocation });
+    };
+
+    const handleRemove = (id: string) => {
+        const newAllocation = { ...(wealthData.savingsAllocation) };
+        if (['debt', 'gold', 'equity'].includes(category)) {
+            const cat = category as FundCategory;
+            newAllocation.mutualFunds[cat] = newAllocation.mutualFunds[cat].filter(f => f.id !== id);
+        } else {
+            const cat = category as TopLevelFundCategory;
+            newAllocation[cat] = (newAllocation[cat] || []).filter(f => f.id !== id);
+        }
+        updateWealthData({ savingsAllocation: newAllocation });
     }
-  }
 
   const handleSelectFund = (name: string, schemeCode: string) => {
     setNewItemName(name);
@@ -134,7 +157,7 @@ export function FundTable({
                     className="h-8 w-24 text-xs"
                     placeholder='Amount'
                 />
-                <Button variant="ghost" size="icon" className='h-8 w-8' onClick={() => removeFund(category, fund.id)}>
+                <Button variant="ghost" size="icon" className='h-8 w-8' onClick={() => handleRemove(fund.id)}>
                     <Trash2 className="h-3 w-3" />
                 </Button>
             </div>

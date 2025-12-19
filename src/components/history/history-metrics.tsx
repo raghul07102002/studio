@@ -1,11 +1,34 @@
+
 'use client';
 
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useFinancialReport } from '@/contexts/financial-report-provider';
+import { useApp } from '@/contexts/app-provider';
 import { PiggyBank, Plane, Receipt } from 'lucide-react';
+import { endOfMonth } from 'date-fns';
 
-export function HistoryMetrics() {
-  const { totalExpenses, totalTrips, totalSavings, view } = useFinancialReport();
+interface HistoryMetricsProps {
+    totalExpenses: number;
+    timeInterval: { start: Date; end: Date; };
+}
+
+export function HistoryMetrics({ totalExpenses, timeInterval }: HistoryMetricsProps) {
+  const { selectedView, wealthData } = useApp();
+
+  const totalTrips = useMemo(() => {
+    return wealthData.trips.reduce((sum, trip) => sum + trip.amount, 0);
+  }, [wealthData.trips]);
+  
+  const totalSavings = useMemo(() => {
+    const start = timeInterval.start;
+    const end = timeInterval.end;
+    const isFullMonth = start.getDate() === 1 && end.getDate() === endOfMonth(start).getDate();
+    
+    if (isFullMonth) {
+        return wealthData.monthlySalary - totalExpenses;
+    }
+    return 0; // Or calculate proportional savings
+  }, [wealthData.monthlySalary, totalExpenses, timeInterval]);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('en-IN', {
@@ -24,7 +47,7 @@ export function HistoryMetrics() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formatCurrency(totalExpenses)}</div>
-          <p className="text-xs text-muted-foreground">For the selected {view.toLowerCase()}</p>
+          <p className="text-xs text-muted-foreground">For the selected {selectedView.toLowerCase()}</p>
         </CardContent>
       </Card>
       <Card>
@@ -46,7 +69,7 @@ export function HistoryMetrics() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formatCurrency(totalSavings)}</div>
-          <p className="text-xs text-muted-foreground">For the selected {view.toLowerCase()}</p>
+          <p className="text-xs text-muted-foreground">For the selected {selectedView.toLowerCase()}</p>
         </CardContent>
       </Card>
     </div>

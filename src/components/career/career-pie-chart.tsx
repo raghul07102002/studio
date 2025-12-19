@@ -14,12 +14,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useCareer } from "@/contexts/career-provider";
+import { useApp } from "@/contexts/app-provider";
 
 const MAX_HOURS_PER_DAY = 4;
 
 export function CareerPieChart() {
-    const { roadmaps } = useCareer();
+    const { roadmaps } = useApp();
 
     const calculateItemProgress = (hours: number) => {
         return Math.min((hours / MAX_HOURS_PER_DAY) * 100, 100);

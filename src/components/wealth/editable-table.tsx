@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useWealth } from '@/contexts/wealth-provider';
+import { useApp } from '@/contexts/app-provider';
 import {
   Card,
   CardContent,
@@ -47,7 +47,7 @@ export function EditableTable({
   selectedDate,
   onDateChange
 }: EditableTableProps) {
-  const { wealthData, addExpense, updateExpense, removeExpense, addTrip, updateTrip, removeTrip } = useWealth();
+  const { wealthData, updateWealthData } = useApp();
   
   const dateForExpenses = type === 'expenses' ? selectedDate : new Date();
   const selectedDateString = dateForExpenses ? format(dateForExpenses, 'yyyy-MM-dd') : '';
@@ -70,56 +70,61 @@ export function EditableTable({
         return total;
       }, 0);
     }
-    // For trips, we'll sum up all trips for now as they are not dated per month
     return wealthData?.trips?.reduce((sum, item) => sum + item.amount, 0) || 0;
   }, [wealthData?.expenses, wealthData?.trips, selectedMonthString, type]);
 
-  const addItem = (item: Omit<Expense, 'id'> | Omit<Trip, 'id'>) => {
-    if (type === 'expenses') {
-      addExpense(selectedDateString, item as Omit<Expense, 'id'>);
-    } else {
-      addTrip(item as Omit<Trip, 'id'>);
-    }
-  };
-
-  const updateItem = (item: Expense | Trip) => {
-    if (type === 'expenses') {
-      updateExpense(selectedDateString, item as Expense);
-    } else {
-      updateTrip(item as Trip);
-    }
-  }
-
-  const removeItem = (id: string) => {
-    if (type === 'expenses') {
-      removeExpense(selectedDateString, id);
-    } else {
-      removeTrip(id);
-    }
-  }
-
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
-
+  
   const handleAddItem = () => {
     const amount = parseFloat(newItemAmount);
     if (newItemName && !isNaN(amount)) {
-      addItem({ name: newItemName, amount });
+      if (type === 'expenses') {
+        const newExpense = { name: newItemName, amount, id: `exp-${Date.now()}` };
+        const newExpenses = { ...(wealthData.expenses || {}) };
+        if (!newExpenses[selectedDateString]) newExpenses[selectedDateString] = [];
+        newExpenses[selectedDateString].push(newExpense);
+        updateWealthData({ expenses: newExpenses });
+      } else {
+        const newTrip = { name: newItemName, amount, id: `trip-${Date.now()}` };
+        const newTrips = [...(wealthData.trips || []), newTrip];
+        updateWealthData({ trips: newTrips });
+      }
       setNewItemName('');
       setNewItemAmount('');
     }
   };
-
+  
   const handleUpdate = (id: string, field: 'name' | 'amount', value: string) => {
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-
-    if (field === 'name') {
-      updateItem({ ...item, name: value });
+    if (type === 'expenses') {
+        const newExpenses = { ...(wealthData.expenses || {}) };
+        if (newExpenses[selectedDateString]) {
+            newExpenses[selectedDateString] = newExpenses[selectedDateString].map(item => 
+                item.id === id ? { ...item, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : item
+            );
+            updateWealthData({ expenses: newExpenses });
+        }
     } else {
-      updateItem({ ...item, amount: parseFloat(value) || 0 });
+        const newTrips = (wealthData.trips || []).map(item => 
+            item.id === id ? { ...item, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : item
+        );
+        updateWealthData({ trips: newTrips });
     }
-  }
+  };
+  
+  const handleRemoveItem = (id: string) => {
+    if (type === 'expenses') {
+        const newExpenses = { ...(wealthData.expenses || {}) };
+        if (newExpenses[selectedDateString]) {
+            newExpenses[selectedDateString] = newExpenses[selectedDateString].filter(item => item.id !== id);
+            if (newExpenses[selectedDateString].length === 0) delete newExpenses[selectedDateString];
+            updateWealthData({ expenses: newExpenses });
+        }
+    } else {
+        const newTrips = (wealthData.trips || []).filter(item => item.id !== id);
+        updateWealthData({ trips: newTrips });
+    }
+  };
 
   const dailyTotal = items.reduce((sum, item) => sum + item.amount, 0);
   const remainingBudget = monthlyBudget - monthlyTotalSpent;
@@ -195,7 +200,7 @@ export function EditableTable({
                       />
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
