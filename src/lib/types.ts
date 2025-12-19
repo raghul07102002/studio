@@ -1,4 +1,5 @@
 
+
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -23,7 +24,7 @@ export type ViewOption =
   | "Month"
   | "Year";
 
-export type DashboardOption = "habits" | "wealth" | "career";
+export type DashboardOption = "habits" | "wealth" | "career" | "travel";
 
 // Career Dashboard Types
 export type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';
@@ -87,4 +88,19 @@ export interface WealthData {
   savingsAllocation: SavingsAllocation;
   expenseBudgets: MonthlyBudget;
   tripBudgets: MonthlyBudget;
+}
+
+// Travel Dashboard Types
+export interface TravelPlace {
+  id: string;
+  name: string;
+  district: string;
+  state: string;
+  date: string; // YYYY-MM-DD
+  coords: { lat: number; lng: number };
+}
+
+export interface TravelData {
+  places: TravelPlace[];
+  selectedStates: string[];
 }

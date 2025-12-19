@@ -10,14 +10,14 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
 import { doc } from "firebase/firestore";
-import { useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking, useDoc } from "@/firebase";
 
 // Default initial states
 const DEFAULT_WEALTH_DATA: WealthData = {
@@ -32,6 +32,11 @@ const DEFAULT_WEALTH_DATA: WealthData = {
   },
   expenseBudgets: {},
   tripBudgets: {},
+};
+
+const DEFAULT_TRAVEL_DATA: TravelData = {
+  places: [],
+  selectedStates: [],
 };
 
 const initialRoadmaps: Record<CareerPath, RoadmapItem[]> = {
@@ -71,6 +76,7 @@ interface UserProfile {
   habitData?: HabitData;
   wealthData?: WealthData;
   careerRoadmaps?: Record<CareerPath, RoadmapItem[]>;
+  travelData?: TravelData;
 }
 
 interface AppContextType {
@@ -78,9 +84,12 @@ interface AppContextType {
   habitData: HabitData;
   wealthData: WealthData;
   roadmaps: Record<CareerPath, RoadmapItem[]>;
+  travelData: TravelData;
+
   updateHabits: (habits: Habit[]) => void;
   updateHabitLog: (date: string, habitId: string, log: Partial<HabitLog>) => void;
   updateWealthData: (data: Partial<WealthData>) => void;
+  updateTravelData: (data: Partial<TravelData>) => void;
   
   updateRoadmapItem: (path: CareerPath, item: RoadmapItem) => void;
   addRoadmapItem: (path: CareerPath, title: string) => void;
@@ -112,11 +121,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [user, firestore]
   );
   
-  const [appData, setAppData] = useState<UserProfile>({
+  const { data: userProfileData, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
+  
+  const [localData, setLocalData] = useState<UserProfile>({
     habits: DEFAULT_HABITS,
     habitData: {},
     wealthData: DEFAULT_WEALTH_DATA,
     careerRoadmaps: initialRoadmaps,
+    travelData: DEFAULT_TRAVEL_DATA,
   });
 
   const [isInitialized, setIsInitialized] = useState(false);
@@ -133,35 +145,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (user && userDocRef) {
-        const fetchAndInitData = async () => {
-            const { getDoc } = await import('firebase/firestore');
-            const docSnap = await getDoc(userDocRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data() as UserProfile;
-                setAppData({
-                    habits: data.habits || DEFAULT_HABITS,
-                    habitData: data.habitData || {},
-                    wealthData: data.wealthData || DEFAULT_WEALTH_DATA,
-                    careerRoadmaps: data.careerRoadmaps || initialRoadmaps,
-                });
-            } else {
-                const initialData = {
-                    habits: DEFAULT_HABITS,
-                    habitData: {},
-                    wealthData: DEFAULT_WEALTH_DATA,
-                    careerRoadmaps: initialRoadmaps
-                };
-                setAppData(initialData);
-                updateDocumentNonBlocking(userDocRef, initialData);
-            }
-            setIsInitialized(true);
-        }
-        fetchAndInitData();
-    } else if (!isUserLoading) {
-        setIsInitialized(true);
+    if (!isProfileLoading && !isUserLoading) {
+      if (userProfileData) {
+        setLocalData({
+          habits: userProfileData.habits || DEFAULT_HABITS,
+          habitData: userProfileData.habitData || {},
+          wealthData: userProfileData.wealthData || DEFAULT_WEALTH_DATA,
+          careerRoadmaps: userProfileData.careerRoadmaps || initialRoadmaps,
+          travelData: userProfileData.travelData || DEFAULT_TRAVEL_DATA,
+        });
+      } else if (user) {
+        // New user, set default data
+        const defaultData = {
+          habits: DEFAULT_HABITS,
+          habitData: {},
+          wealthData: DEFAULT_WEALTH_DATA,
+          careerRoadmaps: initialRoadmaps,
+          travelData: DEFAULT_TRAVEL_DATA,
+        };
+        setLocalData(defaultData);
+        updateDocument(defaultData);
+      }
+      setIsInitialized(true);
     }
-  }, [user, isUserLoading, userDocRef]);
+  }, [user, userProfileData, isProfileLoading, isUserLoading]);
 
 
   const updateDocument = useCallback((data: Partial<UserProfile>) => {
@@ -175,15 +182,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (dashboard === 'habits') router.push('/dashboard');
     else if (dashboard === 'wealth') router.push('/wealth');
     else if (dashboard === 'career') router.push('/career');
+    else if (dashboard === 'travel') router.push('/travel');
   };
 
   const updateHabits = useCallback((newHabits: Habit[]) => {
-    setAppData(prev => ({...prev, habits: newHabits }));
-    updateDocument({ habits: newHabits });
+    setLocalData(prev => {
+        const newState = {...prev, habits: newHabits };
+        updateDocument({ habits: newHabits });
+        return newState;
+    });
   }, [updateDocument]);
   
   const updateHabitLog = useCallback((date: string, habitId: string, log: Partial<HabitLog>) => {
-    setAppData(prev => {
+    setLocalData(prev => {
         const newHabitData = { ...prev.habitData };
         if (!newHabitData[date]) newHabitData[date] = {};
         const existingLog = newHabitData[date][habitId] || {};
@@ -194,15 +205,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [updateDocument]);
   
   const updateWealthData = useCallback((data: Partial<WealthData>) => {
-    setAppData(prev => {
+    setLocalData(prev => {
         const newWealthData = { ...prev.wealthData, ...data } as WealthData;
         updateDocument({ wealthData: newWealthData });
         return { ...prev, wealthData: newWealthData };
     });
   }, [updateDocument]);
 
+  const updateTravelData = useCallback((data: Partial<TravelData>) => {
+    setLocalData(prev => {
+        const newTravelData = { ...prev.travelData, ...data } as TravelData;
+        updateDocument({ travelData: newTravelData });
+        return { ...prev, travelData: newTravelData };
+    });
+  }, [updateDocument]);
+
   const updateRoadmapItem = useCallback((path: CareerPath, updatedItem: RoadmapItem) => {
-    setAppData(prev => {
+    setLocalData(prev => {
         const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
         newRoadmaps[path] = (newRoadmaps[path] || []).map(item => item.id === updatedItem.id ? updatedItem : item);
         updateDocument({ careerRoadmaps: newRoadmaps });
@@ -212,7 +231,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addRoadmapItem = useCallback((path: CareerPath, title: string) => {
       const newItem: RoadmapItem = { id: `item-${path}-${Date.now()}`, title, hoursSpent: 0, subtasks: [] };
-      setAppData(prev => {
+      setLocalData(prev => {
           const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
           newRoadmaps[path] = [...(newRoadmaps[path] || []), newItem];
           updateDocument({ careerRoadmaps: newRoadmaps });
@@ -221,7 +240,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [updateDocument]);
 
   const removeRoadmapItem = useCallback((path: CareerPath, itemId: string) => {
-      setAppData(prev => {
+      setLocalData(prev => {
           const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
           newRoadmaps[path] = (newRoadmaps[path] || []).filter(item => item.id !== itemId);
           updateDocument({ careerRoadmaps: newRoadmaps });
@@ -231,7 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   const addSubtask = useCallback((path: CareerPath, itemId: string, title: string) => {
     const newSubtask: Subtask = { id: `subtask-${Date.now()}`, title, completed: false };
-    setAppData(prev => {
+    setLocalData(prev => {
         const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
         const newItems = (newRoadmaps[path] || []).map(item => {
             if (item.id === itemId) {
@@ -247,7 +266,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [updateDocument]);
   
   const updateSubtask = useCallback((path: CareerPath, itemId: string, subtaskId: string, updates: Partial<Subtask>) => {
-    setAppData(prev => {
+    setLocalData(prev => {
         const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
         const newItems = (newRoadmaps[path] || []).map(item => {
             if (item.id === itemId) {
@@ -265,7 +284,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [updateDocument]);
 
   const removeSubtask = useCallback((path: CareerPath, itemId: string, subtaskId: string) => {
-    setAppData(prev => {
+    setLocalData(prev => {
         const newRoadmaps = { ...(prev.careerRoadmaps || initialRoadmaps) };
         const newItems = (newRoadmaps[path] || []).map(item => {
             if (item.id === itemId) {
@@ -287,14 +306,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   
   const value: AppContextType = {
-    ...appData,
-    habits: appData.habits || DEFAULT_HABITS,
-    habitData: appData.habitData || {},
-    wealthData: appData.wealthData || DEFAULT_WEALTH_DATA,
-    roadmaps: appData.careerRoadmaps || initialRoadmaps,
+    ...localData,
+    habits: localData.habits || DEFAULT_HABITS,
+    habitData: localData.habitData || {},
+    wealthData: localData.wealthData || DEFAULT_WEALTH_DATA,
+    roadmaps: localData.careerRoadmaps || initialRoadmaps,
+    travelData: localData.travelData || DEFAULT_TRAVEL_DATA,
     updateHabits,
     updateHabitLog,
     updateWealthData,
+    updateTravelData,
     updateRoadmapItem,
     addRoadmapItem,
     removeRoadmapItem,

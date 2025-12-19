@@ -27,6 +27,9 @@
         },
         "careerRoadmaps": {
           "$ref": "#/backend/entities/CareerRoadmaps"
+        },
+        "travelData": {
+            "$ref": "#/backend/entities/TravelData"
         }
       },
       "required": ["id"]
@@ -201,6 +204,39 @@
         "emergencyFunds": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }},
         "shortTermGoals": { "type": "array", "items": { "$ref": "#/backend/entities/Fund" }}
       }
+    },
+    "TravelData": {
+        "type": "object",
+        "properties": {
+            "places": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/TravelPlace"
+                }
+            },
+            "selectedStates": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        }
+    },
+    "TravelPlace": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "district": { "type": "string" },
+            "state": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "coords": {
+                "type": "object",
+                "properties": {
+                    "lat": { "type": "number" },
+                    "lng": { "type": "number" }
+                }
+            }
+        },
+        "required": ["id", "name", "state", "date", "coords"]
     }
   },
   "auth": {
