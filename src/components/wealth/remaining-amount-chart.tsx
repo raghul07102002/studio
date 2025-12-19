@@ -26,7 +26,7 @@ interface RemainingAmountChartProps {
 
 export function RemainingAmountChart({ selectedMonth }: RemainingAmountChartProps) {
   const { wealthData } = useApp();
-  const { expenseBudgets, expenses } = wealthData;
+  const { expenseBudgets, expenses, trips } = wealthData;
 
   const monthlyBudget = expenseBudgets?.[selectedMonth] || 0;
 
@@ -39,24 +39,29 @@ export function RemainingAmountChart({ selectedMonth }: RemainingAmountChartProp
       return total;
     }, 0);
   }, [expenses, selectedMonth]);
+
+  const totalTripCosts = useMemo(() => {
+    if (!trips) return 0;
+    return trips.reduce((sum, trip) => sum + trip.amount, 0);
+  }, [trips]);
   
-  const remainingAmount = monthlyBudget - totalExpenses > 0 ? monthlyBudget - totalExpenses : 0;
-  const spentAmount = totalExpenses;
+  const totalSpent = totalExpenses + totalTripCosts;
+  const remainingAmount = monthlyBudget - totalSpent > 0 ? monthlyBudget - totalSpent : 0;
 
   const chartData = useMemo(() => {
-    if (monthlyBudget === 0 && totalExpenses === 0) {
+    if (monthlyBudget === 0 && totalSpent === 0) {
       return [{ name: 'No Budget Set', value: 1, fill: 'hsl(var(--muted))' }];
     }
     const data = [
-      { name: 'Total Spent', value: spentAmount, fill: 'hsl(var(--chart-4))' },
+      { name: 'Total Spent', value: totalSpent, fill: 'hsl(var(--chart-4))' },
       { name: 'Remaining', value: remainingAmount, fill: 'hsl(var(--chart-1))' },
     ];
-    if (spentAmount > monthlyBudget) {
+    if (totalSpent > monthlyBudget) {
       data.find(d => d.name === 'Remaining')!.value = 0;
-      data.find(d => d.name === 'Total Spent')!.value = spentAmount;
+      data.find(d => d.name === 'Total Spent')!.value = totalSpent;
     }
     return data;
-  }, [spentAmount, remainingAmount, monthlyBudget, totalExpenses]);
+  }, [totalSpent, remainingAmount, monthlyBudget]);
 
   const chartConfig = useMemo(() => {
     const config: any = {};
@@ -109,7 +114,7 @@ export function RemainingAmountChart({ selectedMonth }: RemainingAmountChartProp
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
               <p className="text-sm text-muted-foreground">Remaining</p>
               <p className="text-3xl font-bold tracking-tighter">
-                  {(monthlyBudget - totalExpenses).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  {(monthlyBudget - totalSpent).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             </div>
           </div>
