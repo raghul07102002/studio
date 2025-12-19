@@ -5,15 +5,20 @@ import { useApp } from '@/contexts/app-provider';
 import { Skeleton } from '../ui/skeleton';
 import { TravelControls } from './travel-controls';
 import { IndiaMap } from './india-map';
+import { Card } from '../ui/card';
 
 export function TravelDashboardView() {
   const { isInitialized } = useApp();
 
   if (!isInitialized) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-10rem)]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
         <Skeleton className="lg:col-span-1 h-full" />
-        <Skeleton className="lg:col-span-2 h-full" />
+        <Card className="lg:col-span-2 h-full">
+            <div className="w-full h-full bg-background flex items-center justify-center p-4">
+                <Skeleton className="w-full h-full" />
+            </div>
+        </Card>
       </div>
     );
   }
