@@ -1,17 +1,11 @@
+
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { indianStates } from "@/data/stateData";
-import { TravelEntry } from "@/lib/types";
+import { LocationInput } from "./LocationInput";
+import { TravelEntry, TravelLocation } from "@/lib/types";
 
 interface TravelFormProps {
   onAdd: (entry: Omit<TravelEntry, "id">) => void;
@@ -19,25 +13,25 @@ interface TravelFormProps {
 
 const TravelForm = ({ onAdd }: TravelFormProps) => {
   const [date, setDate] = useState("");
-  const [fromState, setFromState] = useState("");
-  const [toState, setToState] = useState("");
+  const [from, setFrom] = useState<TravelLocation | null>(null);
+  const [to, setTo] = useState<TravelLocation | null>(null);
   const [notes, setNotes] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !fromState || !toState) return;
+    if (!date || !from || !to) return;
 
     onAdd({
       date,
-      fromState,
-      toState,
+      from,
+      to,
       notes: notes || undefined,
     });
 
     // Reset form
     setDate("");
-    setFromState("");
-    setToState("");
+    setFrom(null);
+    setTo(null);
     setNotes("");
   };
 
@@ -68,44 +62,26 @@ const TravelForm = ({ onAdd }: TravelFormProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium">From State</Label>
-          <Select value={fromState} onValueChange={setFromState}>
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {indianStates.map((state) => (
-                <SelectItem key={state.code} value={state.code}>
-                  {state.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs font-medium">From</Label>
+          <LocationInput
+            value={from}
+            onValueChange={setFrom}
+            placeholder="Search for a city or place..."
+          />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium">To State</Label>
-          <Select value={toState} onValueChange={setToState}>
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent>
-              {indianStates.map((state) => (
-                <SelectItem key={state.code} value={state.code}>
-                  {state.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs font-medium">To</Label>
+          <LocationInput
+            value={to}
+            onValueChange={setTo}
+            placeholder="Search for a city or place..."
+          />
         </div>
       </div>
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={!date || !fromState || !toState}
-      >
+      <Button type="submit" className="w-full" disabled={!date || !from || !to}>
         <Plus className="h-4 w-4 mr-2" />
         Add Journey
       </Button>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -11,7 +12,6 @@ import DateRangeFilter from '@/components/travel/DateRangeFilter';
 import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
 import 'leaflet/dist/leaflet.css';
-import { getStateByCode } from '@/data/stateData';
 
 const Map = dynamic(() => import('@/components/travel/TravelMap'), {
   ssr: false,
@@ -67,24 +67,21 @@ const TravelPage = () => {
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [entries, startDate, endDate]);
-
+  
   const pathCoordinates = useMemo(() => {
     const coords: { lat: number; lng: number }[] = [];
     filteredEntries.forEach(entry => {
-      const fromState = getStateByCode(entry.fromState);
-      const toState = getStateByCode(entry.toState);
-      if (fromState) {
-        coords.push({ lat: fromState.center[0], lng: fromState.center[1] });
-      }
-      if (toState) {
-        coords.push({ lat: toState.center[0], lng: toState.center[1] });
-      }
+        if (entry.from.coords) {
+            coords.push(entry.from.coords);
+        }
+        if (entry.to.coords) {
+            coords.push(entry.to.coords);
+        }
     });
-    // Remove duplicates
     return coords.filter((c, index, self) => 
-      index === self.findIndex((t) => (
-        t.lat === c.lat && t.lng === c.lng
-      ))
+        c && c.lat && c.lng && index === self.findIndex((t) => (
+            t.lat === c.lat && t.lng === c.lng
+        ))
     );
   }, [filteredEntries]);
 

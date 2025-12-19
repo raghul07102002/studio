@@ -1,5 +1,6 @@
 
 
+
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -105,10 +106,15 @@ export interface TravelData {
   selectedStates: string[];
 }
 
+export interface TravelLocation {
+  name: string;
+  coords: { lat: number; lng: number; };
+}
+
 export interface TravelEntry {
   id: string;
   date: string; // ISO date string YYYY-MM-DD
-  fromState: string; // state code
-  toState: string; // state code
+  from: TravelLocation;
+  to: TravelLocation;
   notes?: string;
 }

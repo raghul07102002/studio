@@ -1,8 +1,9 @@
+
 import { format, parseISO } from "date-fns";
 import { Trash2, MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TravelEntry } from "@/lib/types";
-import { getStateByCode, calculateDistance } from "@/data/stateData";
+import { calculateDistance } from "@/lib/travelUtils";
 
 interface TravelListProps {
   entries: TravelEntry[];
@@ -23,17 +24,7 @@ const TravelList = ({ entries, onDelete }: TravelListProps) => {
   return (
     <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
       {entries.map((entry) => {
-        const fromState = getStateByCode(entry.fromState);
-        const toState = getStateByCode(entry.toState);
-        const distance =
-          fromState && toState
-            ? calculateDistance(
-                fromState.center[0],
-                fromState.center[1],
-                toState.center[0],
-                toState.center[1]
-              )
-            : 0;
+        const distance = calculateDistance(entry.from.coords, entry.to.coords);
 
         return (
           <div
@@ -42,9 +33,9 @@ const TravelList = ({ entries, onDelete }: TravelListProps) => {
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 text-sm font-medium">
-                <span className="truncate">{fromState?.name || entry.fromState}</span>
+                <span className="truncate">{entry.from.name}</span>
                 <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                <span className="truncate">{toState?.name || entry.toState}</span>
+                <span className="truncate">{entry.to.name}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                 <span>{format(parseISO(entry.date), "MMM d, yyyy")}</span>

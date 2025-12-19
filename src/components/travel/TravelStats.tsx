@@ -1,5 +1,6 @@
+
 import { TravelEntry } from "@/lib/types";
-import { getStateByCode, calculateDistance } from "@/data/stateData";
+import { calculateDistance } from "@/lib/travelUtils";
 import { Route, MapPin, Calendar } from "lucide-react";
 
 interface TravelStatsProps {
@@ -8,21 +9,13 @@ interface TravelStatsProps {
 
 const TravelStats = ({ entries }: TravelStatsProps) => {
   const totalDistance = entries.reduce((sum, entry) => {
-    const from = getStateByCode(entry.fromState);
-    const to = getStateByCode(entry.toState);
-    if (from && to) {
-      return (
-        sum +
-        calculateDistance(from.center[0], from.center[1], to.center[0], to.center[1])
-      );
-    }
-    return sum;
+    return sum + calculateDistance(entry.from.coords, entry.to.coords);
   }, 0);
 
-  const uniqueStates = new Set<string>();
+  const uniquePlaces = new Set<string>();
   entries.forEach((e) => {
-    uniqueStates.add(e.fromState);
-    uniqueStates.add(e.toState);
+    uniquePlaces.add(e.from.name);
+    uniquePlaces.add(e.to.name);
   });
 
   return (
@@ -34,8 +27,8 @@ const TravelStats = ({ entries }: TravelStatsProps) => {
       </div>
       <div className="rounded-lg bg-secondary/10 p-3 text-center">
         <MapPin className="h-4 w-4 mx-auto mb-1 text-secondary-foreground" />
-        <p className="text-lg font-bold">{uniqueStates.size}</p>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">States</p>
+        <p className="text-lg font-bold">{uniquePlaces.size}</p>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Places</p>
       </div>
       <div className="rounded-lg bg-accent/10 p-3 text-center">
         <Calendar className="h-4 w-4 mx-auto mb-1 text-accent-foreground" />
