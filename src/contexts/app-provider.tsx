@@ -96,8 +96,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       router.push('/dashboard');
     } else if (dashboard === 'wealth') {
       router.push('/wealth');
-    } else if (dashboard === 'travel') {
-      router.push('/travel');
+    } else if (dashboard === 'career') {
+      router.push('/career');
     }
   };
 

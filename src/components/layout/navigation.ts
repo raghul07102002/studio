@@ -1,4 +1,4 @@
-import { LayoutDashboard, CalendarDays, Settings, DollarSign, History, Plane } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Settings, DollarSign, History, Briefcase } from "lucide-react";
 
 export const navItems = [
     { href: "/wealth", icon: DollarSign, label: "Wealth Dashboard" },
@@ -17,6 +17,6 @@ export const wealthNavItems = [
     { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
-export const travelNavItems = [
-    { href: "/travel", icon: LayoutDashboard, label: "Dashboard" },
+export const careerNavItems = [
+    { href: "/career", icon: LayoutDashboard, label: "Dashboard" },
 ];
