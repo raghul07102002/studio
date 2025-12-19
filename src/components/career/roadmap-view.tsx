@@ -41,7 +41,7 @@ const initialRoadmapItems: Record<string, Omit<RoadmapItem, 'id'>[]> = {
         { title: 'Core Concepts: IaaS, PaaS, SaaS', hoursSpent: 0 },
         { title: 'Networking & Security in the Cloud', hoursSpent: 0 },
         { title: 'Compute Services (VMs, Containers, Serverless)', hoursSpent: 0 },
-        { title: 'Storage & Database Solutions', hoursSpent:_0 },
+        { title: 'Storage & Database Solutions', hoursSpent: 0 },
         { title: 'Identity and Access Management (IAM)', hoursSpent: 0 },
     ],
     'Devops': [
