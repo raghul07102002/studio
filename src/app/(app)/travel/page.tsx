@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -10,18 +9,7 @@ import TravelList from '@/components/travel/TravelList';
 import DateRangeFilter from '@/components/travel/DateRangeFilter';
 import TravelStats from '@/components/travel/TravelStats';
 import { TravelEntry } from '@/lib/types';
-
-const TravelMap = dynamic(() => import('@/components/travel/TravelMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-muted/30">
-      <div className="text-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
-        <p className="text-sm text-muted-foreground">Loading map...</p>
-      </div>
-    </div>
-  ),
-});
+import MapWrapper from '@/components/travel/MapWrapper';
 
 const TravelPage = () => {
   const [entries, setEntries] = useState<TravelEntry[]>([]);
@@ -132,7 +120,7 @@ const TravelPage = () => {
           {/* Map */}
           <Card className="overflow-hidden">
             <div className="h-[calc(100vh-120px)] min-h-[500px]">
-              <TravelMap entries={filteredEntries} />
+              <MapWrapper entries={filteredEntries} />
             </div>
           </Card>
         </div>
