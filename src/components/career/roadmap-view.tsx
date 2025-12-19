@@ -1,20 +1,21 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { RoadmapProgressChart } from './roadmap-progress-chart';
 
 interface RoadmapViewProps {
     path: string;
     onBack: () => void;
 }
 
-interface RoadmapItem {
+export interface RoadmapItem {
     id: string;
     title: string;
     hoursSpent: number;
@@ -94,13 +95,18 @@ export function RoadmapView({ path, onBack }: RoadmapViewProps) {
     return (
         <Card className="w-full">
             <CardHeader>
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" onClick={onBack}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div>
-                        <CardTitle className="text-2xl font-bold">Roadmap: {path}</CardTitle>
-                        <CardDescription>Track your daily effort. Your goal is 4 hours of focused study per day.</CardDescription>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="flex items-center gap-4 flex-1">
+                        <Button variant="outline" size="icon" onClick={onBack}>
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <div>
+                            <CardTitle className="text-2xl font-bold">Roadmap: {path}</CardTitle>
+                            <CardDescription>Track your daily effort. Your goal is 4 hours of focused study per day.</CardDescription>
+                        </div>
+                    </div>
+                    <div className="w-full md:w-auto">
+                        <RoadmapProgressChart items={items} />
                     </div>
                 </div>
             </CardHeader>
