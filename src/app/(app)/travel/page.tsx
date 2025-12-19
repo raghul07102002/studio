@@ -78,6 +78,7 @@ const TravelPage = () => {
             coords.push(entry.to.coords);
         }
     });
+    // Deduplicate coordinates to avoid extra markers and strange polyline behavior
     return coords.filter((c, index, self) => 
         c && c.lat && c.lng && index === self.findIndex((t) => (
             t.lat === c.lat && t.lng === c.lng
