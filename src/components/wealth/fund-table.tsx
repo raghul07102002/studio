@@ -6,7 +6,7 @@ import { useApp } from '@/contexts/app-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, Plus } from 'lucide-react';
-import type { Fund, MutualFunds } from '@/lib/types';
+import type { Fund, MutualFunds, SavingsAllocation } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -18,6 +18,7 @@ interface FundTableProps {
   category: FundCategory | TopLevelFundCategory;
   title: string;
   maxAllocation: number;
+  selectedMonth: string;
 }
 
 interface SearchResult {
@@ -25,17 +26,25 @@ interface SearchResult {
     schemeName: string;
 }
 
+const emptyAllocation: SavingsAllocation = {
+  mutualFunds: { debt: [], equity: [], gold: []},
+  emergencyFunds: [],
+  shortTermGoals: []
+}
+
 export function FundTable({
   category,
   title,
   maxAllocation,
+  selectedMonth,
 }: FundTableProps) {
-  const { wealthData, updateWealthData } = useApp();
+  const { wealthData, updateSavingsAllocation } = useApp();
+  const allocationForMonth = wealthData.savingsAllocation?.[selectedMonth] || emptyAllocation;
   
   const funds: Fund[] = 
-    wealthData.savingsAllocation && 'mutualFunds' in wealthData.savingsAllocation && wealthData.savingsAllocation.mutualFunds && (category in wealthData.savingsAllocation.mutualFunds)
-      ? wealthData.savingsAllocation.mutualFunds[category as FundCategory]
-      : (wealthData.savingsAllocation && (category in wealthData.savingsAllocation) ? wealthData.savingsAllocation[category as TopLevelFundCategory] : []);
+    'mutualFunds' in allocationForMonth && allocationForMonth.mutualFunds && (category in allocationForMonth.mutualFunds)
+      ? allocationForMonth.mutualFunds[category as FundCategory]
+      : (category in allocationForMonth) ? allocationForMonth[category as TopLevelFundCategory] : [];
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
@@ -77,15 +86,15 @@ export function FundTable({
         const amount = parseFloat(newItemAmount);
         if (newItemName && !isNaN(amount)) {
             const newFund: Fund = { name: newItemName, amount, id: `fund-${Date.now()}`, schemeCode: newItemSchemeCode };
-            const newAllocation = { ...(wealthData.savingsAllocation) };
-            if (!newAllocation.mutualFunds) newAllocation.mutualFunds = { debt: [], gold: [], equity: [] };
+            const newAllocation = JSON.parse(JSON.stringify(allocationForMonth));
 
             if (['debt', 'gold', 'equity'].includes(category)) {
                 newAllocation.mutualFunds[category as FundCategory].push(newFund);
             } else {
-                newAllocation[category as TopLevelFundCategory] = [...(newAllocation[category as TopLevelFundCategory] || []), newFund];
+                if (!newAllocation[category as TopLevelFundCategory]) newAllocation[category as TopLevelFundCategory] = [];
+                newAllocation[category as TopLevelFundCategory].push(newFund);
             }
-            updateWealthData({ savingsAllocation: newAllocation });
+            updateSavingsAllocation(selectedMonth, newAllocation);
 
             setNewItemName('');
             setNewItemAmount('');
@@ -96,7 +105,7 @@ export function FundTable({
     };
     
     const handleUpdate = (id: string, field: 'name' | 'amount', value: string) => {
-        const newAllocation = { ...(wealthData.savingsAllocation) };
+        const newAllocation = JSON.parse(JSON.stringify(allocationForMonth));
          if (['debt', 'gold', 'equity'].includes(category)) {
             const cat = category as FundCategory;
             newAllocation.mutualFunds[cat] = newAllocation.mutualFunds[cat].map(f => f.id === id ? { ...f, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : f);
@@ -104,11 +113,11 @@ export function FundTable({
             const cat = category as TopLevelFundCategory;
             newAllocation[cat] = (newAllocation[cat] || []).map(f => f.id === id ? { ...f, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : f);
         }
-        updateWealthData({ savingsAllocation: newAllocation });
+        updateSavingsAllocation(selectedMonth, newAllocation);
     };
 
     const handleRemove = (id: string) => {
-        const newAllocation = { ...(wealthData.savingsAllocation) };
+        const newAllocation = JSON.parse(JSON.stringify(allocationForMonth));
         if (['debt', 'gold', 'equity'].includes(category)) {
             const cat = category as FundCategory;
             newAllocation.mutualFunds[cat] = newAllocation.mutualFunds[cat].filter(f => f.id !== id);
@@ -116,7 +125,7 @@ export function FundTable({
             const cat = category as TopLevelFundCategory;
             newAllocation[cat] = (newAllocation[cat] || []).filter(f => f.id !== id);
         }
-        updateWealthData({ savingsAllocation: newAllocation });
+        updateSavingsAllocation(selectedMonth, newAllocation);
     }
 
   const handleSelectFund = (name: string, schemeCode: string) => {

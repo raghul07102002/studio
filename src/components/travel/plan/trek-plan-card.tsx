@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import type { TrekPlan, TrekPlace } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Trash2, Calendar as CalendarIcon, Route } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,6 +22,7 @@ interface TrekPlanCardProps {
 export function TrekPlanCard({ plan }: TrekPlanCardProps) {
   const { updateTrekPlan } = useApp();
   const [newPlaceName, setNewPlaceName] = useState('');
+  const [newPlaceDistance, setNewPlaceDistance] = useState('');
 
   const handleAddPlace = () => {
     if (newPlaceName.trim() === '') return;
@@ -29,10 +30,12 @@ export function TrekPlanCard({ plan }: TrekPlanCardProps) {
       id: `place-${Date.now()}`,
       name: newPlaceName,
       visited: false,
+      distance: parseFloat(newPlaceDistance) || 0,
     };
     const updatedPlan = { ...plan, places: [...plan.places, newPlace] };
     updateTrekPlan(updatedPlan);
     setNewPlaceName('');
+    setNewPlaceDistance('');
   };
 
   const handleUpdatePlace = (placeId: string, updates: Partial<TrekPlace>) => {
@@ -52,6 +55,10 @@ export function TrekPlanCard({ plan }: TrekPlanCardProps) {
   };
   
   const visitedCount = plan.places.filter(p => p.visited).length;
+  const totalDistance = useMemo(() => {
+    return plan.places.reduce((sum, p) => sum + (p.distance || 0), 0);
+  }, [plan.places]);
+
 
   return (
     <Card>
@@ -61,7 +68,11 @@ export function TrekPlanCard({ plan }: TrekPlanCardProps) {
             <AccordionTrigger className='p-0 hover:no-underline'>
                 <div className='flex-1 text-left'>
                     <CardTitle>{plan.name}</CardTitle>
-                    <CardDescription>{visitedCount} / {plan.places.length} places visited</CardDescription>
+                    <CardDescription>
+                        <span className="font-semibold">{visitedCount} / {plan.places.length}</span> places visited
+                        <span className='mx-2'>•</span>
+                        <span className="font-semibold">{totalDistance}</span> km total
+                    </CardDescription>
                 </div>
             </AccordionTrigger>
           </CardHeader>
@@ -103,6 +114,7 @@ export function TrekPlanCard({ plan }: TrekPlanCardProps) {
                                 onCheckedChange={(checked) => handleUpdatePlace(place.id, { visited: !!checked })}
                                 />
                                 <label htmlFor={`place-${place.id}`} className='flex-1 text-sm'>{place.name}</label>
+                                {place.distance && <span className='text-xs text-muted-foreground'>{place.distance} km</span>}
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -124,10 +136,16 @@ export function TrekPlanCard({ plan }: TrekPlanCardProps) {
                         placeholder="Add a new place..." 
                         value={newPlaceName}
                         onChange={(e) => setNewPlaceName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddPlace()}
                         className="h-9"
                     />
-                    <Button size="icon" className="h-9 w-9" onClick={handleAddPlace}>
+                     <Input 
+                        type="number"
+                        placeholder="km" 
+                        value={newPlaceDistance}
+                        onChange={(e) => setNewPlaceDistance(e.target.value)}
+                        className="h-9 w-20"
+                    />
+                    <Button size="icon" className="h-9 w-9 shrink-0" onClick={handleAddPlace}>
                         <Plus className="h-4 w-4" />
                     </Button>
                  </div>

@@ -6,11 +6,25 @@ import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FundTable } from './fund-table';
 import { Progress } from '../ui/progress';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar } from '../ui/calendar';
 
-export function SavingsAllocation() {
+interface SavingsAllocationProps {
+    selectedDate?: Date;
+    onDateChange?: (date: Date | undefined) => void;
+}
+
+export function SavingsAllocation({ selectedDate, onDateChange }: SavingsAllocationProps) {
   const { wealthData, updateWealthData } = useApp();
-  const { monthlySavings, savingsAllocation } = wealthData;
-  
+  const selectedMonthString = selectedDate ? format(selectedDate, 'yyyy-MM') : format(new Date(), 'yyyy-MM');
+
+  const monthlySavings = wealthData.monthlySavings?.[selectedMonthString] || 0;
+  const savingsAllocation = wealthData.savingsAllocation?.[selectedMonthString];
+
   const totalAllocated = useMemo(() => {
     if (!savingsAllocation) return 0;
     const { mutualFunds, emergencyFunds, shortTermGoals } = savingsAllocation;
@@ -25,16 +39,45 @@ export function SavingsAllocation() {
   
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    updateWealthData({ monthlySavings: parseFloat(value) || 0 });
+    const newMonthlySavings = { ...wealthData.monthlySavings, [selectedMonthString]: parseFloat(value) || 0 };
+    updateWealthData({ monthlySavings: newMonthlySavings });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Savings Allocation</CardTitle>
-        <CardDescription>
-            Allocate your monthly savings into different funds.
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+            <div>
+                <CardTitle>Savings Allocation</CardTitle>
+                <CardDescription>
+                    Allocate your monthly savings into different funds for {format(new Date(selectedMonthString), 'MMMM yyyy')}.
+                </CardDescription>
+            </div>
+            {onDateChange && (
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <Button
+                        variant={"outline"}
+                        className={cn(
+                        "w-full sm:w-[240px] justify-start text-left font-normal",
+                        !selectedDate && "text-muted-foreground"
+                        )}
+                    >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={onDateChange}
+                        initialFocus
+                    />
+                    </PopoverContent>
+                </Popover>
+            )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
@@ -75,9 +118,9 @@ export function SavingsAllocation() {
         <div className='space-y-4 rounded-lg border p-4'>
             <h3 className="text-lg font-semibold text-center">Mutual Funds</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FundTable category="debt" title="Debt" maxAllocation={Infinity} />
-            <FundTable category="gold" title="Gold" maxAllocation={Infinity} />
-            <FundTable category="equity" title="Equity" maxAllocation={Infinity} />
+            <FundTable category="debt" title="Debt" maxAllocation={Infinity} selectedMonth={selectedMonthString} />
+            <FundTable category="gold" title="Gold" maxAllocation={Infinity} selectedMonth={selectedMonthString} />
+            <FundTable category="equity" title="Equity" maxAllocation={Infinity} selectedMonth={selectedMonthString} />
             </div>
         </div>
 
@@ -86,11 +129,13 @@ export function SavingsAllocation() {
             category="emergencyFunds"
             title="Emergency Funds"
             maxAllocation={Infinity}
+            selectedMonth={selectedMonthString}
           />
           <FundTable 
             category="shortTermGoals"
             title="Short Term Goals"
             maxAllocation={Infinity}
+            selectedMonth={selectedMonthString}
           />
         </div>
       </CardContent>

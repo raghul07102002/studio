@@ -80,10 +80,10 @@ export interface MonthlyBudget {
 
 export interface WealthData {
   monthlySalary: number;
-  monthlySavings: number;
+  monthlySavings: Record<string, number>; // Now a record
   expenses: Record<string, Expense[]>;
   trips: Trip[];
-  savingsAllocation: SavingsAllocation;
+  savingsAllocation: Record<string, SavingsAllocation>; // Now a record
   expenseBudgets: MonthlyBudget;
   tripBudgets: MonthlyBudget;
 }
@@ -107,6 +107,7 @@ export interface TrekPlace {
     id: string;
     name: string;
     visited: boolean;
+    distance?: number;
 }
 
 export interface TrekPlan {

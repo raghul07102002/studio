@@ -9,20 +9,25 @@ import { isSameMonth } from 'date-fns';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
 
-export function WealthMetrics() {
+interface WealthMetricsProps {
+    selectedMonth: string;
+}
+
+export function WealthMetrics({ selectedMonth }: WealthMetricsProps) {
   const { wealthData, updateWealthData } = useApp();
-  const { monthlySalary, expenses, monthlySavings } = wealthData;
+  const { monthlySalary, expenses } = wealthData;
+  const monthlySavings = wealthData.monthlySavings?.[selectedMonth] || 0;
 
   const totalExpenses = useMemo(() => {
-    const now = new Date();
     if (!expenses) return 0;
+    const currentMonthDate = new Date(selectedMonth);
     return Object.entries(expenses).reduce((total, [date, dailyExpenses]) => {
-      if (isSameMonth(new Date(date), now)) {
+      if (isSameMonth(new Date(date), currentMonthDate)) {
         return total + dailyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
       }
       return total;
     }, 0);
-  }, [expenses]);
+  }, [expenses, selectedMonth]);
   
   const savings = monthlySavings;
   const savingsRate = monthlySalary > 0 ? (savings / monthlySalary) * 100 : 0;
@@ -89,7 +94,7 @@ export function WealthMetrics() {
             {totalExpenses.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0})}
           </div>
           <p className="text-xs text-muted-foreground">
-            Total for the current month.
+            Total for {new Date(selectedMonth).toLocaleString('default', { month: 'long' })}
           </p>
         </CardContent>
       </Card>

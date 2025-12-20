@@ -18,10 +18,16 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart';
 import { useApp } from '@/contexts/app-provider';
+import { format } from 'date-fns';
 
-export function SavingsDistributionChart() {
+interface SavingsDistributionChartProps {
+    selectedMonth: string;
+}
+
+export function SavingsDistributionChart({ selectedMonth }: SavingsDistributionChartProps) {
   const { wealthData } = useApp();
-  const { monthlySavings, savingsAllocation } = wealthData;
+  const monthlySavings = wealthData.monthlySavings?.[selectedMonth] || 0;
+  const savingsAllocation = wealthData.savingsAllocation?.[selectedMonth];
 
   const chartData = useMemo(() => {
     if (!savingsAllocation || monthlySavings === 0) {
@@ -56,6 +62,7 @@ export function SavingsDistributionChart() {
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle>Savings Distribution</CardTitle>
+        <CardDescription>{format(new Date(selectedMonth), 'MMMM yyyy')}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center">
         <ChartContainer

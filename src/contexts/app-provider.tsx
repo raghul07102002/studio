@@ -10,10 +10,9 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, TrekPlan } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, TrekPlan, SavingsAllocation } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
-import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
-import { getFilteredDates } from "@/lib/analysis";
+import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -21,14 +20,10 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 // Default initial states
 const DEFAULT_WEALTH_DATA: WealthData = {
   monthlySalary: 0,
-  monthlySavings: 0,
+  monthlySavings: {},
   expenses: {},
   trips: [],
-  savingsAllocation: {
-    mutualFunds: { debt: [], gold: [], equity: [] },
-    emergencyFunds: [],
-    shortTermGoals: [],
-  },
+  savingsAllocation: {},
   expenseBudgets: {},
   tripBudgets: {},
 };
@@ -95,6 +90,7 @@ interface AppContextType {
   updateHabits: (habits: Habit[]) => void;
   updateHabitLog: (date: string, habitId: string, log: Partial<HabitLog>) => void;
   updateWealthData: (data: Partial<WealthData>) => void;
+  updateSavingsAllocation: (month: string, allocation: SavingsAllocation) => void;
   
   updateTravelData: (data: Partial<TravelData>) => void;
   updateRoadTripPlan: (plan: RoadTripPlan) => void;
@@ -197,6 +193,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   const updateWealthData = useCallback((data: Partial<WealthData>) => {
     setWealthData(prev => ({ ...prev, ...data }));
+  }, [setWealthData]);
+
+  const updateSavingsAllocation = useCallback((month: string, allocation: SavingsAllocation) => {
+    setWealthData(prev => ({
+      ...prev,
+      savingsAllocation: {
+        ...prev.savingsAllocation,
+        [month]: allocation
+      }
+    }));
   }, [setWealthData]);
 
   const updateRoadmapItem = useCallback((path: CareerPath, updatedItem: RoadmapItem) => {
@@ -345,6 +351,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateHabits,
     updateHabitLog,
     updateWealthData,
+    updateSavingsAllocation,
     updateTravelData,
     updateRoadTripPlan,
     addRoadTripPlan,

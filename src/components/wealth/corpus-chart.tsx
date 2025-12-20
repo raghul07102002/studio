@@ -20,11 +20,8 @@ const TARGET_CORPUS = 70000000; // 7 Crore
 const YEARS = 20;
 const RATE = 0.12; // 12%
 
-// This function calculates the future value of a series of monthly investments
-const calculateFutureValue = (monthlyInvestment: number) => {
-  const months = YEARS * 12;
+const calculateFutureValue = (monthlyInvestment: number, months: number) => {
   const monthlyRate = RATE / 12;
-  // FV = P * [({(1+r)^n - 1} / r) * (1+r)]  (formula for SIP)
   let futureValue = monthlyInvestment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate);
   return futureValue;
 };
@@ -36,55 +33,66 @@ export function CorpusChart() {
   const investmentData = useMemo(() => {
     const { savingsAllocation } = wealthData;
     if (!savingsAllocation) {
-        return { totalPrincipal: 0, totalInterest: 0, remainingPrincipal: TARGET_CORPUS };
+        return { totalPrincipal: 0, totalInterest: 0, fv: 0 };
     }
 
-    const allFunds = [
-        ...(savingsAllocation.mutualFunds?.debt || []),
-        ...(savingsAllocation.mutualFunds?.gold || []),
-        ...(savingsAllocation.mutualFunds?.equity || []),
-        ...(savingsAllocation.emergencyFunds || []),
-        ...(savingsAllocation.shortTermGoals || []),
-    ];
+    let fv = 0;
+    let totalPrincipalInvested = 0;
 
-    const totalMonthlyInvestment = allFunds.reduce((sum, fund) => sum + fund.amount, 0);
+    const today = new Date();
+    const totalMonths = YEARS * 12;
 
-    const fv = calculateFutureValue(totalMonthlyInvestment);
-    const totalPrincipalInvested = totalMonthlyInvestment * 12 * YEARS;
+    Object.entries(savingsAllocation).forEach(([monthStr, allocation]) => {
+      const allFunds = [
+          ...(allocation.mutualFunds?.debt || []),
+          ...(allocation.mutualFunds?.gold || []),
+          ...(allocation.mutualFunds?.equity || []),
+          ...(allocation.emergencyFunds || []),
+          ...(allocation.shortTermGoals || []),
+      ];
+      const monthlyInvestment = allFunds.reduce((sum, fund) => sum + fund.amount, 0);
+
+      const investmentDate = new Date(monthStr + '-01');
+      const monthsRemaining = (today.getFullYear() - investmentDate.getFullYear()) * 12 + (today.getMonth() - investmentDate.getMonth());
+      const monthsToProject = totalMonths - monthsRemaining;
+
+      if (monthsToProject > 0) {
+        fv += calculateFutureValue(monthlyInvestment, monthsToProject);
+        totalPrincipalInvested += monthlyInvestment * monthsToProject;
+      }
+    });
+
     const totalInterest = fv - totalPrincipalInvested > 0 ? fv - totalPrincipalInvested : 0;
     
-    // This represents the total amount of money you'd put in over 20 years at the current monthly rate.
-    // The "remaining" is how much more principal would be needed to hit the target.
-    const remainingNeeded = TARGET_CORPUS > fv ? TARGET_CORPUS - fv : 0;
-
     return {
         amountInvested: totalPrincipalInvested,
         interestAmount: totalInterest,
-        amountToInvest: remainingNeeded,
+        fv: fv,
     }
 
   }, [wealthData.savingsAllocation]);
 
+  const remainingNeeded = TARGET_CORPUS > investmentData.fv ? TARGET_CORPUS - investmentData.fv : 0;
 
   const chartData = useMemo(() => {
     return [
-      { name: 'Amount Invested', value: investmentData.amountInvested, fill: 'hsl(var(--chart-1))' },
-      { name: 'Interest Amount', value: investmentData.interestAmount, fill: 'hsl(var(--chart-3))' },
-      { name: 'Amount to Invest', value: investmentData.amountToInvest, fill: 'hsl(var(--muted))' },
+      { name: 'Principal', value: investmentData.amountInvested, fill: 'hsl(var(--chart-1))' },
+      { name: 'Interest', value: investmentData.interestAmount, fill: 'hsl(var(--chart-3))' },
+      { name: 'Remaining', value: remainingNeeded, fill: 'hsl(var(--muted))' },
     ].filter(d => d.value > 0);
-  }, [investmentData]);
+  }, [investmentData, remainingNeeded]);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-start gap-4">
           <div className='space-y-1'>
-            <CardTitle>Investment</CardTitle>
+            <CardTitle>Investment Corpus</CardTitle>
           </div>
           <div className="text-right">
-              <p className="text-sm font-medium text-muted-foreground">Remaining to Invest</p>
+              <p className="text-sm font-medium text-muted-foreground">Target Corpus</p>
               <p className="text-lg font-bold">
-                {investmentData.amountToInvest.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {TARGET_CORPUS.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             </div>
         </div>
@@ -126,7 +134,7 @@ export function CorpusChart() {
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <p className="text-xs text-muted-foreground mt-2">Projected Value</p>
                 <p className="text-2xl font-bold tracking-tighter">
-                {(investmentData.amountInvested + investmentData.interestAmount).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {investmentData.fv.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
           </div>
         </div>
