@@ -5,7 +5,6 @@ import { MapContainer, TileLayer, Polyline, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { TravelEntry, TravelMode } from "@/lib/types";
-import ReactDOMServer from 'react-dom/server';
 
 const createSvgIcon = (svg: string) => {
     return L.divIcon({
