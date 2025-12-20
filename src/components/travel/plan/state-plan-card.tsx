@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import { INDIA_STATES } from '@/data/india-states';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parseISO } from 'date-fns';
 
 interface StatePlanCardProps {
   plan: RoadTripPlan;
@@ -46,6 +49,10 @@ export function StatePlanCard({ plan }: StatePlanCardProps) {
     const updatedPlaces = plan.places.filter(p => p.id !== placeId);
     updateRoadTripPlan({ ...plan, places: updatedPlaces });
   };
+
+  const handleDateChange = (field: 'startDate' | 'endDate', date: Date | undefined) => {
+    updateRoadTripPlan({ ...plan, [field]: date?.toISOString() });
+  };
   
   const visitedCount = plan.places.filter(p => p.visited).length;
 
@@ -63,29 +70,56 @@ export function StatePlanCard({ plan }: StatePlanCardProps) {
           </CardHeader>
           <AccordionContent>
             <CardContent>
-              <ScrollArea className="h-40 pr-4">
-                <div className="space-y-2">
-                    {plan.places.map((place) => (
-                    <div key={place.id} className="flex items-center gap-2 group">
-                        <Checkbox
-                        id={`place-${place.id}`}
-                        checked={place.visited}
-                        onCheckedChange={(checked) => handleUpdatePlace(place.id, { visited: !!checked })}
-                        />
-                        <label htmlFor={`place-${place.id}`} className='flex-1 text-sm'>{place.name}</label>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={() => handleRemovePlace(place.id)}
-                        >
-                            <Trash2 className="h-3 w-3" />
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal text-xs h-9">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {plan.startDate ? format(parseISO(plan.startDate), 'LLL dd, y') : <span>Start Date</span>}
                         </Button>
-                    </div>
-                    ))}
-                    {plan.places.length === 0 && <p className='text-sm text-muted-foreground text-center pt-8'>No places added yet.</p>}
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <Calendar mode="single" selected={plan.startDate ? parseISO(plan.startDate) : undefined} onSelect={(d) => handleDateChange('startDate', d)} initialFocus />
+                        </PopoverContent>
+                    </Popover>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal text-xs h-9">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {plan.endDate ? format(parseISO(plan.endDate), 'LLL dd, y') : <span>End Date</span>}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <Calendar mode="single" selected={plan.endDate ? parseISO(plan.endDate) : undefined} onSelect={(d) => handleDateChange('endDate', d)} initialFocus />
+                        </PopoverContent>
+                    </Popover>
                 </div>
-              </ScrollArea>
+
+                <ScrollArea className="h-40 pr-4">
+                    <div className="space-y-2">
+                        {plan.places.map((place) => (
+                        <div key={place.id} className="flex items-center gap-2 group">
+                            <Checkbox
+                            id={`place-${place.id}`}
+                            checked={place.visited}
+                            onCheckedChange={(checked) => handleUpdatePlace(place.id, { visited: !!checked })}
+                            />
+                            <label htmlFor={`place-${place.id}`} className='flex-1 text-sm'>{place.name}</label>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                                onClick={() => handleRemovePlace(place.id)}
+                            >
+                                <Trash2 className="h-3 w-3" />
+                            </Button>
+                        </div>
+                        ))}
+                        {plan.places.length === 0 && <p className='text-sm text-muted-foreground text-center pt-8'>No places added yet.</p>}
+                    </div>
+                </ScrollArea>
+              </div>
             </CardContent>
             <CardFooter>
                  <div className="w-full flex items-center gap-2">

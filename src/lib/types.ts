@@ -99,11 +99,28 @@ export interface RoadTripPlan {
     stateCode: string; // e.g. "MH" for Maharashtra
     country: string;
     places: RoadTripPlace[];
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface TrekPlace {
+    id: string;
+    name: string;
+    visited: boolean;
+}
+
+export interface TrekPlan {
+    id: string;
+    name: string;
+    places: TrekPlace[];
+    startDate?: string;
+    endDate?: string;
 }
 
 export interface TravelData {
   places: TravelEntry[];
   roadTrips: RoadTripPlan[];
+  treks: TrekPlan[];
 }
 
 

@@ -222,6 +222,12 @@
                 "items": {
                     "$ref": "#/backend/entities/RoadTripPlan"
                 }
+            },
+            "treks": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/TrekPlan"
+                }
             }
         }
     },
@@ -258,10 +264,35 @@
                 "items": {
                     "$ref": "#/backend/entities/RoadTripPlace"
                 }
-            }
+            },
+            "startDate": { "type": "string", "format": "date" },
+            "endDate": { "type": "string", "format": "date" }
         }
     },
     "RoadTripPlace": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "visited": { "type": "boolean" }
+        }
+    },
+    "TrekPlan": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "places": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/TrekPlace"
+                }
+            },
+            "startDate": { "type": "string", "format": "date" },
+            "endDate": { "type": "string", "format": "date" }
+        }
+    },
+    "TrekPlace": {
         "type": "object",
         "properties": {
             "id": { "type": "string" },

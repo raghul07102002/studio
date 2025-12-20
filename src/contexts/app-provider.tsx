@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, RoadTripPlace } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, TrekPlan } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
@@ -36,6 +36,7 @@ const DEFAULT_WEALTH_DATA: WealthData = {
 const DEFAULT_TRAVEL_DATA: TravelData = {
   places: [],
   roadTrips: [],
+  treks: [],
 };
 
 const DEFAULT_DAY_PLANNER_DATA: DayPlannerData = {
@@ -94,9 +95,12 @@ interface AppContextType {
   updateHabits: (habits: Habit[]) => void;
   updateHabitLog: (date: string, habitId: string, log: Partial<HabitLog>) => void;
   updateWealthData: (data: Partial<WealthData>) => void;
+  
   updateTravelData: (data: Partial<TravelData>) => void;
   updateRoadTripPlan: (plan: RoadTripPlan) => void;
   addRoadTripPlan: (stateCode: string) => void;
+  addTrekPlan: (name: string) => void;
+  updateTrekPlan: (plan: TrekPlan) => void;
   
   updateRoadmapItem: (path: CareerPath, item: RoadmapItem) => void;
   addRoadmapItem: (path: CareerPath, title: string) => void;
@@ -306,6 +310,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
   }, [setTravelData]);
 
+  const addTrekPlan = useCallback((name: string) => {
+    setTravelData(prev => {
+        const newPlan: TrekPlan = { id: `trek-${Date.now()}`, name, places: [] };
+        return { ...prev, treks: [...(prev.treks || []), newPlan] };
+    });
+  }, [setTravelData]);
+
+  const updateTrekPlan = useCallback((updatedPlan: TrekPlan) => {
+      setTravelData(prev => {
+          const newPlans = (prev.treks || []).map(p => p.id === updatedPlan.id ? updatedPlan : p);
+          return { ...prev, treks: newPlans };
+      });
+  }, [setTravelData]);
+
 
   const filteredDates = useMemo(() => {
     if (!habitChartDateRange?.from) {
@@ -330,6 +348,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateTravelData,
     updateRoadTripPlan,
     addRoadTripPlan,
+    addTrekPlan,
+    updateTrekPlan,
     updateRoadmapItem,
     addRoadmapItem,
     removeRoadmapItem,

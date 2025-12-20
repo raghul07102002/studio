@@ -4,6 +4,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoadTripView } from "@/components/travel/plan/road-trip-view";
+import { TrekView } from "@/components/travel/plan/trek-view";
 import { Map, Mountain } from "lucide-react";
 
 export default function TravelPlanPage() {
@@ -26,11 +27,7 @@ export default function TravelPlanPage() {
                         <RoadTripView />
                     </TabsContent>
                     <TabsContent value="treks" className="mt-4">
-                        <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed rounded-lg">
-                            <Mountain className="h-16 w-16 text-muted-foreground/50" />
-                            <h2 className="mt-4 text-xl font-semibold text-muted-foreground">Trekking Plans</h2>
-                            <p className="mt-1 text-sm text-muted-foreground">This feature is coming soon!</p>
-                        </div>
+                        <TrekView />
                     </TabsContent>
                 </Tabs>
             </CardContent>
