@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 const bikerIcon = new L.Icon({
-    iconUrl: 'https://img.icons8.com/ios-filled/50/motorcycle.png',
+    iconUrl: 'https://img.icons8.com/ios-filled/50/person-on-a-bike.png',
     iconSize: [30, 30],
     iconAnchor: [15, 30],
     popupAnchor: [0, -30]
