@@ -1,15 +1,25 @@
 
 import { format, parseISO } from "date-fns";
-import { Trash2, MapPin, ArrowRight } from "lucide-react";
+import { Trash2, MapPin, ArrowRight, Bike, Train, Car, Walk, Plane, Bus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TravelEntry } from "@/lib/types";
+import { TravelEntry, TravelMode } from "@/lib/types";
 import { calculateDistance } from "@/lib/travelUtils";
 import { ScrollArea } from "../ui/scroll-area";
+import { Badge } from "../ui/badge";
 
 interface TravelListProps {
   entries: TravelEntry[];
   onDelete: (id: string) => void;
 }
+
+const modeIcons: Record<TravelMode, React.FC<any>> = {
+    bike: Bike,
+    car: Car,
+    bus: Bus,
+    train: Train,
+    flight: Plane,
+    walk: Walk
+};
 
 const TravelList = ({ entries, onDelete }: TravelListProps) => {
   if (entries.length === 0) {
@@ -27,12 +37,14 @@ const TravelList = ({ entries, onDelete }: TravelListProps) => {
       <div className="space-y-2">
         {entries.map((entry) => {
           const distance = calculateDistance(entry.from.coords, entry.to.coords);
+          const ModeIcon = modeIcons[entry.mode];
 
           return (
             <div
               key={entry.id}
               className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border group hover:bg-muted transition-colors"
             >
+              {ModeIcon && <ModeIcon className="h-5 w-5 text-primary flex-shrink-0" />}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 text-sm font-medium">
                   <span className="truncate">{entry.from.name}</span>
@@ -43,12 +55,6 @@ const TravelList = ({ entries, onDelete }: TravelListProps) => {
                   <span>{format(parseISO(entry.date), "MMM d, yyyy")}</span>
                   <span>•</span>
                   <span className="text-primary font-medium">{distance} km</span>
-                  {entry.notes && (
-                    <>
-                      <span>•</span>
-                      <span className="truncate">{entry.notes}</span>
-                    </>
-                  )}
                 </div>
               </div>
               <Button

@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
@@ -132,7 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [roadmaps, setRoadmaps] = useLocalStorage<Record<CareerPath, RoadmapItem[]>>("careerRoadmaps", initialRoadmaps);
   const [dayPlannerData, setDayPlannerData] = useLocalStorage<DayPlannerData>('dayPlannerData', DEFAULT_DAY_PLANNER_DATA);
   
-  const [rawTravelData, setRawTravelData] = useLocalStorage<{ places: (TravelEntry | TravelData['places'][0])[] }>("travel-entries", { places: [] });
+  const [rawTravelData, setRawTravelData] = useLocalStorage<{ places: (Omit<TravelEntry, 'mode'> & {notes?: string, mode?: TravelMode})[] }>("travel-entries", { places: [] });
 
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -149,21 +149,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     to: endOfWeek(new Date()) 
   });
 
-  const travelData = useMemo(() => {
+  const travelData: TravelData = useMemo(() => {
     const places = (rawTravelData.places || []).map(p => {
-        if ('from' in p && 'to' in p) { // It's a TravelEntry
-            return p;
-        }
-        return p;
+        const { notes, ...rest } = p;
+        return {
+            ...rest,
+            mode: p.mode || 'car'
+        };
     });
-    return { places: places, selectedStates: [] };
+    return { places: places as TravelEntry[], selectedStates: [] };
   }, [rawTravelData]);
 
-  const updateTravelData = useCallback((data: Partial<TravelData>) => {
-    const currentPlaces = travelData.places || [];
-    const newPlaces = data.places || currentPlaces;
-    setRawTravelData({ places: newPlaces });
-  }, [travelData, setRawTravelData]);
+  const updateTravelData = useCallback((data: Partial<{places: TravelEntry[]}>) => {
+    setRawTravelData(prev => {
+        const currentPlaces = prev.places || [];
+        const newPlaces = data.places || currentPlaces;
+        return { ...prev, places: newPlaces as any };
+    });
+  }, [setRawTravelData]);
 
 
   const router = useRouter();
@@ -319,7 +322,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateHabits,
     updateHabitLog,
     updateWealthData,
-    updateTravelData,
+    updateTravelData: updateTravelData as (data: Partial<TravelData>) => void,
     updateRoadmapItem,
     addRoadmapItem,
     removeRoadmapItem,

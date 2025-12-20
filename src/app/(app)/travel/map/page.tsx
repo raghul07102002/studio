@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent } from '@/components/ui/card';
 import DateRangeFilter from '@/components/travel/DateRangeFilter';
@@ -27,7 +27,7 @@ const Map = dynamic(() => import('@/components/travel/TravelMap'), {
 
 const TravelMapPage = () => {
   const { travelData } = useApp();
-  const entries: TravelEntry[] = useMemo(() => (travelData.places || []).map((p: any) => ({...p, from: p.from || {name: 'Unknown'}, to: p.to || {name: 'Unknown'}})), [travelData.places]);
+  const entries: TravelEntry[] = useMemo(() => (travelData.places || []).map((p: any) => ({...p, mode: p.mode || 'car', from: p.from || {name: 'Unknown'}, to: p.to || {name: 'Unknown'}})), [travelData.places]);
   
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
@@ -47,25 +47,6 @@ const TravelMapPage = () => {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [entries, dateRange]);
   
-  const pathCoordinates = useMemo(() => {
-    if (!filteredEntries) return [];
-    const coords: { lat: number; lng: number }[] = [];
-    filteredEntries.forEach(entry => {
-        if (entry.from.coords) {
-            coords.push(entry.from.coords);
-        }
-        if (entry.to.coords) {
-            coords.push(entry.to.coords);
-        }
-    });
-    // Deduplicate coordinates to avoid extra markers and strange polyline behavior
-    return coords.filter((c, index, self) => 
-        c && c.lat && c.lng && index === self.findIndex((t) => (
-            t.lat === c.lat && t.lng === c.lng
-        ))
-    );
-  }, [filteredEntries]);
-
   const totalDistance = useMemo(() => {
     return filteredEntries.reduce((sum, entry) => {
         return sum + calculateDistance(entry.from.coords, entry.to.coords);
@@ -96,7 +77,7 @@ const TravelMapPage = () => {
             </div>
              <Card className="relative z-0">
                 <div className="h-[calc(100vh-220px)] min-h-[500px]">
-                    <Map entries={pathCoordinates} />
+                    <Map entries={filteredEntries} />
                 </div>
             </Card>
         </div>

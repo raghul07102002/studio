@@ -108,12 +108,14 @@ export interface TravelLocation {
   coords: { lat: number; lng: number; };
 }
 
+export type TravelMode = 'bike' | 'train' | 'car' | 'walk' | 'flight' | 'bus';
+
 export interface TravelEntry {
   id: string;
   date: string; // ISO date string YYYY-MM-DD
   from: TravelLocation;
   to: TravelLocation;
-  notes?: string;
+  mode: TravelMode;
 }
 
 // Day Planner Types

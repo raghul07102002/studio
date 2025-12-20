@@ -5,27 +5,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationInput } from "./LocationInput";
-import { TravelEntry, TravelLocation } from "@/lib/types";
+import { TravelEntry, TravelLocation, TravelMode } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Bike, Bus, Car, Plane, Train, Walk } from "lucide-react";
 
 interface TravelFormProps {
   onAdd: (entry: Omit<TravelEntry, "id">) => void;
 }
 
+const travelModes: { value: TravelMode, label: string, icon: React.FC<any> }[] = [
+    { value: 'bike', label: 'Bike', icon: Bike },
+    { value: 'car', label: 'Car', icon: Car },
+    { value: 'bus', label: 'Bus', icon: Bus },
+    { value: 'train', label: 'Train', icon: Train },
+    { value: 'flight', label: 'Flight', icon: Plane },
+    { value: 'walk', label: 'Walk', icon: Walk },
+]
+
 const TravelForm = ({ onAdd }: TravelFormProps) => {
   const [date, setDate] = useState<string>("");
   const [from, setFrom] = useState<TravelLocation | null>(null);
   const [to, setTo] = useState<TravelLocation | null>(null);
-  const [notes, setNotes] = useState("");
+  const [mode, setMode] = useState<TravelMode | "">("");
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !from || !to) {
+    if (!date || !from || !to || !mode) {
       toast({
         title: "Missing Information",
-        description: "Please select a date, a 'From' location, and a 'To' location.",
+        description: "Please select a date, from/to locations, and a mode of transport.",
         variant: "destructive",
       });
       return;
@@ -35,14 +45,14 @@ const TravelForm = ({ onAdd }: TravelFormProps) => {
       date: date,
       from,
       to,
-      notes: notes || undefined,
+      mode,
     });
 
     // Reset form
     setDate("");
     setFrom(null);
     setTo(null);
-    setNotes("");
+    setMode("");
   };
 
   return (
@@ -61,13 +71,25 @@ const TravelForm = ({ onAdd }: TravelFormProps) => {
             />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium">Notes (optional)</Label>
-          <Input
-            placeholder="e.g., Road trip"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="h-9"
-          />
+          <Label className="text-xs font-medium">Mode of Transport</Label>
+          <Select value={mode} onValueChange={(value) => setMode(value as TravelMode)}>
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Select mode" />
+            </SelectTrigger>
+            <SelectContent>
+              {travelModes.map(m => {
+                const Icon = m.icon;
+                return (
+                  <SelectItem key={m.value} value={m.value}>
+                    <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <span>{m.label}</span>
+                    </div>
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
