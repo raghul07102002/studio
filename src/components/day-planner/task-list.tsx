@@ -17,7 +17,7 @@ export function TaskList() {
 
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskTime, setNewTaskTime] = useState('');
-    const [newTaskAmount, setNewTaskAmount] = useState('');
+    const [newTaskHours, setNewTaskHours] = useState('');
 
     const handleAddTask = () => {
         if (!newTaskTitle || !newTaskTime) {
@@ -31,15 +31,15 @@ export function TaskList() {
         addPlannerTask({
             title: newTaskTitle,
             time: newTaskTime,
-            amount: parseFloat(newTaskAmount) || 0,
+            hours: parseFloat(newTaskHours) || 0,
             completed: false,
         });
         setNewTaskTitle('');
         setNewTaskTime('');
-        setNewTaskAmount('');
+        setNewTaskHours('');
     };
     
-    const totalAmount = tasks.reduce((sum, task) => sum + task.amount, 0);
+    const totalHours = tasks.reduce((sum, task) => sum + task.hours, 0);
 
     return (
         <Card className="h-full flex flex-col">
@@ -48,18 +48,7 @@ export function TaskList() {
                 <CardDescription>
                     List and manage your tasks for the day. Click on a task to see details.
                 </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full pr-4">
-                    <div className="space-y-2">
-                        {tasks.map(task => (
-                           <TaskItem key={task.id} task={task} />
-                        ))}
-                    </div>
-                </ScrollArea>
-            </CardContent>
-            <CardFooter className="flex-col items-stretch gap-4 border-t pt-6">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pt-4 border-t">
                     <Input
                         placeholder="New task title..."
                         value={newTaskTitle}
@@ -74,19 +63,36 @@ export function TaskList() {
                     />
                      <Input
                         type="number"
-                        placeholder="Amount"
-                        value={newTaskAmount}
-                        onChange={(e) => setNewTaskAmount(e.target.value)}
+                        placeholder="Hours"
+                        value={newTaskHours}
+                        onChange={(e) => setNewTaskHours(e.target.value)}
                         className="h-10 w-32"
                     />
                     <Button onClick={handleAddTask} size="icon" className="h-10 w-10 shrink-0">
                         <Plus className="h-5 w-5" />
                     </Button>
                 </div>
-                 <div className="flex justify-end font-semibold text-lg pr-12">
-                    <span>Total Spent: </span>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full pr-4">
+                    <div className="space-y-2">
+                        {tasks.map(task => (
+                           <TaskItem key={task.id} task={task} />
+                        ))}
+                         {tasks.length === 0 && (
+                            <div className="text-center text-muted-foreground pt-10">
+                                <p>No tasks planned yet.</p>
+                                <p className="text-sm">Add your first task for the day above.</p>
+                            </div>
+                        )}
+                    </div>
+                </ScrollArea>
+            </CardContent>
+            <CardFooter>
+                 <div className="w-full flex justify-end font-semibold text-lg pr-4">
+                    <span>Total Hours: </span>
                     <span className="ml-2">
-                        {totalAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 })}
+                        {totalHours}
                     </span>
                 </div>
             </CardFooter>

@@ -18,7 +18,7 @@ interface TaskItemProps {
 export function TaskItem({ task }: TaskItemProps) {
     const { updatePlannerTask, removePlannerTask } = useApp();
 
-    const handleFieldChange = (field: 'title' | 'time' | 'amount', value: string | number) => {
+    const handleFieldChange = (field: 'title' | 'time' | 'hours', value: string | number) => {
         updatePlannerTask(task.id, { [field]: value });
     };
 
@@ -61,12 +61,12 @@ export function TaskItem({ task }: TaskItemProps) {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor={`task-amount-${task.id}`}>Amount Spent</Label>
+                                <Label htmlFor={`task-hours-${task.id}`}>Hours</Label>
                                 <Input
-                                    id={`task-amount-${task.id}`}
+                                    id={`task-hours-${task.id}`}
                                     type="number"
-                                    value={task.amount}
-                                    onChange={(e) => handleFieldChange('amount', parseFloat(e.target.value) || 0)}
+                                    value={task.hours}
+                                    onChange={(e) => handleFieldChange('hours', parseFloat(e.target.value) || 0)}
                                     className="h-9"
                                     placeholder="0"
                                 />

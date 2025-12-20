@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -127,7 +122,7 @@ export interface PlannerTask {
     title: string;
     completed: boolean;
     time: string; // e.g. "09:00"
-    amount: number;
+    hours: number;
 }
 
 export interface DayPlannerData {
