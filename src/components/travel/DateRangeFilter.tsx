@@ -25,7 +25,11 @@ const DateRangeFilter = ({
 
   const handleApply = () => {
     const from = start ? parseISO(start) : undefined;
-    const to = end ? parseISO(end) : undefined;
+    let to = end ? parseISO(end) : undefined;
+    if (from && to && to < from) {
+      to = from;
+      setEnd(start);
+    }
     onDateRangeChange({ from, to });
   };
 
@@ -50,11 +54,11 @@ const DateRangeFilter = ({
         <div className="space-y-2">
             <div>
                 <Label htmlFor="start-date" className="text-xs">From</Label>
-                <Input id="start-date" type="date" value={start} onChange={e => setStart(e.target.value)} className="h-9"/>
+                <Input id="start-date" type="date" value={start} onChange={e => setStart(e.target.value)} className="h-9" max={end} />
             </div>
             <div>
                 <Label htmlFor="end-date" className="text-xs">To</Label>
-                <Input id="end-date" type="date" value={end} onChange={e => setEnd(e.target.value)} className="h-9"/>
+                <Input id="end-date" type="date" value={end} onChange={e => setEnd(e.target.value)} className="h-9" min={start}/>
             </div>
         </div>
       <Button onClick={handleApply} className="w-full h-9">Apply Filter</Button>

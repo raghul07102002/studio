@@ -37,7 +37,11 @@ export function DailyProgressChart() {
 
   const handleApplyFilter = () => {
     const from = startDate ? parseISO(startDate) : undefined;
-    const to = endDate ? parseISO(endDate) : from;
+    let to = endDate ? parseISO(endDate) : from;
+    if (from && to && to < from) {
+      to = from;
+      setEndDate(startDate);
+    }
     setHabitChartDateRange({ from, to });
   };
 
@@ -55,11 +59,11 @@ export function DailyProgressChart() {
         <div className="flex flex-col sm:flex-row items-end gap-4 pt-2">
             <div className="grid w-full max-w-sm items-center gap-1.5">
                 <Label htmlFor="start-date-habit">Start Date</Label>
-                <Input id="start-date-habit" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                <Input id="start-date-habit" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} max={endDate} />
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
                 <Label htmlFor="end-date-habit">End Date</Label>
-                <Input id="end-date-habit" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                <Input id="end-date-habit" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate} />
             </div>
             <Button onClick={handleApplyFilter}>Apply</Button>
         </div>
