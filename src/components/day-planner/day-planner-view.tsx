@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TaskList } from './task-list';
 import { AnalogClock } from '../dashboard/analog-clock';
+import { TimeUsageChart } from './time-usage-chart';
 
 export function DayPlannerView() {
   const [isStarted, setIsStarted] = useState(false);
@@ -38,12 +39,13 @@ export function DayPlannerView() {
       <div className="lg:col-span-2">
         <TaskList />
       </div>
-      <div className="lg:col-span-1 hidden lg:block">
-        <Card className="h-full">
-            <CardContent className="h-full flex items-center justify-center">
+      <div className="lg:col-span-1 hidden lg:flex flex-col gap-6">
+        <Card>
+            <CardContent className="flex items-center justify-center p-4">
                 <AnalogClock />
             </CardContent>
         </Card>
+        <TimeUsageChart />
       </div>
     </div>
   );
