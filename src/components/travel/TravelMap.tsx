@@ -5,38 +5,39 @@ import { MapContainer, TileLayer, Polyline, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { TravelEntry, TravelMode } from "@/lib/types";
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Car, Bike, Bus, Train, Plane, Footprints } from "lucide-react";
 
-const ICON_SIZE = 32;
-
-const base = {
-  iconSize: [ICON_SIZE, ICON_SIZE] as [number, number],
-  iconAnchor: [ICON_SIZE / 2, ICON_SIZE] as [number, number],
-  popupAnchor: [0, -ICON_SIZE] as [number, number],
-  shadowUrl: "/map-icons/shadow.png",
-  shadowSize: [40, 40] as [number, number],
-  shadowAnchor: [20, 38] as [number, number],
-};
-
-const transportIcons: Record<TravelMode, L.Icon> = {
-  car: L.icon({ ...base, iconUrl: "/map-icons/car.png" }),
-  bike: L.icon({ ...base, iconUrl: "/map-icons/bike.png" }),
-  bus: L.icon({ ...base, iconUrl: "/map-icons/bus.png" }),
-  train: L.icon({ ...base, iconUrl: "/map-icons/train.png" }),
-  flight: L.icon({ ...base, iconUrl: "/map-icons/flight.png" }),
-  walk: L.icon({ ...base, iconUrl: "/map-icons/walk.png" }),
-};
-
-
-const defaultIcon = new L.Icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-    shadowSize: [41, 41]
+// Default icon for fallback, required by Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
+
+const createSvgIcon = (icon: React.ReactElement) => {
+    const iconHtml = renderToStaticMarkup(icon);
+    return L.divIcon({
+        html: iconHtml,
+        className: 'bg-primary text-primary-foreground rounded-full p-2 shadow-lg border-2 border-primary-foreground',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+    });
+};
+
+const transportIcons: Record<TravelMode, L.DivIcon> = {
+  car: createSvgIcon(<Car className="w-4 h-4" />),
+  bike: createSvgIcon(<Bike className="w-4 h-4" />),
+  bus: createSvgIcon(<Bus className="w-4 h-4" />),
+  train: createSvgIcon(<Train className="w-4 h-4" />),
+  flight: createSvgIcon(<Plane className="w-4 h-4" />),
+  walk: createSvgIcon(<Footprints className="w-4 h-4" />),
+};
+
+const defaultIcon = transportIcons.car;
 
 type TravelMapProps = {
   entries: TravelEntry[];
