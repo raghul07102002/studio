@@ -4,15 +4,11 @@ import { MapContainer, TileLayer, Polyline, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// FIX: Leaflet marker icon issue in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+const bikerIcon = new L.Icon({
+    iconUrl: 'https://img.icons8.com/ios-filled/50/motorcycle.png',
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30]
 });
 
 
@@ -45,7 +41,7 @@ export default function TravelMap({ entries }: TravelMapProps) {
           <>
             <Polyline positions={path} color="#14b8a6" weight={3}/>
             {path.map((pos, idx) => (
-              <Marker key={idx} position={pos} />
+              <Marker key={idx} position={pos} icon={bikerIcon} />
             ))}
           </>
         )}
