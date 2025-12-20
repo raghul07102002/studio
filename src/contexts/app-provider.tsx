@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
@@ -36,6 +36,10 @@ const DEFAULT_WEALTH_DATA: WealthData = {
 const DEFAULT_TRAVEL_DATA: TravelData = {
   places: [],
   selectedStates: [],
+};
+
+const DEFAULT_DAY_PLANNER_DATA: DayPlannerData = {
+    tasks: []
 };
 
 const initialRoadmaps: Record<CareerPath, RoadmapItem[]> = {
@@ -76,6 +80,7 @@ interface UserProfile {
   wealthData?: WealthData;
   careerRoadmaps?: Record<CareerPath, RoadmapItem[]>;
   travelData?: TravelData;
+  dayPlannerData?: DayPlannerData;
 }
 
 interface AppContextType {
@@ -84,6 +89,7 @@ interface AppContextType {
   wealthData: WealthData;
   roadmaps: Record<CareerPath, RoadmapItem[]>;
   travelData: TravelData;
+  dayPlannerData: DayPlannerData;
 
   updateHabits: (habits: Habit[]) => void;
   updateHabitLog: (date: string, habitId: string, log: Partial<HabitLog>) => void;
@@ -97,6 +103,10 @@ interface AppContextType {
   addSubtask: (path: CareerPath, itemId: string, title: string) => void;
   updateSubtask: (path: CareerPath, itemId: string, subtaskId: string, updates: Partial<Subtask>) => void;
   removeSubtask: (path: CareerPath, itemId: string, subtaskId: string) => void;
+
+  addPlannerTask: (task: Omit<PlannerTask, 'id'>) => void;
+  updatePlannerTask: (taskId: string, updates: Partial<PlannerTask>) => void;
+  removePlannerTask: (taskId: string) => void;
 
   selectedView: ViewOption;
   setSelectedView: (view: ViewOption) => void;
@@ -120,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [habitData, setHabitData] = useLocalStorage<HabitData>("habitData", {});
   const [wealthData, setWealthData] = useLocalStorage<WealthData>("wealthData", DEFAULT_WEALTH_DATA);
   const [roadmaps, setRoadmaps] = useLocalStorage<Record<CareerPath, RoadmapItem[]>>("careerRoadmaps", initialRoadmaps);
+  const [dayPlannerData, setDayPlannerData] = useLocalStorage<DayPlannerData>('dayPlannerData', DEFAULT_DAY_PLANNER_DATA);
   
   const [rawTravelData, setRawTravelData] = useLocalStorage<{ places: (TravelEntry | TravelData['places'][0])[] }>("travel-entries", { places: [] });
 
@@ -264,6 +275,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, [setRoadmaps]);
 
+  const addPlannerTask = useCallback((task: Omit<PlannerTask, 'id'>) => {
+    setDayPlannerData(prev => ({
+        ...prev,
+        tasks: [...(prev.tasks || []), { ...task, id: `task-${Date.now()}` }]
+    }));
+  }, [setDayPlannerData]);
+
+  const updatePlannerTask = useCallback((taskId: string, updates: Partial<PlannerTask>) => {
+    setDayPlannerData(prev => ({
+        ...prev,
+        tasks: (prev.tasks || []).map(task => 
+            task.id === taskId ? { ...task, ...updates } : task
+        )
+    }));
+  }, [setDayPlannerData]);
+
+  const removePlannerTask = useCallback((taskId: string) => {
+    setDayPlannerData(prev => ({
+        ...prev,
+        tasks: (prev.tasks || []).filter(task => task.id !== taskId)
+    }));
+  }, [setDayPlannerData]);
+
 
   const filteredDates = useMemo(() => {
     if (!habitChartDateRange?.from) {
@@ -281,6 +315,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     wealthData,
     roadmaps,
     travelData,
+    dayPlannerData,
     updateHabits,
     updateHabitLog,
     updateWealthData,
@@ -291,6 +326,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addSubtask,
     updateSubtask,
     removeSubtask,
+    addPlannerTask,
+    updatePlannerTask,
+    removePlannerTask,
     selectedView,
     setSelectedView,
     habitChartDateRange,

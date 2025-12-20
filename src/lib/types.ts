@@ -3,6 +3,7 @@
 
 
 
+
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -118,4 +119,17 @@ export interface TravelEntry {
   from: TravelLocation;
   to: TravelLocation;
   notes?: string;
+}
+
+// Day Planner Types
+export interface PlannerTask {
+    id: string;
+    title: string;
+    completed: boolean;
+    time: string; // e.g. "09:00"
+    amount: number;
+}
+
+export interface DayPlannerData {
+    tasks: PlannerTask[];
 }

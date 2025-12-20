@@ -258,9 +258,10 @@
             "id": { "type": "string" },
             "title": { "type": "string" },
             "completed": { "type": "boolean" },
-            "time": { "type": "string", "format": "time" }
+            "time": { "type": "string", "format": "time" },
+            "amount": { "type": "number" }
         },
-        "required": ["id", "title", "completed"]
+        "required": ["id", "title", "completed", "time", "amount"]
     }
   },
   "auth": {
