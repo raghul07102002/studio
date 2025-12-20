@@ -6,22 +6,26 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { TravelEntry, TravelMode } from "@/lib/types";
 
-const createRealIcon = (name: string) =>
-  L.icon({
-    iconUrl: `/map-icons/${name}.svg`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
-    popupAnchor: [0, -28],
-  });
+const ICON_SIZE = 32;
+
+const base = {
+  iconSize: [ICON_SIZE, ICON_SIZE] as [number, number],
+  iconAnchor: [ICON_SIZE / 2, ICON_SIZE] as [number, number],
+  popupAnchor: [0, -ICON_SIZE] as [number, number],
+  shadowUrl: "/map-icons/shadow.png",
+  shadowSize: [40, 40] as [number, number],
+  shadowAnchor: [20, 38] as [number, number],
+};
 
 const transportIcons: Record<TravelMode, L.Icon> = {
-  bike: createRealIcon("bicycle"),
-  car: createRealIcon("car"),
-  bus: createRealIcon("bus"),
-  train: createRealIcon("rail"),
-  flight: createRealIcon("airport"),
-  walk: createRealIcon("walking"),
+  car: L.icon({ ...base, iconUrl: "/map-icons/car.png" }),
+  bike: L.icon({ ...base, iconUrl: "/map-icons/bike.png" }),
+  bus: L.icon({ ...base, iconUrl: "/map-icons/bus.png" }),
+  train: L.icon({ ...base, iconUrl: "/map-icons/train.png" }),
+  flight: L.icon({ ...base, iconUrl: "/map-icons/flight.png" }),
+  walk: L.icon({ ...base, iconUrl: "/map-icons/walk.png" }),
 };
+
 
 const defaultIcon = new L.Icon({
     iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
