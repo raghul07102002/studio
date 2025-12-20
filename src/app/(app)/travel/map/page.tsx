@@ -27,7 +27,7 @@ const Map = dynamic(() => import('@/components/travel/TravelMap'), {
 
 const TravelMapPage = () => {
   const { travelData } = useApp();
-  const entries: TravelEntry[] = useMemo(() => (travelData.places || []).map((p: any) => ({...p, mode: p.mode || 'car', from: p.from || {name: 'Unknown'}, to: p.to || {name: 'Unknown'}})), [travelData.places]);
+  const entries: TravelEntry[] = useMemo(() => (travelData.places || []), [travelData.places]);
   
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 

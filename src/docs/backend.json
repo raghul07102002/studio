@@ -30,6 +30,9 @@
         },
         "travelData": {
             "$ref": "#/backend/entities/TravelData"
+        },
+        "dayPlannerData": {
+            "$ref": "#/backend/entities/DayPlannerData"
         }
       },
       "required": ["id"]
@@ -211,23 +214,31 @@
             "places": {
                 "type": "array",
                 "items": {
-                    "$ref": "#/backend/entities/TravelPlace"
+                    "$ref": "#/backend/entities/TravelEntry"
                 }
             },
-            "selectedStates": {
+            "roadTrips": {
                 "type": "array",
-                "items": { "type": "string" }
+                "items": {
+                    "$ref": "#/backend/entities/RoadTripPlan"
+                }
             }
         }
     },
-    "TravelPlace": {
+    "TravelEntry": {
         "type": "object",
         "properties": {
             "id": { "type": "string" },
-            "name": { "type": "string" },
-            "district": { "type": "string" },
-            "state": { "type": "string" },
             "date": { "type": "string", "format": "date" },
+            "from": { "$ref": "#/backend/entities/TravelLocation" },
+            "to": { "$ref": "#/backend/entities/TravelLocation" },
+            "mode": { "type": "string" }
+        }
+    },
+    "TravelLocation": {
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
             "coords": {
                 "type": "object",
                 "properties": {
@@ -235,8 +246,50 @@
                     "lng": { "type": "number" }
                 }
             }
+        }
+    },
+    "RoadTripPlan": {
+        "type": "object",
+        "properties": {
+            "stateCode": { "type": "string" },
+            "country": { "type": "string" },
+            "places": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/RoadTripPlace"
+                }
+            }
+        }
+    },
+    "RoadTripPlace": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "visited": { "type": "boolean" }
+        }
+    },
+    "DayPlannerData": {
+        "type": "object",
+        "properties": {
+            "tasks": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/PlannerTask"
+                }
+            }
+        }
+    },
+    "PlannerTask": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "completed": { "type": "boolean" },
+            "time": { "type": "string", "format": "time" },
+            "hours": { "type": "number" }
         },
-        "required": ["id", "name", "state", "date", "coords"]
+        "required": ["id", "title", "completed", "time", "hours"]
     }
   },
   "auth": {

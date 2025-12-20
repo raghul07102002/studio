@@ -14,7 +14,7 @@ import { DateRange } from 'react-day-picker';
 
 const TravelPage = () => {
   const { travelData, updateTravelData } = useApp();
-  const entries = useMemo(() => (travelData.places || []).map((p: any) => ({...p, mode: p.mode || 'car', from: p.from || {name: 'Unknown'}, to: p.to || {name: 'Unknown'}})), [travelData.places]);
+  const entries = useMemo(() => (travelData.places || []), [travelData.places]);
 
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);

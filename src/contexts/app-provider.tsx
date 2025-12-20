@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, RoadTripPlace } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { getFilteredDates } from "@/lib/analysis";
@@ -35,7 +35,7 @@ const DEFAULT_WEALTH_DATA: WealthData = {
 
 const DEFAULT_TRAVEL_DATA: TravelData = {
   places: [],
-  selectedStates: [],
+  roadTrips: [],
 };
 
 const DEFAULT_DAY_PLANNER_DATA: DayPlannerData = {
@@ -95,6 +95,8 @@ interface AppContextType {
   updateHabitLog: (date: string, habitId: string, log: Partial<HabitLog>) => void;
   updateWealthData: (data: Partial<WealthData>) => void;
   updateTravelData: (data: Partial<TravelData>) => void;
+  updateRoadTripPlan: (plan: RoadTripPlan) => void;
+  addRoadTripPlan: (stateCode: string) => void;
   
   updateRoadmapItem: (path: CareerPath, item: RoadmapItem) => void;
   addRoadmapItem: (path: CareerPath, title: string) => void;
@@ -131,8 +133,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [wealthData, setWealthData] = useLocalStorage<WealthData>("wealthData", DEFAULT_WEALTH_DATA);
   const [roadmaps, setRoadmaps] = useLocalStorage<Record<CareerPath, RoadmapItem[]>>("careerRoadmaps", initialRoadmaps);
   const [dayPlannerData, setDayPlannerData] = useLocalStorage<DayPlannerData>('dayPlannerData', DEFAULT_DAY_PLANNER_DATA);
-  
-  const [rawTravelData, setRawTravelData] = useLocalStorage<{ places: (Omit<TravelEntry, 'mode'> & {notes?: string, mode?: TravelMode})[] }>("travel-entries", { places: [] });
+  const [travelData, setTravelData] = useLocalStorage<TravelData>('travelData', DEFAULT_TRAVEL_DATA);
 
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -149,24 +150,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     to: endOfWeek(new Date()) 
   });
 
-  const travelData: TravelData = useMemo(() => {
-    const places = (rawTravelData.places || []).map(p => {
-        const { notes, ...rest } = p;
-        return {
-            ...rest,
-            mode: p.mode || 'car'
-        };
-    });
-    return { places: places as TravelEntry[], selectedStates: [] };
-  }, [rawTravelData]);
 
-  const updateTravelData = useCallback((data: Partial<{places: TravelEntry[]}>) => {
-    setRawTravelData(prev => {
-        const currentPlaces = prev.places || [];
-        const newPlaces = data.places || currentPlaces;
-        return { ...prev, places: newPlaces as any };
-    });
-  }, [setRawTravelData]);
+  const updateTravelData = useCallback((data: Partial<TravelData>) => {
+    setTravelData(prev => ({
+        ...prev,
+        ...data,
+    }));
+  }, [setTravelData]);
 
 
   const router = useRouter();
@@ -183,7 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (dashboard === 'habits') router.push('/dashboard');
     else if (dashboard === 'wealth') router.push('/wealth');
     else if (dashboard === 'career') router.push('/career');
-    else if (dashboard === 'travel') router.push('/travel');
+    else if (dashboard === 'travel') router.push('/travel/plan'); // Default to plan
     else if (dashboard === 'day-planner') router.push('/day-planner');
   };
 
@@ -301,6 +291,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }, [setDayPlannerData]);
 
+  const addRoadTripPlan = useCallback((stateCode: string) => {
+      setTravelData(prev => {
+          if (prev.roadTrips.find(p => p.stateCode === stateCode)) return prev; // already exists
+          const newPlan: RoadTripPlan = { stateCode, country: 'India', places: [] };
+          return { ...prev, roadTrips: [...prev.roadTrips, newPlan] };
+      });
+  }, [setTravelData]);
+
+  const updateRoadTripPlan = useCallback((updatedPlan: RoadTripPlan) => {
+      setTravelData(prev => {
+          const newPlans = prev.roadTrips.map(p => p.stateCode === updatedPlan.stateCode ? updatedPlan : p);
+          return { ...prev, roadTrips: newPlans };
+      });
+  }, [setTravelData]);
+
 
   const filteredDates = useMemo(() => {
     if (!habitChartDateRange?.from) {
@@ -322,7 +327,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateHabits,
     updateHabitLog,
     updateWealthData,
-    updateTravelData: updateTravelData as (data: Partial<TravelData>) => void,
+    updateTravelData,
+    updateRoadTripPlan,
+    addRoadTripPlan,
     updateRoadmapItem,
     addRoadmapItem,
     removeRoadmapItem,

@@ -89,19 +89,23 @@ export interface WealthData {
 }
 
 // Travel Dashboard Types
-export interface TravelPlace {
-  id: string;
-  name: string;
-  district: string;
-  state: string;
-  date: string; // YYYY-MM-DD
-  coords: { lat: number; lng: number };
+export interface RoadTripPlace {
+    id: string;
+    name: string;
+    visited: boolean;
+}
+
+export interface RoadTripPlan {
+    stateCode: string; // e.g. "MH" for Maharashtra
+    country: string;
+    places: RoadTripPlace[];
 }
 
 export interface TravelData {
-  places: TravelPlace[];
-  selectedStates: string[];
+  places: TravelEntry[];
+  roadTrips: RoadTripPlan[];
 }
+
 
 export interface TravelLocation {
   name: string;
