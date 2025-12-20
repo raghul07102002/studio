@@ -9,12 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { INDIA_STATES } from '@/data/india-states';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
+import { Label } from '@/components/ui/label';
 
 interface StatePlanCardProps {
   plan: RoadTripPlan;
@@ -72,28 +71,27 @@ export function StatePlanCard({ plan }: StatePlanCardProps) {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal text-xs h-9">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {plan.startDate ? format(parseISO(plan.startDate), 'LLL dd, y') : <span>Start Date</span>}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar mode="single" selected={plan.startDate ? parseISO(plan.startDate) : undefined} onSelect={(d) => handleDateChange('startDate', d)} initialFocus />
-                        </PopoverContent>
-                    </Popover>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal text-xs h-9">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {plan.endDate ? format(parseISO(plan.endDate), 'LLL dd, y') : <span>End Date</span>}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar mode="single" selected={plan.endDate ? parseISO(plan.endDate) : undefined} onSelect={(d) => handleDateChange('endDate', d)} initialFocus />
-                        </PopoverContent>
-                    </Popover>
+                   <div className='space-y-1.5'>
+                        <Label htmlFor={`start-date-${plan.stateCode}`} className='text-xs'>Start Date</Label>
+                        <Input 
+                            id={`start-date-${plan.stateCode}`}
+                            type='date'
+                            value={plan.startDate ? format(parseISO(plan.startDate), 'yyyy-MM-dd') : ''}
+                            onChange={(e) => handleDateChange('startDate', e.target.value ? parseISO(e.target.value) : undefined)}
+                            className='h-9 text-xs'
+                        />
+                   </div>
+                   <div className='space-y-1.5'>
+                        <Label htmlFor={`end-date-${plan.stateCode}`} className='text-xs'>End Date</Label>
+                        <Input 
+                            id={`end-date-${plan.stateCode}`}
+                            type='date'
+                            value={plan.endDate ? format(parseISO(plan.endDate), 'yyyy-MM-dd') : ''}
+                            onChange={(e) => handleDateChange('endDate', e.target.value ? parseISO(e.target.value) : undefined)}
+                            className='h-9 text-xs'
+                             min={plan.startDate ? format(parseISO(plan.startDate), 'yyyy-MM-dd') : ''}
+                        />
+                   </div>
                 </div>
 
                 <ScrollArea className="h-40 pr-4">

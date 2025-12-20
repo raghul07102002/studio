@@ -24,13 +24,11 @@ import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import type { Expense, Trip } from '@/lib/types';
 import { Textarea } from '../ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 import { MonthlyBudgetInput } from './monthly-budget-input';
+import { Label } from '../ui/label';
 
 interface EditableTableProps {
   title: string;
@@ -140,30 +138,18 @@ export function EditableTable({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </div>
-            {type === 'expenses' && onDateChange ? (
-                <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        variant={"outline"}
-                        className={cn(
-                        "w-full sm:w-[240px] justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={onDateChange}
-                        initialFocus
-                    />
-                    </PopoverContent>
-                </Popover>
-            ) : null}
+             {type === 'expenses' && onDateChange && (
+              <div className="grid w-full max-w-xs items-center gap-1.5">
+                  <Label htmlFor="expense-date">Select Date</Label>
+                  <Input
+                    id="expense-date"
+                    type="date"
+                    value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
+                    onChange={(e) => onDateChange(e.target.value ? parseISO(e.target.value) : undefined)}
+                    className="w-full"
+                  />
+              </div>
+            )}
         </div>
         {type === 'expenses' && (
           <div className="pt-4">

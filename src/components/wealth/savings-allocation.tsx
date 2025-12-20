@@ -6,12 +6,11 @@ import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FundTable } from './fund-table';
 import { Progress } from '../ui/progress';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { Calendar } from '../ui/calendar';
+import { format, parseISO } from 'date-fns';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 interface SavingsAllocationProps {
     selectedDate?: Date;
@@ -54,28 +53,15 @@ export function SavingsAllocation({ selectedDate, onDateChange }: SavingsAllocat
                 </CardDescription>
             </div>
             {onDateChange && (
-                <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        variant={"outline"}
-                        className={cn(
-                        "w-full sm:w-[240px] justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={onDateChange}
-                        initialFocus
-                    />
-                    </PopoverContent>
-                </Popover>
+              <div className="grid w-full max-w-xs items-center gap-1.5">
+                  <Label htmlFor="savings-date">Select Month</Label>
+                  <Input
+                    id="savings-date"
+                    type="month"
+                    value={selectedDate ? format(selectedDate, 'yyyy-MM') : ''}
+                    onChange={(e) => onDateChange(e.target.value ? parseISO(`${e.target.value}-01`) : undefined)}
+                  />
+              </div>
             )}
         </div>
       </CardHeader>
