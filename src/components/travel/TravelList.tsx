@@ -1,6 +1,6 @@
 
 import { format, parseISO } from "date-fns";
-import { Trash2, MapPin, ArrowRight, Bike, Train, Car, Walk, Plane, Bus } from "lucide-react";
+import { Trash2, MapPin, ArrowRight, Bike, Train, Car, Footprints, Plane, Bus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TravelEntry, TravelMode } from "@/lib/types";
 import { calculateDistance } from "@/lib/travelUtils";
@@ -18,7 +18,7 @@ const modeIcons: Record<TravelMode, React.FC<any>> = {
     bus: Bus,
     train: Train,
     flight: Plane,
-    walk: Walk
+    walk: Footprints
 };
 
 const TravelList = ({ entries, onDelete }: TravelListProps) => {

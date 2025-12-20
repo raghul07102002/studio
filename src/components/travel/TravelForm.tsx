@@ -8,7 +8,7 @@ import { LocationInput } from "./LocationInput";
 import { TravelEntry, TravelLocation, TravelMode } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bike, Bus, Car, Plane, Train, Walk } from "lucide-react";
+import { Bike, Bus, Car, Plane, Train, Footprints } from "lucide-react";
 
 interface TravelFormProps {
   onAdd: (entry: Omit<TravelEntry, "id">) => void;
@@ -20,7 +20,7 @@ const travelModes: { value: TravelMode, label: string, icon: React.FC<any> }[] =
     { value: 'bus', label: 'Bus', icon: Bus },
     { value: 'train', label: 'Train', icon: Train },
     { value: 'flight', label: 'Flight', icon: Plane },
-    { value: 'walk', label: 'Walk', icon: Walk },
+    { value: 'walk', label: 'Walk', icon: Footprints },
 ]
 
 const TravelForm = ({ onAdd }: TravelFormProps) => {

@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Polyline, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { TravelEntry } from "@/lib/types";
-import { Bike, Bus, Car, Plane, Train, Walk } from "lucide-react";
+import { Bike, Bus, Car, Plane, Train, Footprints } from "lucide-react";
 import ReactDOMServer from 'react-dom/server';
 
 const createIcon = (IconComponent: React.FC<any>) => {
@@ -23,7 +23,7 @@ const icons = {
     bus: createIcon(Bus),
     train: createIcon(Train),
     flight: createIcon(Plane),
-    walk: createIcon(Walk),
+    walk: createIcon(Footprints),
 };
 
 const defaultIcon = new L.Icon({
