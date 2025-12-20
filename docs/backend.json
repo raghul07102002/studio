@@ -30,6 +30,9 @@
         },
         "travelData": {
             "$ref": "#/backend/entities/TravelData"
+        },
+        "dayPlannerData": {
+            "$ref": "#/backend/entities/DayPlannerData"
         }
       },
       "required": ["id"]
@@ -237,8 +240,52 @@
             }
         },
         "required": ["id", "name", "state", "date", "coords"]
+    },
+    "DayPlannerData": {
+        "type": "object",
+        "properties": {
+            "tasks": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/PlannerTask"
+                }
+            }
+        }
+    },
+    "PlannerTask": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "completed": { "type": "boolean" },
+            "time": { "type": "string", "format": "time" }
+        },
+        "required": ["id", "title", "completed"]
     }
+  },
+  "auth": {
+    "providers": [
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile and their associated data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user."
+            }
+          ]
+        }
+      }
+    ]
   }
 }
-
-    

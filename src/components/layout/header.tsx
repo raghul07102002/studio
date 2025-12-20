@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Flame, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { habitNavItems, wealthNavItems, careerNavItems, travelNavItems } from "./navigation";
+import { habitNavItems, wealthNavItems, careerNavItems, travelNavItems, dayPlannerNavItems } from "./navigation";
 import { DashboardSelector } from "./dashboard-selector";
 import { useApp } from "@/contexts/app-provider";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ export function AppHeader() {
     wealth: wealthNavItems,
     career: careerNavItems,
     travel: travelNavItems,
+    'day-planner': dayPlannerNavItems,
   }
 
   const currentNavItems = navItemsMap[selectedDashboard];

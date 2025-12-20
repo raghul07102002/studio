@@ -2,6 +2,7 @@
 
 
 
+
 import type { IconName } from "@/components/icons";
 
 export interface Habit {
@@ -25,7 +26,7 @@ export type ViewOption =
   | "Month"
   | "Year";
 
-export type DashboardOption = "habits" | "wealth" | "career" | "travel";
+export type DashboardOption = "habits" | "wealth" | "career" | "travel" | "day-planner";
 
 // Career Dashboard Types
 export type CareerPath = 'CyberArk' | 'Sailpoint IDN' | 'Cloud computing' | 'Devops';

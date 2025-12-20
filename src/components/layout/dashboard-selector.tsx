@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DashboardOption } from "@/lib/types";
-import { Briefcase, Plane, Wallet, Flame } from "lucide-react";
+import { Briefcase, Plane, Wallet, Flame, AlarmClock } from "lucide-react";
 
 export function DashboardSelector() {
   const { selectedDashboard, setSelectedDashboard } = useApp();
@@ -45,6 +45,12 @@ export function DashboardSelector() {
           <div className="flex items-center gap-2">
             <Plane className="h-4 w-4" />
             <span>Travel Dashboard</span>
+          </div>
+        </SelectItem>
+        <SelectItem value="day-planner">
+          <div className="flex items-center gap-2">
+            <AlarmClock className="h-4 w-4" />
+            <span>Day Planner</span>
           </div>
         </SelectItem>
       </SelectContent>

@@ -126,7 +126,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   
   const [selectedView, setSelectedView] = useState<ViewOption>("Week");
-  const [selectedDashboard, setSelectedDashboard] = useState<DashboardOption>('habits');
+  const [selectedDashboard, setSelectedDashboard] = useLocalStorage<DashboardOption>('selectedDashboard', 'habits');
   
   const defaultDateRange: DateRange = {
     from: subDays(new Date(), 6),
@@ -170,6 +170,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else if (dashboard === 'wealth') router.push('/wealth');
     else if (dashboard === 'career') router.push('/career');
     else if (dashboard === 'travel') router.push('/travel');
+    else if (dashboard === 'day-planner') router.push('/day-planner');
   };
 
   const updateHabits = useCallback((newHabits: Habit[]) => {
