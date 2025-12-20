@@ -103,25 +103,18 @@ export interface RoadTripPlan {
     endDate?: string;
 }
 
-export interface TrekPlace {
+export interface TrekEntry {
     id: string;
     name: string;
-    visited: boolean;
-    distance?: number;
-}
-
-export interface TrekPlan {
-    id: string;
-    name: string;
-    places: TrekPlace[];
-    startDate?: string;
-    endDate?: string;
+    place: string;
+    date: string;
+    kilometers: number;
 }
 
 export interface TravelData {
   places: TravelEntry[];
   roadTrips: RoadTripPlan[];
-  treks: TrekPlan[];
+  treks: TrekEntry[];
 }
 
 

@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, TrekPlan, SavingsAllocation } from "@/lib/types";
+import type { Habit, HabitData, ViewOption, DashboardOption, HabitLog, WealthData, RoadmapItem, CareerPath, Subtask, TravelData, TravelEntry as JourneyEntry, DayPlannerData, PlannerTask, TravelMode, RoadTripPlan, TrekEntry } from "@/lib/types";
 import { DEFAULT_HABITS } from "@/data/habits";
 import { subDays, eachDayOfInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -95,8 +95,8 @@ interface AppContextType {
   updateTravelData: (data: Partial<TravelData>) => void;
   updateRoadTripPlan: (plan: RoadTripPlan) => void;
   addRoadTripPlan: (stateCode: string) => void;
-  addTrekPlan: (name: string) => void;
-  updateTrekPlan: (plan: TrekPlan) => void;
+  addTrekEntry: (trek: Omit<TrekEntry, 'id'>) => void;
+  updateTrekEntry: (trekId: string, updates: Partial<TrekEntry>) => void;
   
   updateRoadmapItem: (path: CareerPath, item: RoadmapItem) => void;
   addRoadmapItem: (path: CareerPath, title: string) => void;
@@ -316,17 +316,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
   }, [setTravelData]);
 
-  const addTrekPlan = useCallback((name: string) => {
+  const addTrekEntry = useCallback((trek: Omit<TrekEntry, 'id'>) => {
     setTravelData(prev => {
-        const newPlan: TrekPlan = { id: `trek-${Date.now()}`, name, places: [] };
-        return { ...prev, treks: [...(prev.treks || []), newPlan] };
+        const newTrek: TrekEntry = { ...trek, id: `trek-${Date.now()}` };
+        return { ...prev, treks: [...(prev.treks || []), newTrek] };
     });
   }, [setTravelData]);
 
-  const updateTrekPlan = useCallback((updatedPlan: TrekPlan) => {
+  const updateTrekEntry = useCallback((trekId: string, updates: Partial<TrekEntry>) => {
       setTravelData(prev => {
-          const newPlans = (prev.treks || []).map(p => p.id === updatedPlan.id ? updatedPlan : p);
-          return { ...prev, treks: newPlans };
+          const newTreks = (prev.treks || []).map(t => t.id === trekId ? { ...t, ...updates } : t);
+          return { ...prev, treks: newTreks };
       });
   }, [setTravelData]);
 
@@ -355,8 +355,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateTravelData,
     updateRoadTripPlan,
     addRoadTripPlan,
-    addTrekPlan,
-    updateTrekPlan,
+    addTrekEntry,
+    updateTrekEntry,
     updateRoadmapItem,
     addRoadmapItem,
     removeRoadmapItem,

@@ -226,7 +226,7 @@
             "treks": {
                 "type": "array",
                 "items": {
-                    "$ref": "#/backend/entities/TrekPlan"
+                    "$ref": "#/backend/entities/TrekEntry"
                 }
             }
         }
@@ -277,27 +277,14 @@
             "visited": { "type": "boolean" }
         }
     },
-    "TrekPlan": {
+    "TrekEntry": {
         "type": "object",
         "properties": {
             "id": { "type": "string" },
             "name": { "type": "string" },
-            "places": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/backend/entities/TrekPlace"
-                }
-            },
-            "startDate": { "type": "string", "format": "date" },
-            "endDate": { "type": "string", "format": "date" }
-        }
-    },
-    "TrekPlace": {
-        "type": "object",
-        "properties": {
-            "id": { "type": "string" },
-            "name": { "type": "string" },
-            "visited": { "type": "boolean" }
+            "place": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "kilometers": { "type": "number" }
         }
     },
     "DayPlannerData": {
